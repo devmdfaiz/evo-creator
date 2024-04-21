@@ -1,0 +1,9 @@
+{
+    "tailwindCSS.experimental.classRegex": [
+        "class:\\s*?[\"'`]([^\"'`]*).*?,"
+      ],
+      "editor.tabSize": 4,
+      "editor.wordWrap": "on",
+      "editor.fontSize": 20
+      
+}
