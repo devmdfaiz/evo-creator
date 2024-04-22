@@ -51,35 +51,43 @@ export default withAuth(
       //   return NextResponse.redirect(new URL("/", req.url));
       // }
 
-      if(pathname.startsWith("/pg")){
-        return null
+      if (pathname.startsWith("/pg")) {
+        return null;
       }
 
-      if(pathname.startsWith("/thank-you")){
-        return null
+      if (pathname.startsWith("/api/signin")) {
+        return null;
       }
 
-      if(pathname.startsWith("/preview")){
-        return null
+      if (pathname.startsWith("/api/signup")) {
+        return null;
       }
 
-      if(pathname.startsWith("/payment-page")){
-        return null
+      if (pathname.startsWith("/thank-you")) {
+        return null;
+      }
+
+      if (pathname.startsWith("/preview")) {
+        return null;
+      }
+
+      if (pathname.startsWith("/payment-page")) {
+        return null;
       }
       if (pathname.startsWith("/pages")) {
         return null;
       }
 
-      if(pathname.startsWith("/api/page")){
-        return null
+      if (pathname.startsWith("/api/page")) {
+        return null;
       }
 
-      if(pathname.startsWith("/api/order")){
-        return null
+      if (pathname.startsWith("/api/order")) {
+        return null;
       }
 
-      if(pathname.startsWith("/api/razorpay/payment/verify")){
-        return null
+      if (pathname.startsWith("/api/razorpay/payment/verify")) {
+        return null;
       }
 
       if (routesForLoggedinUsers.includes(pathname)) {
@@ -105,16 +113,24 @@ export default withAuth(
         return NextResponse.redirect(new URL("/sign-in", req.url));
       }
 
-      if(pathname.startsWith("/thank-you")){
-        return null
+      if (pathname.startsWith("/api/signin")) {
+        return null;
       }
 
-      if(pathname.startsWith("/api/razorpay/payment/verify")){
-        return null
+      if (pathname.startsWith("/api/signup")) {
+        return null;
       }
 
-      if(pathname.startsWith("/api/order")){
-        return null
+      if (pathname.startsWith("/thank-you")) {
+        return null;
+      }
+
+      if (pathname.startsWith("/api/razorpay/payment/verify")) {
+        return null;
+      }
+
+      if (pathname.startsWith("/api/order")) {
+        return null;
       }
 
       if (routesForLoggedinUsers.includes(pathname)) {

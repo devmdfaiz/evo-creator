@@ -29,6 +29,7 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import ErrorAlert from "@/components/global/form/ErrorAlert";
 import { formSchemaLogin } from "@/lib/zod/index.zodSchema";
+import axios from "axios";
 
 let isLoginCom = false;
 
@@ -39,15 +40,15 @@ const SignInPage = () => {
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchemaLogin>) {
-    const { phone, password } = values;
-    checkCredentials(phone, password).then((res) => {
-      if (res?.status) {
-        const payload = res?.payload;
+    axios.post("/api/user/signin", values).then((res) => {
+      const { data } = res;
+      if (data?.status) {
+        const payload = data?.user;
         signIn("credentials", { redirect: false, ...payload });
         isLoginCom = true;
       } else {
-        console.log("error in sign in", res?.massage);
-        setIsError(res?.massage);
+        console.log("error in sign in", data?.massage);
+        setIsError(data?.massage);
       }
     });
   }

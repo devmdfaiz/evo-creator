@@ -18,7 +18,6 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils/utils";
 import TypographyH3 from "@/components/typography/TypographyH3";
 import TypographyMuted from "@/components/typography/TypographyMuted";
-import { Separator } from "@/components/ui/separator";
 import TypographySmall from "@/components/typography/TypographySmall";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -30,8 +29,7 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import ErrorAlert from "@/components/global/form/ErrorAlert";
 import { formSchemaSignUp } from "@/lib/zod/index.zodSchema";
-
-
+import axios from "axios";
 
 let isLoginCom = false;
 
@@ -42,21 +40,19 @@ const SignUpPage = () => {
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchemaSignUp>) {
-    saveUsersToDb(values).then((res) => {
-      if (res?.status) {
-        const payload = res?.payload;
+    axios.post("/api/user/signup", values).then((res) => {
+      if (res.data.status) {
+        const payload = res?.data?.user;
         signIn("credentials", { redirect: false, ...payload });
         isLoginCom = true;
-        console.log("error no")
-        return;
       } else {
-        console.log("error in sign in", res?.massage)
-        setIsError(res?.massage);
+        console.log("error in sign in", res?.data?.massage);
+        setIsError(res?.data?.massage);
       }
     });
   }
 
-  // handle seaving phone number in local storage and redirect to OTP verification page
+  // handle seving phone number in local storage and redirect to OTP verification page
   if (isLoginCom) {
     rout.push("/");
     setTimeout(() => {
