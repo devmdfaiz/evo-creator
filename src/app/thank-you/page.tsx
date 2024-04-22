@@ -2,7 +2,7 @@
 import PageSpinner from "@/components/global/spinner/PageSpinner";
 import { checkOrderPaidOrNot } from "@/lib/actions";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 const ThankYouPage = () => {
   const [isPaid, setIspaid] = useState(false)
@@ -68,4 +68,12 @@ if(!isPaid){
   );
 };
 
-export default ThankYouPage;
+const SuspenseThankYouPage = () => {
+  return (
+    <Suspense>
+      <ThankYouPage />
+    </Suspense>
+  )
+}
+
+export default SuspenseThankYouPage;

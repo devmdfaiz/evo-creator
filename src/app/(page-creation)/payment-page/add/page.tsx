@@ -22,37 +22,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import InfoTooltip from "@/components/dashboard-layout/InfoTooltip";
 import { cn } from "@/lib/utils/utils";
-import { checkSubdoamin, createPage } from "@/lib/actions";
+import { createPage } from "@/lib/actions";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
-import { redirect, useRouter } from "next/navigation";
-
-//!! ZOD schema
-export const pageShortFormSchema = z.object({
-  metaTitle: z
-    .string()
-    .min(6, "Short title must contain at least 6 character(s)")
-    .max(60, "Short title must contain at most 60 character(s)"),
-  metaDesc: z
-    .string()
-    .min(70, "Short description must contain at least 70 character(s)")
-    .max(160, "Short description must contain at most 160 character(s)"),
-  keywords: z
-    .string()
-    .min(10, "Keywords must contain at least 10 character(s)"),
-  // subdomain: z
-  //   .string()
-  //   .min(4, "Subdomain must contain at least 4 character(s)")
-  //   .max(20, "Subdomain must contain at most 20 character(s)"),
-  // pageType: z.enum(["simple-page", "with-page-builder"], {
-  //   required_error: "You need to select a notification type.",
-  // }),
-});
+import { useRouter } from "next/navigation";
+import { pageShortFormSchema } from "@/lib/zod/index.zodSchema";
 
 // React component starts here
 const PageAdd = () => {

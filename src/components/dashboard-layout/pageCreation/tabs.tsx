@@ -101,7 +101,7 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
     useState<TFieldDetails[]>(defaultFieldValue);
   const { setfieldValue }: any = useContext(PageContext);
   const path = usePathname();
-  const rout = useRouter()
+  const rout = useRouter();
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof pageFormSchema>>({
@@ -142,9 +142,9 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
     },
   });
 
-  console.log("form", form)
+  console.log("form", form);
 
-  console.log("is submitting", form.formState.isSubmitting)
+  console.log("is submitting", form.formState.isSubmitting);
 
   const formValuesArr: any = formValuesArrFun(form);
 
@@ -186,9 +186,14 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
         className="space-y-4 relative"
       >
         <div className="flex items-center gap-2">
-          <Button onClick={() => {
-            rout.push("/pages")
-          }} type="button" variant="ghost" size="icon">
+          <Button
+            onClick={() => {
+              rout.push("/pages");
+            }}
+            type="button"
+            variant="ghost"
+            size="icon"
+          >
             <Cross1Icon />
           </Button>
           <div className="grow max-h-14 overflow-hidden">
@@ -249,7 +254,9 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
           </TabsContent>
         </Tabs>
         <div className="lg:fixed lg:-top-4 lg:right-4 z-50 hidden lg:block">
-          <Button className={cn("w-fit")}>{form.formState.isSubmitting ? <ButtonSpinner /> : "Publish"}</Button>
+          <Button className={cn("w-fit")}>
+            {form.formState.isSubmitting ? <ButtonSpinner /> : "Publish"}
+          </Button>
         </div>
 
         <div className="lg:hidden z-50 bg-card bottom-0 left-0 right-0 absolute flex justify-end items-center py-3">
@@ -324,7 +331,9 @@ export function ProductFields({ form }: { form: any }) {
                 </FormControl>
                 <SelectContent>
                   {categories.map((category, i) => (
-                    <SelectItem value={category}>{category}</SelectItem>
+                    <SelectItem key={i} value={category}>
+                      {category}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

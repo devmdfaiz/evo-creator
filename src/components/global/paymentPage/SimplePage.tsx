@@ -158,7 +158,7 @@ export const ProductPageTestimonial = ({
         } p-4 rounded-sm shadow-lg`}
       >
         <QuoteIcon className="h-9" />
-        <p className={cn("text-base font-medium", TClassName)}>"{text}"</p>
+        <p className={cn("text-base font-medium", TClassName)}>{`"${text}"`}</p>
 
         <div className="flex justify-center">
           <Separator className="bg-black/70 mt-2 w-3 h-[2px]" />

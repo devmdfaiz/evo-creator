@@ -1,17 +1,16 @@
 "use server";
-import { formSchema } from "@/app/(auth)/sign-up/page";
 import { z } from "zod";
 import connectToDb from "./mongodb/connection/db";
 import { User } from "@/lib/mongodb/models/user.model";
 import { Order } from "@/lib/mongodb/models/order.model";
 import bcrypt from "bcryptjs";
 import { Page } from "./mongodb/models/page.model";
-import { pageFormSchema } from "./zod/index.zodSchema";
+import { formSchemaSignUp, pageFormSchema } from "./zod/index.zodSchema";
 
 /**
  * For saving users in mongodb database
  */
-export const saveUsersToDb = async (value: z.infer<typeof formSchema>) => {
+export const saveUsersToDb = async (value: z.infer<typeof formSchemaSignUp>) => {
   connectToDb();
 
   const { fullname, email, password, phone } = value;

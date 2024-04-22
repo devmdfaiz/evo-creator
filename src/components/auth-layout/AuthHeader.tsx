@@ -2,7 +2,6 @@
 import Link from "next/link";
 import TypographyH3 from "../typography/TypographyH3";
 import { usePathname } from "next/navigation";
-import { getCurrentUser } from "@/lib/utils/appwrite/appwrite";
 
 const AuthHeader = () => {
   const path = usePathname();

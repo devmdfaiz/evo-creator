@@ -1,10 +1,9 @@
-import PageDisplay from "@/components/prototype/PageDisplay";
 
 const SalesPage = ({ params }: { params: { subdomain: string } }) => {
   return (
-    <>
-      <PageDisplay />
-    </>
+    <div>
+      This Page is not yet build
+    </ div>
   );
 };
 

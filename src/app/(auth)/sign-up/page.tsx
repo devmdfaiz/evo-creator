@@ -29,30 +29,9 @@ import GoogleAuthButton from "@/components/auth-layout/GoogleAuthButton";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import ErrorAlert from "@/components/global/form/ErrorAlert";
+import { formSchemaSignUp } from "@/lib/zod/index.zodSchema";
 
-export const formSchema = z.object({
-  fullname: z.string().min(3, {
-    message: "Full Name must be at least 3 characters.",
-  }),
-  email: z.string().email(),
-  phone: z
-    .string()
-    .min(10, {
-      message: "Phone number must be at least 10 digit",
-    })
-    .max(10, {
-      message: "Phone number must be contain 10 digit",
-    }),
 
-  password: z
-    .string()
-    .min(8, {
-      message: "Password must be at least 8 characters",
-    })
-    .max(16, {
-      message: "Password max contain 16 characters",
-    }),
-});
 
 let isLoginCom = false;
 
@@ -62,7 +41,7 @@ const SignUpPage = () => {
   const [isError, setIsError] = useState<any>("");
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: z.infer<typeof formSchemaSignUp>) {
     saveUsersToDb(values).then((res) => {
       if (res?.status) {
         const payload = res?.payload;
@@ -85,8 +64,8 @@ const SignUpPage = () => {
     }, 500);
   }
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof formSchemaSignUp>>({
+    resolver: zodResolver(formSchemaSignUp),
     defaultValues: {
       fullname: "",
       email: "",

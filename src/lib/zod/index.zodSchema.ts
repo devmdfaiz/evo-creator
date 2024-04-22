@@ -264,3 +264,75 @@ export const formValuesArrFun = (form: any) => {
     form.watch("color"),
   ];
 };
+
+/**
+ * This zod schema for sign in form
+ */
+export const formSchemaLogin = z.object({
+  phone: z
+    .string()
+    .min(10, {
+      message: "Phone number must be at least 10 digit",
+    })
+    .max(10, {
+      message: "Phone number must be contain 10 digit",
+    }),
+  password: z
+    .string()
+    .min(8, {
+      message: "Password must be at least 8 characters",
+    })
+    .max(16, {
+      message: "Password max contain 16 characters",
+    }),
+});
+
+/**
+ * This Zod schema for sign up form
+ */
+export const formSchemaSignUp = z.object({
+  fullname: z.string().min(3, {
+    message: "Full Name must be at least 3 characters.",
+  }),
+  email: z.string().email(),
+  phone: z
+    .string()
+    .min(10, {
+      message: "Phone number must be at least 10 digit",
+    })
+    .max(10, {
+      message: "Phone number must be contain 10 digit",
+    }),
+
+  password: z
+    .string()
+    .min(8, {
+      message: "Password must be at least 8 characters",
+    })
+    .max(16, {
+      message: "Password max contain 16 characters",
+    }),
+});
+
+
+//!! ZOD schema for page meta data
+export const pageShortFormSchema = z.object({
+  metaTitle: z
+    .string()
+    .min(6, "Short title must contain at least 6 character(s)")
+    .max(60, "Short title must contain at most 60 character(s)"),
+  metaDesc: z
+    .string()
+    .min(70, "Short description must contain at least 70 character(s)")
+    .max(160, "Short description must contain at most 160 character(s)"),
+  keywords: z
+    .string()
+    .min(10, "Keywords must contain at least 10 character(s)"),
+  // subdomain: z
+  //   .string()
+  //   .min(4, "Subdomain must contain at least 4 character(s)")
+  //   .max(20, "Subdomain must contain at most 20 character(s)"),
+  // pageType: z.enum(["simple-page", "with-page-builder"], {
+  //   required_error: "You need to select a notification type.",
+  // }),
+});

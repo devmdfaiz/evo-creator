@@ -20,34 +20,15 @@ import TypographyH3 from "@/components/typography/TypographyH3";
 import TypographyMuted from "@/components/typography/TypographyMuted";
 import TypographySmall from "@/components/typography/TypographySmall";
 import Link from "next/link";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import PolicyMsg from "@/components/auth-layout/PolicyMsg";
 import SeparatorAuth from "@/components/auth-layout/SeparatorAuth";
 import GoogleAuthButton from "@/components/auth-layout/GoogleAuthButton";
 import { checkCredentials } from "@/lib/actions";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
 import ErrorAlert from "@/components/global/form/ErrorAlert";
-
-export const formSchemaLogin = z.object({
-  phone: z
-    .string()
-    .min(10, {
-      message: "Phone number must be at least 10 digit",
-    })
-    .max(10, {
-      message: "Phone number must be contain 10 digit",
-    }),
-  password: z
-    .string()
-    .min(8, {
-      message: "Password must be at least 8 characters",
-    })
-    .max(16, {
-      message: "Password max contain 16 characters",
-    }),
-});
+import { formSchemaLogin } from "@/lib/zod/index.zodSchema";
 
 let isLoginCom = false;
 
