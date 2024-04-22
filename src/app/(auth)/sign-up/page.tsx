@@ -31,12 +31,11 @@ import ErrorAlert from "@/components/global/form/ErrorAlert";
 import { formSchemaSignUp } from "@/lib/zod/index.zodSchema";
 import axios from "axios";
 
-let isLoginCom = false;
-
 // React conponent startss here
 const SignUpPage = () => {
   const rout = useRouter();
   const [isError, setIsError] = useState<any>("");
+  const [isSignupComplete, setIsSignupComplete] = useState(false)
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchemaSignUp>) {
@@ -44,7 +43,7 @@ const SignUpPage = () => {
       if (res.data.status) {
         const payload = res?.data?.user;
         signIn("credentials", { redirect: false, ...payload });
-        isLoginCom = true;
+        setIsSignupComplete(true)
       } else {
         console.log("error in sign in", res?.data?.massage);
         setIsError(res?.data?.massage);
@@ -53,11 +52,8 @@ const SignUpPage = () => {
   }
 
   // handle seving phone number in local storage and redirect to OTP verification page
-  if (isLoginCom) {
-    rout.push("/");
-    setTimeout(() => {
+  if (isSignupComplete) {
       rout.refresh();
-    }, 500);
   }
 
   const form = useForm<z.infer<typeof formSchemaSignUp>>({
