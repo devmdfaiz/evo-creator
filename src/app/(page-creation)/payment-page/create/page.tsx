@@ -24,22 +24,22 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import InfoTooltip from "@/components/dashboard-layout/InfoTooltip";
 import { cn } from "@/lib/utils/utils";
-import { createPage } from "@/lib/actions";
 import { useSession } from "next-auth/react";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import { useRouter } from "next/navigation";
 import { pageShortFormSchema } from "@/lib/zod/index.zodSchema";
+import axios from "axios";
 
 // React component starts here
 const PageAdd = () => {
   const { data } = useSession();
-  
+
   //!!: not in use
   // const [subdomainMsg, setSubdomainMsg] = useState<any>("");
   // const [isSubdomainChecking, setIsSubdomainChecking] = useState(false);
   // const [isSubdomainAvl, setIsSubdomainAvl] = useState(true);
 
-  const router = useRouter()
+  const router = useRouter();
   // 1. Define your form.
   const form = useForm<z.infer<typeof pageShortFormSchema>>({
     resolver: zodResolver(pageShortFormSchema),
@@ -57,16 +57,14 @@ const PageAdd = () => {
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof pageShortFormSchema>) {
-    const userDataPayload = {
+    const userData = {
       user: data?.user,
     };
 
-    console.log("submit button is clicked")
-
-    createPage({ ...values, ...userDataPayload }).then((res) => {
-      console.log("page creation res SA", res);
-      if(res.status){
-        router.push(`/payment-page/add/${res.payload?.id}`);
+    axios.post("/api/page/create", { ...values, ...userData }).then((res) => {
+      const { data } = res;
+      if (data.status) {
+        router.push(`/payment-page/create/${data.pageData?.id}`);
       }
     });
   }
@@ -93,7 +91,6 @@ const PageAdd = () => {
   //     setIsSubdomainChecking(false);
   //   });
   // }
-
 
   return (
     <div className="flex items-center justify-center my-10">
@@ -291,7 +288,7 @@ const PageAdd = () => {
 
               <Button
                 type="submit"
-                className={cn("disabled:bg-gray-500 w-full mt-4")}                
+                className={cn("disabled:bg-gray-500 w-full mt-4")}
               >
                 {form.formState.isSubmitting ? (
                   <ButtonSpinner className="w-5 h-5" />

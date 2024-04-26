@@ -24,7 +24,6 @@ import { useRouter } from "next/navigation";
 import PolicyMsg from "@/components/auth-layout/PolicyMsg";
 import SeparatorAuth from "@/components/auth-layout/SeparatorAuth";
 import GoogleAuthButton from "@/components/auth-layout/GoogleAuthButton";
-import { checkCredentials } from "@/lib/actions";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import ErrorAlert from "@/components/global/form/ErrorAlert";

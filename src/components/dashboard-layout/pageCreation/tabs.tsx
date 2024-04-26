@@ -29,7 +29,6 @@ import {
 } from "@radix-ui/react-icons";
 import { Textarea } from "@/components/ui/textarea";
 import { z } from "zod";
-import { actionPageDetailUpdate } from "@/lib/actions";
 import { Switch } from "@/components/ui/switch";
 import {
   Popover,
@@ -83,6 +82,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { setLsItem } from "@/lib/utils/storage/localstorage";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
+import axios from "axios";
 
 /**
  * This function contains all the forms and inputs for page editor and creator. This use shadcn's tab components, zod validation, react-hook-form and shadcn's sonner.
@@ -142,10 +142,6 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
     },
   });
 
-  console.log("form", form);
-
-  console.log("is submitting", form.formState.isSubmitting);
-
   const formValuesArr: any = formValuesArrFun(form);
 
   const formValues = formValuesFun(
@@ -169,14 +165,23 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof pageFormSchema>) {
-    const res = actionPageDetailUpdate(
+    console.log("i clicked");
+
+    const fieldsInput = {
       values,
       testimonialsFields,
       faqs,
       policies,
       fieldDetails,
-      pageId
-    );
+      pageId,
+    };
+
+    console.log("i clicked");
+
+    axios.post("/api/page/update", fieldsInput).then((res) => {
+      const { data } = res;
+      alert(data.massage);
+    });
   }
 
   return (

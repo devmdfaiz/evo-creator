@@ -21,7 +21,6 @@ import TypographyMuted from "@/components/typography/TypographyMuted";
 import TypographySmall from "@/components/typography/TypographySmall";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { saveUsersToDb } from "@/lib/actions";
 import PolicyMsg from "@/components/auth-layout/PolicyMsg";
 import SeparatorAuth from "@/components/auth-layout/SeparatorAuth";
 import GoogleAuthButton from "@/components/auth-layout/GoogleAuthButton";
