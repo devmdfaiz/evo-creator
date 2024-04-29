@@ -13,7 +13,6 @@ export const authOptions = {
     // Google Provider setup
     GoogleProvider({
       profile(profile) {
-        console.log("google profile", profile);
         let userRole;
         if (profile?.email === "inoogobyfaizan@gmail.com") {
           userRole = "ADMIN";
@@ -30,7 +29,7 @@ export const authOptions = {
     async jwt({ token, user }) {
       if (user) {
         // editing jwt payload
-        token.sub = user.id;
+        token.sub = user._id;
         token.name = user.fullname;
         token.phone = user.phone;
         token.isEmailVerified = user.isEmailVerified;

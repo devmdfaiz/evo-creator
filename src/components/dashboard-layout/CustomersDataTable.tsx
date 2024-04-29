@@ -1,13 +1,10 @@
 "use client";
-
-import * as React from "react";
 import {
   CaretSortIcon,
   DotsHorizontalIcon,
+  ExternalLinkIcon,
 } from "@radix-ui/react-icons";
-import {
-  ColumnDef,
-} from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,51 +14,24 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils/utils";
 import DataTable from "../global/tables/DataTable";
+import { format } from "date-fns";
+import Link from "next/link";
+import IconWhatsapp from "../icons/WhatsappIcon";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useState } from "react";
+import QRCode from "qrcode";
 
-export type Payment = {
-  id: string;
-  name: string,
-  phone: number,
-  amount: number;
-  page: string
-  date: string,
-  email?: string;
-};
-
-const data: Payment[] = [
+export const columns: ColumnDef<any>[] = [
   {
-    id: "m5gr84i9",
-    name: "Md Faizan",
-    phone: 9696293133,
-    amount: 316,
-    page:"ABC",
-    date: "12/45/6789",
-    email: "ken99@yahoo.com",
-  },
-  {
-    id: "3u1reuv4",
-    name: "Md Rizwan",
-    phone: 7700340934,
-    amount: 242,
-    page:"ABC",
-    date: "12/45/6789",
-    email: "Abe45@gmail.com",
-  },
-  {
-    id: "derv1ws0",
-    name: "Tarannum Khatoon",
-    phone: 7755051658,
-    amount: 837,
-    page:"ABC",
-    date: "12/45/6789",
-    email: "Monserrat44@gmail.com",
-  },
-];
-export const columns: ColumnDef<Payment>[] = [
-  {
-    accessorKey: "name",
+    accessorKey: "Name",
     header: ({ column }) => {
       return (
         <Button
@@ -74,10 +44,14 @@ export const columns: ColumnDef<Payment>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-9 capitalize">{row.getValue("name")}</div>,
+    cell: ({ row }) => (
+      <div className="ml-9 capitalize">
+        {row.original.customerInfo["Full Name"]}
+      </div>
+    ),
   },
   {
-    accessorKey: "phone",
+    accessorKey: "Phone",
     header: ({ column }) => {
       return (
         <Button
@@ -89,10 +63,70 @@ export const columns: ColumnDef<Payment>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4 lowercase">{row.getValue("phone")}</div>,
+    cell: ({ row }) => {
+      const [qrCodeUrl, setQrCodeUrl] = useState("#");
+
+      const url = `https://wa.me/+91${row.original.customerInfo["Phone Number"]}`;
+
+      const generateQR = (text: string) => {
+        QRCode.toDataURL(text, { version: 7 })
+          .then((url: string) => {
+            setQrCodeUrl(url);
+          })
+          .catch((err: any) => {
+            console.error(err);
+          });
+      };
+
+      return (
+        <div className="ml-4 lowercase flex gap-2 items-center justify-start">
+          <span>{row.original.customerInfo["Phone Number"]}</span>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  generateQR(url);
+                }}
+              >
+                <IconWhatsapp className="w-4 h-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>
+                  {row.original.isPaid
+                    ? "Express your gratitude to your customers."
+                    : "Encourage the customer to complete their purchase."}
+                </DialogTitle>
+                <DialogDescription>
+                  {row.original.isPaid
+                    ? "Take a moment to express your gratitude to your customers, acknowledging their support and valuing their role in your success."
+                    : "Encourage the customer to complete their purchase by addressing any concerns and highlighting the benefits of their order."}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col gap-3">
+                <Link
+                  href={url}
+                  target="_blank"
+                  className="border border-primary rounded-md px-5 py-3 flex gap-2 items-center justify-center bg-primary/20"
+                >
+                  Open on Whatsapp now <ExternalLinkIcon />
+                </Link>
+                <br />
+                <span>or scan me</span>
+                <img src={qrCodeUrl} alt="whatsapp qrcode" />
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      );
+    },
   },
   {
-    accessorKey: "email",
+    accessorKey: "Email",
     header: ({ column }) => {
       return (
         <Button
@@ -104,10 +138,12 @@ export const columns: ColumnDef<Payment>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4 lowercase">{row.getValue("email")}</div>,
+    cell: ({ row }) => (
+      <div className="ml-4 lowercase">{row.original.customerInfo.Email}</div>
+    ),
   },
   {
-    accessorKey: "page",
+    accessorKey: "Page",
     header: ({ column }) => {
       return (
         <Button
@@ -119,24 +155,49 @@ export const columns: ColumnDef<Payment>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4 lowercase">{row.getValue("page")}</div>,
+    cell: ({ row }) => (
+      <div className="ml-4 flex gap-2 items-center justify-start">
+        <span>{row.original.pageTitle}</span>
+        <Link href={`/pg/${row.original.pageId}`} target="_blank">
+          <ExternalLinkIcon />
+        </Link>
+      </div>
+    ),
   },
   {
-    accessorKey: "date",
-    header: () => {
+    accessorKey: "Date",
+    header: ({ column }) => {
       return (
-        <div>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
           Date
-        </div>
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
       );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("date")}</div>,
+    cell: ({ row }) => {
+      const formated = format(row.original.createdAt, "dd/MM/yyyy");
+
+      return <div className="ml-4 lowercase">{formated}</div>;
+    },
   },
   {
-    accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
+    accessorKey: "Amount",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Amount
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
+      const amount = parseFloat(row.original.amount);
 
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {
@@ -144,7 +205,7 @@ export const columns: ColumnDef<Payment>[] = [
         currency: "INR",
       }).format(amount);
 
-      return <div className="text-right font-medium">{formatted}</div>;
+      return <div className="ml-4 text-left font-medium">{formatted}</div>;
     },
   },
   {
@@ -164,9 +225,11 @@ export const columns: ColumnDef<Payment>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
+              onClick={() =>
+                navigator.clipboard.writeText(payment.rzrPayOrderId)
+              }
             >
-              Copy customer ID
+              Copy order ID
             </DropdownMenuItem>
             {/* <DropdownMenuSeparator /> */}
             {/* <DropdownMenuItem>View customer</DropdownMenuItem>
@@ -178,7 +241,10 @@ export const columns: ColumnDef<Payment>[] = [
   },
 ];
 
-export default function CustomersDataTable(){
-  return <DataTable data={data} columns={columns}/>
-}
+export default function CustomersDataTable({ orders }: { orders: any }) {
+  const filteredOrders = orders.filter((data: any) => {
+    return data.isPaid === true;
+  });
 
+  return <DataTable data={filteredOrders} columns={columns} />;
+}

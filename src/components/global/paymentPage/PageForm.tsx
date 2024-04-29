@@ -26,7 +26,6 @@ import {
   pageStrikeTextThemeProvider,
   pageThemeProvider,
 } from "@/lib/constants/index.constant";
-import { actionOrderFilledInfo } from "@/lib/actions";
 import axios from "axios";
 import { ReactHookFormContext } from "@/context/ReactHookFormProvider";
 import { useContext, useState } from "react";
@@ -37,22 +36,10 @@ import { evar } from "@/lib/envConstant";
  * @location /components/global/paymentPage/PageForm.tsx
  * @param data
  */
-const handleOrderFilledInfo: any = async (
-  data: TFieldDetails[],
-  pageId: string,
-  device: string,
-  priceType: string
-) => {
-  console.log("forms data", data, "page Id", pageId);
-  // actionOrderFilledInfo(data, pageId, device, priceType);
+const handleOrderFilledInfo: any = async (info: any) => {
   const {
     data: { order, msg, status },
-  } = await axios.post("/api/order", {
-    data,
-    pageId,
-    device,
-    priceType,
-  });
+  } = await axios.post("/api/order", info);
 
   if (status === 200) {
     const options = {
@@ -121,7 +108,7 @@ export const ProductPageForm = ({
       <TypographyH4 className="mb-3">Payment Details</TypographyH4>
       <form
         onSubmit={handleSubmit((data: any) =>
-          handleOrderFilledInfo(data, pageId, "desktop", priceType)
+          handleOrderFilledInfo({ data, pageId, device: "desktop", priceType })
         )}
         className="space-y-4"
       >

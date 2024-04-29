@@ -4,24 +4,36 @@ import { Page } from "@/lib/mongodb/models/page.model";
 import razorpay from "@/lib/utils/razorpay/razorpay";
 import { NextResponse } from "next/server";
 import uniqid from "uniqid";
+import { authOptions } from "../../../../AuthOptions";
+import { getServerSession } from "next-auth";
 
 export async function POST(req: Request, res: Response) {
   connectToDb();
+
+  const {
+    user: { sub },
+  } = await getServerSession(authOptions);
 
   const { data, pageId, device, priceType } = await req.json();
 
   try {
     const pageDetail = await Page.findById(pageId);
 
+    if (!pageDetail) {
+      return NextResponse.json({ msg: "Page not found!", order: null }, { status: 404 });
+    }
+
     const amount = pageDetail?.pagePrice?.price;
     let createdOrder;
 
     const auctionPrice = data?.auctionPrice;
 
+    const receipt = `receipt#${uniqid()}`;
+
     const rzrOrder = await razorpay.orders.create({
       amount: priceType === "auctionPrice" ? auctionPrice : amount * 100,
       currency: "INR",
-      receipt: `receipt#${uniqid()}`,
+      receipt: receipt,
       notes: {
         pageId,
       },
@@ -36,6 +48,8 @@ export async function POST(req: Request, res: Response) {
         rzrPayOrderId: rzrOrder.id,
         rzrPayEntity: rzrOrder.entity,
         rzrPayStatus: rzrOrder.status,
+        owner: sub,
+        receipt,
       });
     }
 
@@ -51,6 +65,6 @@ export async function POST(req: Request, res: Response) {
     });
   } catch (error) {
     console.log("error in creating order =>", error);
-    return NextResponse.json({ msg: error, status: 500, order: "" });
+    return NextResponse.json({ msg: error, order: null }, { status: 500 });
   }
 }

@@ -53,8 +53,6 @@ const PageAdd = () => {
     },
   });
 
-  console.log("form hook", form.formState.isSubmitted);
-
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof pageShortFormSchema>) {
     const userData = {

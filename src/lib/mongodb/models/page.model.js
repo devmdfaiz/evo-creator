@@ -1,5 +1,4 @@
 import mongoose, { Schema } from "mongoose";
-import { type } from "os";
 
 //?? Meta Data schema starts here
 const metaDataSchema = new Schema({
@@ -103,6 +102,11 @@ const pageSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    isPublished: {
+        type: Boolean,
+        default: false,
+        required: true,
     },
     coupons: [
       {

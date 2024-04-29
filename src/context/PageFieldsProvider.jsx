@@ -33,8 +33,6 @@ const PageFieldsProvider = ({ children }) => {
     color: { hex: "#E9570C" },
   });
 
-  console.log("from PageFieldsProvider", fieldValue);
-
   return (
     <PageContext.Provider value={{ fieldValue, setfieldValue }}>
       {children}

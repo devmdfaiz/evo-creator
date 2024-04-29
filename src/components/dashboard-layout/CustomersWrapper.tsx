@@ -1,31 +1,41 @@
-"use client"
-import SmallCard from './Card'
+"use client";
+import SmallCard from "./Card";
 
-const CustomersOrdersWrapper = () => {
+const CustomersOrdersWrapper = ({ orders }: { orders: any[] }) => {
+  const filteredOrders = orders.filter((data) => {
+    return data.isPaid === true;
+  });
+
+  let totalRevenue = 0;
+
+  for (const filteredOrder of filteredOrders) {
+    totalRevenue += filteredOrder.amount;
+  }
+
   return (
     <div className="flex flex-wrap justify-center gap-5">
       <SmallCard
         title="Total Customers"
-        earn="50"
+        goal={filteredOrders.length}
         desc="+20.1% from last month"
       />
       <SmallCard
         title="Total Revenue"
-        earn="50"
+        goal={`₹${totalRevenue}`}
         desc="+20.1% from last month"
       />
       <SmallCard
-        title="Total Success Customers"
-        earn="50"
+        title="Total Success Orders"
+        goal={filteredOrders.length}
         desc="+20.1% from last month"
       />
       <SmallCard
-        title="Total Field Customers"
-        earn="50"
+        title="Total Field Orders"
+        goal={orders.length - filteredOrders.length}
         desc="+20.1% from last month"
       />
     </div>
-  )
-}
+  );
+};
 
-export default CustomersOrdersWrapper
+export default CustomersOrdersWrapper;

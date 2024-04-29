@@ -34,15 +34,18 @@ import axios from "axios";
 const SignUpPage = () => {
   const rout = useRouter();
   const [isError, setIsError] = useState<any>("");
-  const [isSignupComplete, setIsSignupComplete] = useState(false)
+  const [isSignupComplete, setIsSignupComplete] = useState(false);
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchemaSignUp>) {
     axios.post("/api/user/signup", values).then((res) => {
       if (res.data.status) {
         const payload = res?.data?.user;
+
+        console.log("user payload", payload)
+
         signIn("credentials", { redirect: false, ...payload });
-        setIsSignupComplete(true)
+        setIsSignupComplete(true);
       } else {
         console.log("error in sign in", res?.data?.massage);
         setIsError(res?.data?.massage);
@@ -52,7 +55,7 @@ const SignUpPage = () => {
 
   // handle seving phone number in local storage and redirect to OTP verification page
   if (isSignupComplete) {
-      rout.refresh();
+    rout.refresh();
   }
 
   const form = useForm<z.infer<typeof formSchemaSignUp>>({

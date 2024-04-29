@@ -10,20 +10,20 @@ import LineGraph from "../global/graphs/LineGraph";
 
 type Props = {
   title: string;
-  earn: string;
+  goal: string | number;
   desc: string;
   data?: any[] | undefined;
   key?: string | undefined;
 };
 
-const SmallCard = ({ title, earn, desc, data, key }: Props) => {
+const SmallCard = ({ title, goal, desc, data, key }: Props) => {
   return (
     <Card className={cn("grow rounded-sm")}>
       <CardHeader>
         <CardDescription className={cn("text-foreground")}>
           {title}
         </CardDescription>
-        <CardTitle className={cn("text-2xl font-bold")}>{earn}</CardTitle>
+        <CardTitle className={cn("text-2xl font-bold")}>{goal}</CardTitle>
         <CardDescription>{desc}</CardDescription>
       </CardHeader>
       {data && <CardContent>{<LineGraph data={data} key={key} />}</CardContent>}
