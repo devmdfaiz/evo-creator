@@ -19,35 +19,35 @@ const OverviewCardsWrapper = () => {
     <div className="flex flex-wrap justify-center gap-5">
       <SmallCard
         title="Total Sales"
-        earn="50"
+        goal="50"
         desc="+20.1% from last month"
         data={data}
         key="value"
       />
       <SmallCard
         title="Total Revenue"
-        earn="₹15,000.00"
+        goal="₹15,000.00"
         desc="+10.1% from last month"
         data={data}
         key="value"
       />
       <SmallCard
         title="Sales Growth"
-        earn="50%"
+        goal="50%"
         desc="+50.1% from last month"
         data={data}
         key="value"
       />
       <SmallCard
         title="Page Sold"
-        earn="100"
+        goal="100"
         desc="+15.4% from last month"
         data={data}
         key="value"
       />
       <SmallCard
         title="Total Customers"
-        earn="150"
+        goal="150"
         desc="+55.4% from last month"
         data={data}
         key="value"

@@ -1,4 +1,5 @@
 "use client";
+import * as React from "react"
 import {
   CaretSortIcon,
   DotsHorizontalIcon,
@@ -26,8 +27,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState } from "react";
 import QRCode from "qrcode";
+import { PhoneCell } from "./OrderTableData";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -63,67 +64,7 @@ export const columns: ColumnDef<any>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => {
-      const [qrCodeUrl, setQrCodeUrl] = useState("#");
-
-      const url = `https://wa.me/+91${row.original.customerInfo["Phone Number"]}`;
-
-      const generateQR = (text: string) => {
-        QRCode.toDataURL(text, { version: 7 })
-          .then((url: string) => {
-            setQrCodeUrl(url);
-          })
-          .catch((err: any) => {
-            console.error(err);
-          });
-      };
-
-      return (
-        <div className="ml-4 lowercase flex gap-2 items-center justify-start">
-          <span>{row.original.customerInfo["Phone Number"]}</span>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  generateQR(url);
-                }}
-              >
-                <IconWhatsapp className="w-4 h-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>
-                  {row.original.isPaid
-                    ? "Express your gratitude to your customers."
-                    : "Encourage the customer to complete their purchase."}
-                </DialogTitle>
-                <DialogDescription>
-                  {row.original.isPaid
-                    ? "Take a moment to express your gratitude to your customers, acknowledging their support and valuing their role in your success."
-                    : "Encourage the customer to complete their purchase by addressing any concerns and highlighting the benefits of their order."}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-col gap-3">
-                <Link
-                  href={url}
-                  target="_blank"
-                  className="border border-primary rounded-md px-5 py-3 flex gap-2 items-center justify-center bg-primary/20"
-                >
-                  Open on Whatsapp now <ExternalLinkIcon />
-                </Link>
-                <br />
-                <span>or scan me</span>
-                <img src={qrCodeUrl} alt="whatsapp qrcode" />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      );
-    },
+    cell: ({ row }) => <PhoneCell row={row} />,
   },
   {
     accessorKey: "Email",
