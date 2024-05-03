@@ -34,6 +34,6 @@
     "src/lib/mongodb/models/user.model.js",
     "src/components/global/patterns/PaymentsPagePatterns.tsx",
     "src/context/PageFieldsProvider.jsx"
-, "src/context/PreviewReloadProvider.jsx", "src/lib/utils/razorpay/razorpay.js"  ],
+, "src/context/PreviewReloadProvider.jsx", "src/lib/utils/razorpay/razorpay.js", "src/context/DateProvider.jsx"  ],
   "exclude": ["node_modules"]
 }

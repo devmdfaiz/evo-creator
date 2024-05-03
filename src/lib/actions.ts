@@ -2,6 +2,7 @@
 import connectToDb from "./mongodb/connection/db";
 import { Order } from "@/lib/mongodb/models/order.model";
 import { Page } from "./mongodb/models/page.model";
+import fs from "fs";
 
 /**
  * Function (server action) that takes customer info which is collected form payment page via handleOrderFilledInfo(). Roll of this function takes customer info and save to database
@@ -56,3 +57,24 @@ export const checkOrderPaidOrNot = async (orderId: string) => {
     return { rzrPayStatus: null, isPaid: false, status: false };
   }
 };
+
+export async function genDummyFile(jsonData: {
+  orderJson: any;
+  pageJson: any;
+}) {
+  fs.writeFile("orders.json", jsonData.orderJson, (err) => {
+    if (err) {
+      console.error("Error writing JSON data to file:", err);
+    } else {
+      console.log("JSON data successfully written to orders.json");
+    }
+  });
+
+  fs.writeFile("page.json", jsonData.pageJson, (err) => {
+    if (err) {
+      console.error("Error writing JSON data to file:", err);
+    } else {
+      console.log("JSON data successfully written to orders.json");
+    }
+  });
+}

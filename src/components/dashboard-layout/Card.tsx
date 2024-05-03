@@ -17,6 +17,10 @@ type Props = {
 };
 
 const SmallCard = ({ title, goal, desc, data, key }: Props) => {
+  const splitDesc = desc.split("%");
+
+  const indicator = splitDesc[0].includes("-") ? 0 : 1;
+
   return (
     <Card className={cn("grow rounded-sm")}>
       <CardHeader>
@@ -24,7 +28,16 @@ const SmallCard = ({ title, goal, desc, data, key }: Props) => {
           {title}
         </CardDescription>
         <CardTitle className={cn("text-2xl font-bold")}>{goal}</CardTitle>
-        <CardDescription>{desc}</CardDescription>
+        <CardDescription>
+          <span
+            className={`${
+              indicator === 0
+                ? "bg-red-700/20 text-red-700"
+                : "bg-green-700/20 text-green-700"
+            } px-2 py-1 rounded-md`}
+          >{`${splitDesc[0]}%`}</span>{" "}
+          {splitDesc[1]}
+        </CardDescription>
       </CardHeader>
       {data && <CardContent>{<LineGraph data={data} key={key} />}</CardContent>}
     </Card>

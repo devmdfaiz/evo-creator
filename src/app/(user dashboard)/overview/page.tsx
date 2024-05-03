@@ -1,8 +1,12 @@
 import OverviewCardsWrapper from "@/components/dashboard-layout/OverviewCardsWrapper";
 import { DatePickerWithRange } from "@/components/global/calendar/DatePicker";
 import TypographyH1 from "@/components/typography/TypographyH1";
+// import { DateContext } from "@/context/DateProvider";
+// import { useContext } from "react";
 
 const OverviewPage = () => {
+  // const { fromDate, toDate } = useContext(DateContext);
+
 
   return (
     <section className="mb-7">

@@ -3,22 +3,24 @@ import PageCardWrapper from "@/components/dashboard-layout/PageCardWrapper";
 import PagesTableData from "@/components/dashboard-layout/PagesTableData";
 import { DatePickerWithRange } from "@/components/global/calendar/DatePicker";
 import TypographyH1 from "@/components/typography/TypographyH1";
+import { DateContext } from "@/context/DateProvider";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import axios from "axios";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 const Pages = () => {
   const [pages, setPages] = useState([]);
+  const { fromDate, toDate } = useContext(DateContext);
 
   useEffect(() => {
-    axios.get(`/api/page`).then((res) => {
+    axios.post(`/api/page`, { fromDate, toDate }).then((res) => {
       const {
         data: { pages },
       } = res;
       setPages(pages);
     });
-  }, []);
+  }, [fromDate, toDate]);
 
   return (
     <section className="mb-7">

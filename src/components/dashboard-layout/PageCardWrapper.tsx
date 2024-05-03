@@ -26,22 +26,22 @@ const PageCardWrapper = ({ pages }: { pages: any[] }) => {
       <SmallCard
         title="Total Page"
         goal={pages.length}
-        desc="+20.1% from last month"
+        desc=""
       />
       <SmallCard
         title="Total Page Revenue"
         goal={`₹${totalRevenue}`}
-        desc="+20.1% from last month"
+        desc=""
       />
       <SmallCard
         title="Total Public Pages"
         goal={noOfPublicPages}
-        desc="+20.1% from last month"
+        desc=""
       />
       <SmallCard
         title="Total Private Pages"
         goal={noOfPrivatePages}
-        desc="+20.1% from last month"
+        desc=""
       />
     </div>
   );

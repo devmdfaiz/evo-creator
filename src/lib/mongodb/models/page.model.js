@@ -63,7 +63,6 @@ const themeSchema = new Schema({
 const policiesSchema = new Schema({
   policies: [String],
 });
-
 //?? Page schema starts here
 const pageSchema = new Schema(
   {

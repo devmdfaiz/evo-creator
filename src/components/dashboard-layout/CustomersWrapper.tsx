@@ -1,38 +1,45 @@
 "use client";
+import { useContext } from "react";
 import SmallCard from "./Card";
+import { growthCalculation } from "./OrdersCardWrapper";
+import { DateContext } from "@/context/DateProvider";
 
-const CustomersOrdersWrapper = ({ orders }: { orders: any[] }) => {
-  const filteredOrders = orders.filter((data) => {
-    return data.isPaid === true;
+const CustomersOrdersWrapper = ({
+  currentPeriod,
+  comparisonPeriod,
+}: {
+  currentPeriod: any[];
+  comparisonPeriod: any[];
+}) => {
+  const { dayGap } = useContext(DateContext);
+
+  const {
+    currentFilteredOrders,
+    currentTotalRevenue,
+    faildOrderGrowth,
+    orderGrowth,
+    revenueGrowth,
+    succOrderGrowth,
+  } = growthCalculation({
+    currentPeriod,
+    comparisonPeriod,
   });
-
-  let totalRevenue = 0;
-
-  for (const filteredOrder of filteredOrders) {
-    totalRevenue += filteredOrder.amount;
-  }
 
   return (
     <div className="flex flex-wrap justify-center gap-5">
       <SmallCard
         title="Total Customers"
-        goal={filteredOrders.length}
-        desc="+20.1% from last month"
+        goal={currentFilteredOrders.length}
+        desc={`${parseInt(JSON.stringify(succOrderGrowth))}% from last ${
+          Number.isNaN(dayGap) ? 0 : dayGap
+        } days`}
       />
       <SmallCard
         title="Total Revenue"
-        goal={`₹${totalRevenue}`}
-        desc="+20.1% from last month"
-      />
-      <SmallCard
-        title="Total Success Orders"
-        goal={filteredOrders.length}
-        desc="+20.1% from last month"
-      />
-      <SmallCard
-        title="Total Field Orders"
-        goal={orders.length - filteredOrders.length}
-        desc="+20.1% from last month"
+        goal={`₹${currentTotalRevenue}`}
+        desc={`${parseInt(JSON.stringify(revenueGrowth))}% from last ${
+          Number.isNaN(dayGap) ? 0 : dayGap
+        } days`}
       />
     </div>
   );

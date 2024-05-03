@@ -1,39 +1,133 @@
 "use client";
+import { useContext } from "react";
 import SmallCard from "./Card";
+import { DateContext } from "@/context/DateProvider";
 
-const OrdersCardWrapper = ({ orders }: { orders: any[] }) => {
+export function growthCalculation({
+  currentPeriod,
+  comparisonPeriod,
+}: {
+  currentPeriod: any[];
+  comparisonPeriod: any[];
+}) {
+  //Current calculation
+  let currentTotalRevenue = 0;
 
-  let totalRevenue = 0;
-
-  const filteredOrders = orders.filter((data) => {
-    return data.isPaid === true;
+  const currentFilteredOrders = currentPeriod?.filter((data) => {
+    return data?.isPaid === true;
   });
 
-  for (const filteredOrder of filteredOrders) {
-    totalRevenue += filteredOrder.amount;
+  for (const filteredOrder of currentFilteredOrders) {
+    currentTotalRevenue += parseFloat(filteredOrder.amount);
   }
+
+  const currentOrderCount = currentPeriod.length;
+
+  // Comparison calculation
+  let comparisonTotalRevenue = 0;
+
+  const comparisonFilteredOrders = comparisonPeriod?.filter((data) => {
+    return data?.isPaid === true;
+  });
+
+  for (const filteredOrder of comparisonFilteredOrders) {
+    comparisonTotalRevenue += parseFloat(filteredOrder.amount);
+  }
+  const comparisonOrderCount = comparisonPeriod.length;
+
+  const currentRevenueTotalCount = currentTotalRevenue;
+  const comparisonRevenueTotalCount = comparisonTotalRevenue;
+
+  // % calculations
+  const revenueGrowth =
+    comparisonOrderCount === 0
+      ? 0 // Avoid division by zero
+      : ((currentRevenueTotalCount - comparisonRevenueTotalCount) /
+          comparisonRevenueTotalCount) *
+        100;
+
+  const orderGrowth =
+    comparisonOrderCount === 0
+      ? 0 // Avoid division by zero
+      : ((currentOrderCount - comparisonOrderCount) / comparisonOrderCount) *
+        100;
+
+  const succOrderGrowth =
+    currentFilteredOrders.length === 0
+      ? 0 // Avoid division by zero
+      : ((currentFilteredOrders.length - comparisonFilteredOrders.length) /
+          comparisonFilteredOrders.length) *
+        100;
+
+  const faildOrderGrowth =
+    currentFilteredOrders.length === 0
+      ? 0 // Avoid division by zero
+      : ((currentPeriod.length -
+          currentFilteredOrders.length -
+          (comparisonPeriod.length - comparisonFilteredOrders.length)) /
+          (comparisonPeriod.length - comparisonFilteredOrders.length)) *
+        100;
+
+  return {
+    orderGrowth,
+    currentTotalRevenue,
+    revenueGrowth,
+    currentFilteredOrders,
+    succOrderGrowth,
+    faildOrderGrowth,
+  };
+}
+
+const OrdersCardWrapper = ({
+  currentPeriod,
+  comparisonPeriod,
+}: {
+  currentPeriod: any[];
+  comparisonPeriod: any[];
+}) => {
+  const { dayGap } = useContext(DateContext);
+
+  const {
+    currentFilteredOrders,
+    currentTotalRevenue,
+    faildOrderGrowth,
+    orderGrowth,
+    revenueGrowth,
+    succOrderGrowth,
+  } = growthCalculation({
+    currentPeriod,
+    comparisonPeriod,
+  });
 
   return (
     <div className="flex flex-wrap justify-center gap-5">
       <SmallCard
         title="Total Orders"
-        goal={orders.length}
-        desc="+20.1% from last month"
+        goal={currentPeriod.length}
+        desc={`${parseInt(JSON.stringify(orderGrowth))}% from last ${
+          Number.isNaN(dayGap) ? 0 : dayGap
+        } days`}
       />
       <SmallCard
         title="Total Revenue"
-        goal={`₹${totalRevenue}`}
-        desc="+20.1% from last month"
+        goal={`₹${currentTotalRevenue}`}
+        desc={`${parseInt(JSON.stringify(revenueGrowth))}% from last ${
+          Number.isNaN(dayGap) ? 0 : dayGap
+        } days`}
       />
       <SmallCard
         title="Total Success Order"
-        goal={orders.length}
-        desc="+20.1% from last month"
+        goal={currentFilteredOrders.length}
+        desc={`${parseInt(JSON.stringify(succOrderGrowth))}% from last ${
+          Number.isNaN(dayGap) ? 0 : dayGap
+        } days`}
       />
       <SmallCard
-        title="Total Field Order"
-        goal={orders.length - filteredOrders.length}
-        desc="+20.1% from last month"
+        title="Total Faild Order"
+        goal={currentPeriod.length - currentFilteredOrders.length}
+        desc={`${parseInt(JSON.stringify(faildOrderGrowth))}% from last ${
+          Number.isNaN(dayGap) ? 0 : dayGap
+        } days`}
       />
     </div>
   );

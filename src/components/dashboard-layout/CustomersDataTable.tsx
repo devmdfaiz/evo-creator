@@ -18,16 +18,6 @@ import {
 import DataTable from "../global/tables/DataTable";
 import { format } from "date-fns";
 import Link from "next/link";
-import IconWhatsapp from "../icons/WhatsappIcon";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import QRCode from "qrcode";
 import { PhoneCell } from "./OrderTableData";
 
 export const columns: ColumnDef<any>[] = [
@@ -182,8 +172,8 @@ export const columns: ColumnDef<any>[] = [
   },
 ];
 
-export default function CustomersDataTable({ orders }: { orders: any }) {
-  const filteredOrders = orders.filter((data: any) => {
+export default function CustomersDataTable({ currentPeriod }: { currentPeriod: any }) {
+  const filteredOrders = currentPeriod.filter((data: any) => {
     return data.isPaid === true;
   });
 

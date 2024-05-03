@@ -5,8 +5,9 @@ import NextAuthSessionProvider from "@/context/NextAuthSessionProvider";
 import ProgressBarProvider from "@/context/ProgressBarProvider";
 import { Toaster } from "@/components/ui/sonner";
 import PageFieldsProvider from "@/context/PageFieldsProvider";
-import  ReactHookFormProvider from "@/context/ReactHookFormProvider";
+import ReactHookFormProvider from "@/context/ReactHookFormProvider";
 import Script from "next/script";
+import DateProvider from "@/context/DateProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,8 +30,10 @@ export default function RootLayout({
           <NextAuthSessionProvider>
             <PageFieldsProvider>
               <ReactHookFormProvider>
-                <main className="min-h-screen">{children}</main>
-                <Toaster />
+                <DateProvider>
+                  <main className="min-h-screen">{children}</main>
+                  <Toaster />
+                </DateProvider>
               </ReactHookFormProvider>
             </PageFieldsProvider>
           </NextAuthSessionProvider>

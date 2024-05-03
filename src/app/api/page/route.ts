@@ -5,26 +5,25 @@ import { NextResponse } from "next/server";
 import { authOptions } from "../../../../AuthOptions";
 import mongoose from "mongoose";
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   connectToDb();
 
   const {
     user: { sub },
   } = await getServerSession(authOptions);
 
-  console.log("iser id", sub);
+  const { fromDate, toDate } = await req.json();
 
   try {
     const pages = await Page.aggregate([
-      // Match only the pages with orders
       {
         $match: {
           pageOrders: { $exists: true, $ne: [] },
-        },
-      },
-      {
-        $match: {
           creator: new mongoose.Types.ObjectId(sub),
+          createdAt: {
+            $gte: new Date(fromDate),
+            $lte: new Date(toDate),
+          },
         },
       },
       // Unwind the pageOrders array
@@ -60,7 +59,6 @@ export async function GET(req: Request) {
           isPublished: { $first: "$isPublished" },
           coupons: { $first: "$coupons" },
           createdAt: { $first: "$createdAt" },
-          updatedAt: { $first: "$updatedAt" },
         },
       },
     ]);
@@ -81,3 +79,4 @@ export async function GET(req: Request) {
     });
   }
 }
+

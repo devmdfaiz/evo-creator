@@ -101,11 +101,11 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => (
       <div
         className={cn(
-          "ml-5 capitalize max-w-11 text-center rounded-sm",
+          "ml-5 capitalize text-center rounded-md py-1 px-1",
           `${
             row.original.isPaid
-              ? "text-green-600 bg-green-600/20 "
-              : "text-red-600 bg-red-600/20 max-w-[70px]"
+              ? "text-green-700 bg-green-700/20 "
+              : "text-red-700 bg-red-700/20"
           }`
         )}
       >{`${row.original.isPaid ? "Paid" : "Cancled"}`}</div>
@@ -261,6 +261,6 @@ export const columns: ColumnDef<any>[] = [
   },
 ];
 
-export default function OrderDataTable({ orders }: { orders: any[] }) {
-  return <DataTable data={orders} columns={columns} />;
+export default function OrderDataTable({ currentPeriod }: { currentPeriod: any[] }) {
+  return <DataTable data={currentPeriod} columns={columns} />;
 }
