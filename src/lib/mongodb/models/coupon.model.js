@@ -1,4 +1,4 @@
-const analyticIdsSchema = new Schema({
+const couponSchema = new Schema({
   name: String,
   discount: Number,
   discountType: {
@@ -14,4 +14,17 @@ const analyticIdsSchema = new Schema({
   }
 },  { timestamps: true });
 
-export const Coupon = mongoose.models.Coupon || mongoose.model("Coupon", pageSchema);
+couponSchema.pre("save", function (next) {
+  const indiaTimezone = "Asia/Kolkata";
+  const formatString = "EEE MMM dd yyyy HH:mm:ss (zzzz)";
+
+  if (this.isNew) {
+    this.formattedCreatedAt = formatInTimeZone(this.createdAt, indiaTimezone, formatString);
+  }
+
+  this.formattedUpdatedAt = formatInTimeZone(this.updatedAt, indiaTimezone, formatString);
+
+  next();
+});
+
+export const Coupon = mongoose.models.Coupon || mongoose.model("Coupon", couponSchema);

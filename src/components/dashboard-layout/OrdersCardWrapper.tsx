@@ -18,10 +18,10 @@ export function growthCalculation({
   });
 
   for (const filteredOrder of currentFilteredOrders) {
-    currentTotalRevenue += parseFloat(filteredOrder.amount);
+    currentTotalRevenue += parseFloat(filteredOrder?.amount);
   }
 
-  const currentOrderCount = currentPeriod.length;
+  const currentOrderCount = currentPeriod?.length;
 
   // Comparison calculation
   let comparisonTotalRevenue = 0;
@@ -31,9 +31,9 @@ export function growthCalculation({
   });
 
   for (const filteredOrder of comparisonFilteredOrders) {
-    comparisonTotalRevenue += parseFloat(filteredOrder.amount);
+    comparisonTotalRevenue += parseFloat(filteredOrder?.amount);
   }
-  const comparisonOrderCount = comparisonPeriod.length;
+  const comparisonOrderCount = comparisonPeriod?.length;
 
   const currentRevenueTotalCount = currentTotalRevenue;
   const comparisonRevenueTotalCount = comparisonTotalRevenue;
@@ -55,8 +55,8 @@ export function growthCalculation({
   const succOrderGrowth =
     currentFilteredOrders.length === 0
       ? 0 // Avoid division by zero
-      : ((currentFilteredOrders.length - comparisonFilteredOrders.length) /
-          comparisonFilteredOrders.length) *
+      : ((currentFilteredOrders?.length - comparisonFilteredOrders?.length) /
+          comparisonFilteredOrders?.length) *
         100;
 
   const faildOrderGrowth =
@@ -64,8 +64,8 @@ export function growthCalculation({
       ? 0 // Avoid division by zero
       : ((currentPeriod.length -
           currentFilteredOrders.length -
-          (comparisonPeriod.length - comparisonFilteredOrders.length)) /
-          (comparisonPeriod.length - comparisonFilteredOrders.length)) *
+          (comparisonPeriod?.length - comparisonFilteredOrders?.length)) /
+          (comparisonPeriod?.length - comparisonFilteredOrders?.length)) *
         100;
 
   return {
@@ -103,7 +103,7 @@ const OrdersCardWrapper = ({
     <div className="flex flex-wrap justify-center gap-5">
       <SmallCard
         title="Total Orders"
-        goal={currentPeriod.length}
+        goal={currentPeriod?.length}
         desc={`${parseInt(JSON.stringify(orderGrowth))}% from last ${
           Number.isNaN(dayGap) ? 0 : dayGap
         } days`}
@@ -117,14 +117,14 @@ const OrdersCardWrapper = ({
       />
       <SmallCard
         title="Total Success Order"
-        goal={currentFilteredOrders.length}
+        goal={currentFilteredOrders?.length}
         desc={`${parseInt(JSON.stringify(succOrderGrowth))}% from last ${
           Number.isNaN(dayGap) ? 0 : dayGap
         } days`}
       />
       <SmallCard
         title="Total Faild Order"
-        goal={currentPeriod.length - currentFilteredOrders.length}
+        goal={currentPeriod?.length - currentFilteredOrders?.length}
         desc={`${parseInt(JSON.stringify(faildOrderGrowth))}% from last ${
           Number.isNaN(dayGap) ? 0 : dayGap
         } days`}

@@ -28,12 +28,12 @@ export const columns: ColumnDef<any>[] = [
         className={cn(
           "ml-5 capitalize max-w-16 text-center rounded-md py-1 px-1",
           `${
-            row.original.isPublished
+            row?.original?.isPublished
               ? "text-green-700 bg-green-700/20 "
               : "text-red-700 bg-red-700/20"
           }`
         )}
-      >{`${row.original.isPublished ? "Public" : "Private"}`}</div>
+      >{`${row?.original?.isPublished ? "Public" : "Private"}`}</div>
     ),
   },
   {
@@ -43,7 +43,7 @@ export const columns: ColumnDef<any>[] = [
     },
     cell: ({ row }) => (
       <Image
-        src={row.getValue("img")}
+        src={row?.getValue("img")}
         alt="img"
         width={30}
         height={30}
@@ -57,7 +57,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column.getIsSorted() === "asc")}
         >
           Name
           <CaretSortIcon className="h-4 w-4" />
@@ -65,7 +65,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="ml-4 capitalize">{row.original.metaData.metaTitle}</div>
+      <div className="ml-4 capitalize">{row?.original?.metaTitle}</div>
     ),
   },
   {
@@ -74,7 +74,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Price
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -82,7 +82,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => {
-      const amount = parseFloat(row.original.pagePrice.price);
+      const amount = parseFloat(row?.original?.pagePrice?.price);
 
       // Format the amount as a INR amount
       const formatted = new Intl.NumberFormat("en-US", {
@@ -99,7 +99,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Date
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -107,7 +107,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => {
-      const formated = format(row.original.createdAt, "dd/MM/yyyy");
+      const formated = format(row?.original?.createdAt, "dd/MM/yyyy");
 
       return <div className="ml-4 lowercase">{formated}</div>;
     },
@@ -118,7 +118,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Revenue
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -126,7 +126,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => {
-      const amount = parseFloat(row.original.totalRevenue);
+      const amount = parseFloat(row?.original?.totalRevenue);
 
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {
@@ -143,7 +143,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Orders
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -151,14 +151,14 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="ml-4 lowercase">{row.original.paidOrdersCount}</div>
+      <div className="ml-4 lowercase">{row?.original?.paidOrdersCount}</div>
     ),
   },
   {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const pageData = row.original;
+      const pageData = row?.original;
 
       return (
         <DropdownMenu>
@@ -171,7 +171,7 @@ export const columns: ColumnDef<any>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(pageData.pageId)}
+              onClick={() => navigator.clipboard.writeText(pageData?.pageId)}
             >
               Copy page ID
             </DropdownMenuItem>

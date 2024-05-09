@@ -120,4 +120,17 @@ const pageSchema = new Schema(
   { timestamps: true }
 );
 
+pageSchema.pre("save", function (next) {
+  const indiaTimezone = "Asia/Kolkata";
+  const formatString = "EEE MMM dd yyyy HH:mm:ss (zzzz)";
+
+  if (this.isNew) {
+    this.formattedCreatedAt = formatInTimeZone(this.createdAt, indiaTimezone, formatString);
+  }
+
+  this.formattedUpdatedAt = formatInTimeZone(this.updatedAt, indiaTimezone, formatString);
+
+  next();
+});
+
 export const Page = mongoose.models.Page || mongoose.model("Page", pageSchema);

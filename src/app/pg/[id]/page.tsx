@@ -1,8 +1,11 @@
-import { PageComponents, PageCont } from "@/components/dashboard-layout/PaymentPageView/PageViewComponents";
 import {
-  PageInputsWithFormForMobileFormSolution,
-} from "@/components/global/paymentPage/PageForm";
+  PageComponents,
+  PageCont,
+} from "@/components/dashboard-layout/PaymentPageView/PageViewComponents";
+import { PageInputsWithFormForMobileFormSolution } from "@/components/global/paymentPage/PageForm";
 import { getPageData } from "@/lib/fetch/pageData";
+import { indianNameAndCityGenerator } from "@/lib/faker/index.faker";
+import { toast } from "react-toastify";
 
 /**
  * Payment page main component
@@ -33,9 +36,11 @@ const PaymentPage = async ({
   }
 
   return (
-    <PageCont fieldValue={fieldValue} color={color} theme={theme}>
-      <PageComponents fieldValue={fieldValue} theme={theme} />
-    </PageCont>
+    <>
+      <PageCont fieldValue={fieldValue} color={color} theme={theme}>
+        <PageComponents fieldValue={fieldValue} theme={theme} />
+      </PageCont>
+    </>
   );
 };
 

@@ -6,21 +6,68 @@ import TypographyH1 from "@/components/typography/TypographyH1";
 import { DateContext } from "@/context/DateProvider";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import axios from "axios";
+import { format } from "date-fns";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 
+function getPageData({
+  fromDate,
+  toDate,
+  date,
+  setPages,
+}: {
+  fromDate: Date;
+  toDate: Date;
+  date: any;
+  setPages: any;
+}) {
+  axios.post("/api/page", { fromDate, toDate }).then((res) => {
+    const { data, status } = res;
+    if (status === 200) {
+      if (date?.type === "template") {
+        if (date?.templateData?.day === "today") {
+          const filtered = data.pages.filter(
+            (data: any) =>
+              format(data?.createdAt, "dd/MM/yyyy") ===
+              date?.templateData?.todayDate
+          );
+
+          setPages(filtered);
+          return;
+        }
+
+        if (date?.templateData?.day === "yesterday") {
+          const filtered = data?.pages?.filter(
+            (data: any) =>
+              format(data?.createdAt, "dd/MM/yyyy") ===
+              date?.templateData?.yesterdayDate
+          );
+
+          setPages(filtered);
+          return;
+        }
+
+        setPages(data?.pages);
+        return;
+      }
+
+      setPages(data?.pages);
+    }
+  });
+}
+
 const Pages = () => {
   const [pages, setPages] = useState([]);
-  const { fromDate, toDate } = useContext(DateContext);
+  const { fromDate, toDate, date } = useContext(DateContext);
 
   useEffect(() => {
-    axios.post(`/api/page`, { fromDate, toDate }).then((res) => {
-      const {
-        data: { pages },
-      } = res;
-      setPages(pages);
+    getPageData({
+      fromDate,
+      toDate,
+      date,
+      setPages,
     });
-  }, [fromDate, toDate]);
+  }, [date]);
 
   return (
     <section className="mb-7">

@@ -28,7 +28,7 @@ export const columns: ColumnDef<any>[] = [
         <Button
           variant="ghost"
           className="ml-5"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Full Name
           <CaretSortIcon className="h-4 w-4" />
@@ -37,7 +37,7 @@ export const columns: ColumnDef<any>[] = [
     },
     cell: ({ row }) => (
       <div className="ml-9 capitalize">
-        {row.original.customerInfo["Full Name"]}
+        {row?.original?.customerInfo["Full Name"]}
       </div>
     ),
   },
@@ -47,7 +47,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Phone Number
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -62,7 +62,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Email
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -70,7 +70,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="ml-4 lowercase">{row.original.customerInfo.Email}</div>
+      <div className="ml-4 lowercase">{row?.original?.customerInfo?.Email}</div>
     ),
   },
   {
@@ -79,7 +79,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Page
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -88,8 +88,8 @@ export const columns: ColumnDef<any>[] = [
     },
     cell: ({ row }) => (
       <div className="ml-4 flex gap-2 items-center justify-start">
-        <span>{row.original.pageTitle}</span>
-        <Link href={`/pg/${row.original.pageId}`} target="_blank">
+        <span>{row?.original?.pageTitle}</span>
+        <Link href={`/pg/${row?.original?.pageId}`} target="_blank">
           <ExternalLinkIcon />
         </Link>
       </div>
@@ -101,7 +101,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Date
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -109,7 +109,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => {
-      const formated = format(row.original.createdAt, "dd/MM/yyyy");
+      const formated = format(row?.original?.createdAt, "dd/MM/yyyy");
 
       return <div className="ml-4 lowercase">{formated}</div>;
     },
@@ -120,7 +120,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Amount
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -128,7 +128,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => {
-      const amount = parseFloat(row.original.amount);
+      const amount = parseFloat(row?.original?.amount);
 
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {
@@ -143,7 +143,7 @@ export const columns: ColumnDef<any>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original;
+      const payment = row?.original;
 
       return (
         <DropdownMenu>
@@ -174,7 +174,7 @@ export const columns: ColumnDef<any>[] = [
 
 export default function CustomersDataTable({ currentPeriod }: { currentPeriod: any }) {
   const filteredOrders = currentPeriod.filter((data: any) => {
-    return data.isPaid === true;
+    return data?.isPaid === true;
   });
 
   return <DataTable data={filteredOrders} columns={columns} />;

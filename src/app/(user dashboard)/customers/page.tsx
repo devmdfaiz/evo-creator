@@ -4,26 +4,24 @@ import CustomersOrdersWrapper from "@/components/dashboard-layout/CustomersWrapp
 import { DatePickerWithRange } from "@/components/global/calendar/DatePicker";
 import TypographyH1 from "@/components/typography/TypographyH1";
 import { DateContext } from "@/context/DateProvider";
-import axios from "axios";
+import { getOrderData } from "@/lib/fetch/orderData";
 import React, { useContext, useEffect, useState } from "react";
-import { dummyDataAndFileGen } from "@/lib/faker/index";
 
 const Customers = () => {
   const [currentPeriodOrders, setCurrentPeriodOrders] = useState([]);
   const [comparisonPeriodOrders, setComparisonPeriodOrders] = useState([]);
-  const { fromDate, toDate, dayGap } = useContext(DateContext);
+  const { fromDate, toDate, dayGap, date } = useContext(DateContext);
 
   useEffect(() => {
-    axios.post("/api/order/order-data", { fromDate, toDate, dayGap }).then((res) => {
-      const { data, status } = res;
-      if (status === 200) {
-        setCurrentPeriodOrders(data.orders[0].currentPeriod);
-        setComparisonPeriodOrders(data.orders[0].comparisonPeriod)
-      }
+    getOrderData({
+      fromDate,
+      toDate,
+      dayGap,
+      date,
+      setCurrentPeriodOrders,
+      setComparisonPeriodOrders,
     });
-  }, [dayGap]);
-
-  // dummyDataAndFileGen();
+  }, [date]);
 
   return (
     <section className="mb-7">
@@ -33,7 +31,10 @@ const Customers = () => {
           <DatePickerWithRange />
         </div>
       </div>
-      <CustomersOrdersWrapper currentPeriod={currentPeriodOrders} comparisonPeriod={comparisonPeriodOrders}/>
+      <CustomersOrdersWrapper
+        currentPeriod={currentPeriodOrders}
+        comparisonPeriod={comparisonPeriodOrders}
+      />
       <CustomersDataTable currentPeriod={currentPeriodOrders} />
     </section>
   );

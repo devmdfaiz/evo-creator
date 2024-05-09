@@ -29,7 +29,7 @@ export const authOptions = {
     async jwt({ token, user }) {
       if (user) {
         // editing jwt payload
-        token.sub = user._id;
+        token.sub = user.userId;
         token.name = user.fullname;
         token.phone = user.phone;
         token.isEmailVerified = user.isEmailVerified;

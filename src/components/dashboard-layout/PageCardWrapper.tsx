@@ -12,11 +12,11 @@ const PageCardWrapper = ({ pages }: { pages: any[] }) => {
   let noOfPrivatePages = 0;
 
   for (let page of pages) {
-    if (page.isPublished) {
+    if (page?.isPublished) {
       noOfPublicPages += 1;
     }
 
-    if (!page.isPublished) {
+    if (!page?.isPublished) {
       noOfPrivatePages += 1;
     }
   }
@@ -25,7 +25,7 @@ const PageCardWrapper = ({ pages }: { pages: any[] }) => {
     <div className="flex flex-wrap justify-center gap-5">
       <SmallCard
         title="Total Page"
-        goal={pages.length}
+        goal={pages?.length}
         desc=""
       />
       <SmallCard

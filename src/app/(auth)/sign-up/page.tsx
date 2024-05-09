@@ -25,38 +25,68 @@ import PolicyMsg from "@/components/auth-layout/PolicyMsg";
 import SeparatorAuth from "@/components/auth-layout/SeparatorAuth";
 import GoogleAuthButton from "@/components/auth-layout/GoogleAuthButton";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ErrorAlert from "@/components/global/form/ErrorAlert";
 import { formSchemaSignUp } from "@/lib/zod/index.zodSchema";
 import axios from "axios";
+import { toast } from "react-toastify";
+import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 
 // React conponent startss here
 const SignUpPage = () => {
   const rout = useRouter();
-  const [isError, setIsError] = useState<any>("");
-  const [isSignupComplete, setIsSignupComplete] = useState(false);
+  const [isError, setIsError] = useState<string>("");
+  const [signupStatus, setSignupStatus] = useState<
+    "started" | "creating" | "redirecting"
+  >("started");
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchemaSignUp>) {
-    axios.post("/api/user/signup", values).then((res) => {
-      if (res.data.status) {
-        const payload = res?.data?.user;
+    setSignupStatus("creating");
 
-        console.log("user payload", payload)
+    toast
+      .promise(axios.post("/api/user/signup", values), {
+        pending: "Signing you up...",
+        success: "Signed up successfully!",
+        error: "Failed to sign up. Please try again.",
+      })
+      .then((res) => {
+        const {
+          status,
+          data: { message, user },
+        } = res;
 
-        signIn("credentials", { redirect: false, ...payload });
-        setIsSignupComplete(true);
-      } else {
-        console.log("error in sign in", res?.data?.massage);
-        setIsError(res?.data?.massage);
-      }
-    });
+        if (status === 201) {
+          const payload = user;
+
+          signIn("credentials", { redirect: false, ...payload });
+          setSignupStatus("redirecting");
+        }
+      })
+      .catch((error) => {
+        setSignupStatus("started");
+        let errorMessage = "An unexpected error occurred.";
+
+        if (
+          error &&
+          typeof error === "object" &&
+          "response" in error &&
+          (error as any).response?.data?.message
+        ) {
+          // Check if the error has a response with a data object containing the message
+          errorMessage = (error as any).response.data.message;
+        }
+  
+        setIsError(errorMessage); // Set the extracted message as the error state
+      });
   }
 
-  // handle seving phone number in local storage and redirect to OTP verification page
-  if (isSignupComplete) {
-    rout.refresh();
-  }
+  useEffect(() => {
+    if (signupStatus === "redirecting") {
+      toast.info("Redirection to verification page");
+      rout.push("/sign-up/verify");
+    }
+  }, [signupStatus]);
 
   const form = useForm<z.infer<typeof formSchemaSignUp>>({
     resolver: zodResolver(formSchemaSignUp),
@@ -145,9 +175,23 @@ const SignUpPage = () => {
           <Button
             type="submit"
             className={cn("disabled:bg-gray-500 w-full mt-4")}
-            disabled={form.formState.isSubmitting}
+            disabled={
+              signupStatus === "redirecting" || signupStatus === "creating"
+            }
           >
-            Next
+            {signupStatus === "started" ? (
+              "Next"
+            ) : signupStatus === "creating" ? (
+              <div className="flex items-center justify-center gap-2">
+                <ButtonSpinner className="w-6 h-6" /> Creating user
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                {" "}
+                <ButtonSpinner className="w-6 h-6" /> Redirecting to
+                verification page
+              </div>
+            )}
           </Button>
           <div>
             <TypographySmall>

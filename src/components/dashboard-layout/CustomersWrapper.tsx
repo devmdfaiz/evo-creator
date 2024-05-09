@@ -16,8 +16,6 @@ const CustomersOrdersWrapper = ({
   const {
     currentFilteredOrders,
     currentTotalRevenue,
-    faildOrderGrowth,
-    orderGrowth,
     revenueGrowth,
     succOrderGrowth,
   } = growthCalculation({
@@ -29,7 +27,7 @@ const CustomersOrdersWrapper = ({
     <div className="flex flex-wrap justify-center gap-5">
       <SmallCard
         title="Total Customers"
-        goal={currentFilteredOrders.length}
+        goal={currentFilteredOrders?.length}
         desc={`${parseInt(JSON.stringify(succOrderGrowth))}% from last ${
           Number.isNaN(dayGap) ? 0 : dayGap
         } days`}

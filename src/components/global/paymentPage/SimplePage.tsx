@@ -1,7 +1,11 @@
 import "@/components/styles/pageStyles.css";
 import Image from "next/image";
 import sanitizeHtml from "sanitize-html";
-import { EnvelopeClosedIcon, PersonIcon } from "@radix-ui/react-icons";
+import {
+  EnvelopeClosedIcon,
+  PersonIcon,
+  QuoteIcon,
+} from "@radix-ui/react-icons";
 import {
   Accordion,
   AccordionContent,
@@ -20,7 +24,6 @@ import {
 
 import { cn } from "@/lib/utils/utils";
 import { Separator } from "@/components/ui/separator";
-import QuoteIcon from "@/components/icons/QuoteIcon";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -153,18 +156,18 @@ export const ProductPageTestimonial = ({
   return (
     <div className="my-6" key={key}>
       <div
-        className={`flext flex-col items-center border ${
+        className={`border-primary/50 border-2 ${
           theme === "dark" ? "border-white/30" : "border-black/30"
-        } p-4 rounded-sm shadow-lg`}
+        } p-6 rounded-3xl shadow-lg shadow-primary/20 w-80`}
       >
-        <QuoteIcon className="h-9" />
-        <p className={cn("text-base font-medium", TClassName)}>{`"${text}"`}</p>
+        <QuoteIcon className="h-14 w-14 text-primary/70" />
+        <p
+          className={cn("text-base font-medium", TClassName)}
+        >{text}</p>
 
-        <div className="flex justify-center">
-          <Separator className="bg-black/70 mt-2 w-3 h-[2px]" />
-        </div>
+        <Separator className="bg-black/70 mt-2 w-3 h-[2px]" />
 
-        <p className={cn("mt-2 font-normal text-center text-sm", DClassName)}>
+        <p className={cn("mt-2 font-normal text-start text-sm", DClassName)}>
           {name}
         </p>
       </div>

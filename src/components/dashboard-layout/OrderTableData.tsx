@@ -103,12 +103,12 @@ export const columns: ColumnDef<any>[] = [
         className={cn(
           "ml-5 capitalize text-center rounded-md py-1 px-1",
           `${
-            row.original.isPaid
+            row?.original?.isPaid
               ? "text-green-700 bg-green-700/20 "
               : "text-red-700 bg-red-700/20"
           }`
         )}
-      >{`${row.original.isPaid ? "Paid" : "Cancled"}`}</div>
+      >{`${row?.original?.isPaid ? "Paid" : "Cancled"}`}</div>
     ),
   },
   {
@@ -117,7 +117,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Full Name
           <CaretSortIcon className="h-4 w-4" />
@@ -136,7 +136,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Phone Number
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -151,7 +151,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Email
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -159,7 +159,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="ml-4 lowercase">{row.original.customerInfo.Email}</div>
+      <div className="ml-4 lowercase">{row?.original?.customerInfo?.Email}</div>
     ),
   },
   {
@@ -168,7 +168,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Page
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -177,8 +177,8 @@ export const columns: ColumnDef<any>[] = [
     },
     cell: ({ row }) => (
       <div className="ml-4 flex gap-2 items-center justify-start">
-        <span>{row.original.pageTitle}</span>
-        <Link href={`pg/${row.original.pageId}`} target="_blank">
+        <span>{row?.original?.pageTitle}</span>
+        <Link href={`pg/${row?.original?.pageId}`} target="_blank">
           <ExternalLinkIcon />
         </Link>
       </div>
@@ -190,7 +190,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Date
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -198,7 +198,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => {
-      const formated = format(row.original.createdAt, "dd/MM/yyyy");
+      const formated = format(row?.original?.createdAt, "dd/MM/yyyy");
 
       return <div className="ml-4 lowercase">{formated}</div>;
     },
@@ -209,7 +209,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column?.toggleSorting(column?.getIsSorted() === "asc")}
         >
           Amount
           <CaretSortIcon className="ml-2 h-4 w-4" />
@@ -217,7 +217,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => {
-      const amount = parseFloat(row.original.amount);
+      const amount = parseFloat(row?.original?.amount);
 
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {
@@ -232,7 +232,7 @@ export const columns: ColumnDef<any>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original;
+      const payment = row?.original;
 
       return (
         <DropdownMenu>
@@ -246,7 +246,7 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() =>
-                navigator.clipboard.writeText(payment.rzrPayOrderId)
+                navigator.clipboard.writeText(payment?.rzrPayOrderId)
               }
             >
               Copy order ID

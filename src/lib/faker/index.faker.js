@@ -1,5 +1,5 @@
-"use client"
 import { faker } from "@faker-js/faker";
+import { faker as fakerIn } from "@faker-js/faker/locale/en_IN";
 import { genDummyFile } from "@/lib/actions";
 
 export const dummyDataAndFileGen = () => {
@@ -22,7 +22,7 @@ export const dummyDataAndFileGen = () => {
       customerInfo: {
         "Full Name": faker.person.fullName(),
         "Phone Number": faker.phone.number(),
-        "Email": faker.internet.email(),
+        Email: faker.internet.email(),
       },
       isPaid: faker.datatype.boolean(),
       rzrPayOrderId: faker.string.uuid(),
@@ -52,7 +52,7 @@ export const dummyDataAndFileGen = () => {
   const ordersD = [];
   const pageD = [];
   for (let i = 0; i < 1000; i++) {
-    const dummyData = generateRandomOrder()
+    const dummyData = generateRandomOrder();
     ordersD.push(dummyData.dummyOrder);
     pageD.push(dummyData.dummyPage);
   }
@@ -64,4 +64,15 @@ export const dummyDataAndFileGen = () => {
   const pageJson = JSON.stringify(pageD, null, 2);
 
   genDummyFile({ orderJson, pageJson });
+};
+
+export const indianNameAndCityGenerator = () => {
+  const firstName = fakerIn.person.firstName();
+  const lastName = fakerIn.person.lastName()
+  const indianCity = fakerIn.location.city();
+
+  return {
+    indianName: `${firstName} ${lastName}`,
+    indianCity,
+  };
 };
