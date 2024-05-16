@@ -20,7 +20,7 @@ import TypographyH3 from "@/components/typography/TypographyH3";
 import TypographyMuted from "@/components/typography/TypographyMuted";
 import TypographySmall from "@/components/typography/TypographySmall";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import PolicyMsg from "@/components/auth-layout/PolicyMsg";
 import SeparatorAuth from "@/components/auth-layout/SeparatorAuth";
 import GoogleAuthButton from "@/components/auth-layout/GoogleAuthButton";
@@ -31,6 +31,7 @@ import { formSchemaSignUp } from "@/lib/zod/index.zodSchema";
 import axios from "axios";
 import { toast } from "react-toastify";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
+import OtpVerificationCom from "@/components/global/auth/OtpVerification";
 
 // React conponent startss here
 const SignUpPage = () => {
@@ -39,6 +40,9 @@ const SignUpPage = () => {
   const [signupStatus, setSignupStatus] = useState<
     "started" | "creating" | "redirecting"
   >("started");
+
+  const searchParams = useSearchParams();
+  const isVerify = searchParams.get("verify");
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchemaSignUp>) {
@@ -61,7 +65,9 @@ const SignUpPage = () => {
 
           signIn("credentials", { redirect: false, ...payload });
           setSignupStatus("redirecting");
+          return;
         }
+        setSignupStatus("started");
       })
       .catch((error) => {
         setSignupStatus("started");
@@ -76,7 +82,7 @@ const SignUpPage = () => {
           // Check if the error has a response with a data object containing the message
           errorMessage = (error as any).response.data.message;
         }
-  
+
         setIsError(errorMessage); // Set the extracted message as the error state
       });
   }
@@ -84,7 +90,8 @@ const SignUpPage = () => {
   useEffect(() => {
     if (signupStatus === "redirecting") {
       toast.info("Redirection to verification page");
-      rout.push("/sign-up/verify");
+      rout.push("/sign-up?verify=true");
+      setSignupStatus("started")
     }
   }, [signupStatus]);
 
@@ -97,6 +104,15 @@ const SignUpPage = () => {
       password: "",
     },
   });
+
+  if (isVerify) {
+    return (
+      <OtpVerificationCom
+        title="Unlock the door!"
+        subTitle="We've sent a key to your phone (virtually, of course). Enter it here to open your account."
+      />
+    );
+  }
 
   return (
     <AuthWrapper
@@ -171,28 +187,25 @@ const SignUpPage = () => {
               </FormItem>
             )}
           />
-          {isError && <ErrorAlert isError={isError} />}
-          <Button
-            type="submit"
-            className={cn("disabled:bg-gray-500 w-full mt-4")}
-            disabled={
-              signupStatus === "redirecting" || signupStatus === "creating"
-            }
-          >
-            {signupStatus === "started" ? (
-              "Next"
-            ) : signupStatus === "creating" ? (
-              <div className="flex items-center justify-center gap-2">
-                <ButtonSpinner className="w-6 h-6" /> Creating user
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-2">
-                {" "}
-                <ButtonSpinner className="w-6 h-6" /> Redirecting to
-                verification page
-              </div>
-            )}
-          </Button>
+          {isError && <ErrorAlert isError={isError} setIsError={setIsError} />}
+          {signupStatus === "started" ? (
+            <Button
+              type="submit"
+              className={cn("disabled:bg-gray-500 w-full mt-4 py-1")}
+            >
+              Next
+            </Button>
+          ) : signupStatus === "creating" ? (
+            <div className="flex items-center justify-center gap-2 py-1">
+              <ButtonSpinner className="w-5 h-5" /> Creating user!
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2 py-1">
+              {" "}
+              <ButtonSpinner className="w-5 h-5" /> Redirecting to verification
+              page!
+            </div>
+          )}
           <div>
             <TypographySmall>
               Already have account?{" "}

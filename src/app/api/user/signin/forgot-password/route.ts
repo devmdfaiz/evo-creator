@@ -1,20 +1,16 @@
 import connectToDb from "@/lib/mongodb/connection/db";
 import { User } from "@/lib/mongodb/models/user.model";
-import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { authenticator } from "otplib";
-import { generateOTP } from "../signup/route";
 import { resend } from "@/lib/resend/resend";
 import { evar } from "@/lib/envConstant";
-import SendOtp from "../../../../../emails/otp.email";
+import PasswordResetLinkEmail from "../../../../../../emails/resetPassword.email";
+import jwt from "jsonwebtoken";
+import { addMinutes } from "date-fns";
 
 export async function POST(req: Request, res: Response) {
   connectToDb();
 
-  // Configure OTP settings
-  authenticator.options = { window: 5, digits: 6 }; // Combine OTP options into one line
-
-  const { phone, password } = await req.json();
+  const { phone } = await req.json();
 
   try {
     const user = await User.findOne({ phone });
@@ -30,29 +26,23 @@ export async function POST(req: Request, res: Response) {
       ); // Set HTTP status code 404 for resource not found
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordCorrect) {
-      return NextResponse.json(
-        {
-          message: "Please enter correct password",
-          user: null,
-          error: null,
-        },
-        { status: 401 }
-      ); // Set HTTP status code 401 for unauthorized access
-    }
+    const token = jwt.sign({
+      name: user.fullname,
+      phone: user.phone,
+      email: user.email,
+      expiry: addMinutes(new Date(), 5)
+    }, evar.jwtSec);
 
     // Send the OTP to a specific email address using the "resend" service
     const { data, error } = await resend.emails.send({
       from: "onboarding@resend.dev", // Sender's email address
       to: user.email, // Recipient's email address
-      subject: "Your One-Time Password (OTP) from The Dream Project", // Email subject
-      react: SendOtp({
-        projectName: "The Dream Project",
+      subject: `Your Forgot Password Link from ${evar.projectName}`, // Email subject
+      react: PasswordResetLinkEmail({
+        projectName: evar.projectName,
         recipientName: user.fullname,
-        action: "Sign in",
-        otp: generateOTP(), // Generate OTP directly here
+        action: "reset password",
+        link: `${evar.domain}/reset-password/${token}`,
         supportEmail: "support@support.com",
         baseUrl: evar.domain,
       }), // React component generating the email content
@@ -62,7 +52,7 @@ export async function POST(req: Request, res: Response) {
     if (error) {
       return NextResponse.json(
         {
-          message: "An error occurred while sending otp. Please try again.",
+          message: "An error occurred while sending email. Please try again.",
           user: null,
           error, // Return the error object for debugging
         },
@@ -72,8 +62,8 @@ export async function POST(req: Request, res: Response) {
 
     return NextResponse.json(
       {
-        message: "User verified",
-        user,
+        message: "Forgot password link has sended to your email",
+        user: user.email,
         error: null,
       },
       { status: 200 }

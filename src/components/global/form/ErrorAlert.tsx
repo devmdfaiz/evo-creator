@@ -1,24 +1,33 @@
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/utils";
-import { CrossCircledIcon } from "@radix-ui/react-icons";
-import React from "react";
+import {
+  Cross1Icon,
+  CrossCircledIcon,
+  InfoCircledIcon,
+} from "@radix-ui/react-icons";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const ErrorAlert = ({
   isError,
   className,
+  setIsError,
 }: {
   isError: string;
   className?: string;
+  setIsError: any;
 }) => {
+  if (isError) {
+    setTimeout(() => {
+      setIsError("");
+    }, 7000);
+  }
+
   return (
-    <div
-      className={cn(
-        "w-full bg-red-100 text-red-700 border-l-4 border-red-500 px-4 py-3 rounded-lg flex items-center gap-2",
-        className
-      )}
-    >
-      <CrossCircledIcon className="text-red-500 w-10 h-10" />
-      <span className="leading-[20px]">{isError}</span>
-    </div>
+    <Alert variant="destructive">
+      <InfoCircledIcon className="h-4 w-4" />
+      <AlertTitle>Error</AlertTitle>
+      <AlertDescription>{isError}</AlertDescription>
+    </Alert>
   );
 };
 

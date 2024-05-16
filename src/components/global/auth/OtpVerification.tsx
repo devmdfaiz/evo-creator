@@ -9,18 +9,35 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils/utils";
 import TypographyH3 from "@/components/typography/TypographyH3";
 import TypographyMuted from "@/components/typography/TypographyMuted";
 import { Separator } from "@/components/ui/separator";
-import { getLsItem, ls, removeLsItem } from "@/lib/utils/storage/localstorage";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { toast } from "react-toastify";
+import ErrorAlert from "../form/ErrorAlert";
+import ButtonSpinner from "../spinner/ButtonSpinner";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { cn } from "@/lib/utils/utils";
+import { addMinutes, intervalToDuration } from "date-fns";
+import {
+  getLsItem,
+  removeLsItem,
+  setLsItem,
+} from "@/lib/utils/storage/localstorage";
 
 const formSchema = z.object({
   otp: z
@@ -33,12 +50,133 @@ const formSchema = z.object({
     }),
 });
 
-let isOtpVerified = false;
+const OTPCountdownTimmer = ({ onComplete, setIsError }: any) => {
+  const [timmerInterval, setTimmerInterval] = useState<any>(null);
+  const [isClient, setIsClient] = useState(false);
+  const [isTimmerCompleted, setIsTimmerCompleted] = useState(false);
 
-// 2. Define a submit handler.
-async function onSubmit(values: z.infer<typeof formSchema>) {
-  // TODO: to handle email verification
-}
+  useEffect(() => {
+    const otpTimmerFinalDate: string = getLsItem("otpTimmerFinalDate");
+
+    if (timmerInterval) {
+      if (
+        (timmerInterval.minutes <= 0 && timmerInterval.hours <= 0,
+        timmerInterval.seconds <= 0)
+      ) {
+        setIsTimmerCompleted(true);
+      }
+    }
+
+    setTimmerInterval(
+      intervalToDuration({
+        start: new Date(),
+        end: new Date(otpTimmerFinalDate),
+      })
+    );
+  }, [timmerInterval]);
+
+  useEffect(() => {
+    const otpTimmerFinalDate: string = getLsItem("otpTimmerFinalDate");
+    setIsClient(true);
+    if (timmerInterval) {
+      if (
+        (timmerInterval.minutes <= 0 && timmerInterval.hours <= 0,
+        timmerInterval.seconds <= 0)
+      ) {
+        removeLsItem("otpTimmerFinalDate");
+        setIsTimmerCompleted(true);
+      }
+    }
+
+    if (!otpTimmerFinalDate) {
+      setLsItem("otpTimmerFinalDate", addMinutes(new Date(), 3));
+
+      setTimmerInterval(
+        intervalToDuration({
+          start: new Date(),
+          end: new Date(otpTimmerFinalDate),
+        })
+      );
+    }
+  }, []);
+
+  return (
+    <>
+      {isClient &&
+        (isTimmerCompleted ? (
+          <Button
+            className="mt-2 p-0"
+            onClick={async () => {
+              toast
+                .promise(axios.get("/api/emails/otp/send-otp"), {
+                  pending: "Generating OTP...",
+                  success: "OTP generated successfully!",
+                  error: "Failed to generating OTP. Please try again.",
+                })
+                .then(() => {
+                  setLsItem("otpTimmerFinalDate", addMinutes(new Date(), 3));
+
+                  setTimeout(() => {
+                    const otpTimmerFinalDate: string =
+                      getLsItem("otpTimmerFinalDate");
+
+                    setTimmerInterval(
+                      intervalToDuration({
+                        start: new Date(),
+                        end: new Date(otpTimmerFinalDate),
+                      })
+                    );
+
+                    setIsTimmerCompleted(false);
+                  }, 500);
+                })
+                .catch((error) => {
+                  let errorMessage = "An unexpected error occurred.";
+
+                  if (
+                    error &&
+                    typeof error === "object" &&
+                    "response" in error &&
+                    (error as any).response?.data?.message
+                  ) {
+                    // Check if the error has a response with a data object containing the message
+                    errorMessage = (error as any).response.data.message;
+                  }
+
+                  setIsError(errorMessage); // Set the extracted message as the error state
+                });
+            }}
+            variant="link"
+          >
+            Request new OTP
+          </Button>
+        ) : (
+          <div className="my-2">
+            Request new OTP in:{" "}
+            <span className="text-primary">
+              {!timmerInterval?.hours
+                ? "00"
+                : (timmerInterval?.hours).length === 1
+                ? `0${timmerInterval?.hours}`
+                : timmerInterval?.hours}
+              :
+              {!timmerInterval?.minutes
+                ? "00"
+                : (timmerInterval?.minutes).length === 1
+                ? `0${timmerInterval?.minutes}`
+                : timmerInterval?.minutes}
+              :
+              {!timmerInterval?.seconds
+                ? "00"
+                : (timmerInterval?.seconds).length === 1
+                ? `0${timmerInterval?.seconds}`
+                : timmerInterval?.seconds}
+            </span>
+          </div>
+        ))}
+    </>
+  );
+};
 
 // react components starts here
 const OtpVerificationCom = ({
@@ -49,6 +187,67 @@ const OtpVerificationCom = ({
   subTitle: string;
 }) => {
   const rout = useRouter();
+  const [emailVerificationStatus, setEmailVerificationStatus] = useState<
+    "started" | "verifying" | "redirecting"
+  >("started");
+  const [isError, setIsError] = useState<string>("");
+  const session = useSession();
+
+  // 2. Define a submit handler.
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    setEmailVerificationStatus("verifying");
+
+    toast
+      .promise(axios.post("/api/emails/otp/verify-otp", values), {
+        pending: "Verifying OTP...",
+        success: "OTP verified",
+        error: "Invalid OTP!",
+      })
+      .then((res) => {
+        const {
+          status,
+          data: { isOtpValid, user, message },
+        } = res;
+
+        if (status === 200 && isOtpValid) {
+          const payload = user;
+
+          signIn("credentials", { redirect: false, ...payload });
+          setEmailVerificationStatus("redirecting");
+          return;
+        }
+
+        if (status !== 200 && !isOtpValid) {
+          setEmailVerificationStatus("started");
+          setIsError(message);
+        }
+
+        setIsError(message);
+      })
+      .catch((error) => {
+        setEmailVerificationStatus("started");
+        let errorMessage = "An unexpected error occurred.";
+
+        if (
+          error &&
+          typeof error === "object" &&
+          "response" in error &&
+          (error as any).response?.data?.message
+        ) {
+          // Check if the error has a response with a data object containing the message
+          errorMessage = (error as any).response.data.message;
+        }
+
+        setIsError(errorMessage); // Set the extracted message as the error state
+      });
+  }
+
+  useEffect(() => {
+    if (emailVerificationStatus === "redirecting") {
+      toast.info("Redirection to dashboard");
+      rout.push("/");
+    }
+  }, [emailVerificationStatus]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,9 +256,7 @@ const OtpVerificationCom = ({
     },
   });
 
-  if (isOtpVerified) {
-    rout.push("/overview");
-  }
+  function handleTimerComplete() {}
 
   return (
     <AuthWrapper
@@ -76,35 +273,69 @@ const OtpVerificationCom = ({
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* otp field */}
           <FormField
             control={form.control}
             name="otp"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email Verification Code</FormLabel>
+              <FormItem
+                className={cn(
+                  "w-full flex flex-col justify-center items-center"
+                )}
+              >
+                <FormLabel>One-Time Password</FormLabel>
                 <FormControl>
-                  <Input placeholder="123456" {...field} />
+                  <InputOTP maxLength={6} {...field}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                    </InputOTPGroup>
+                    <InputOTPSeparator />
+                    <InputOTPGroup>
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                    </InputOTPGroup>
+                    <InputOTPSeparator />
+                    <InputOTPGroup>
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
                 </FormControl>
+                <FormDescription className="text-center">
+                  Please enter the one-time password sent to your email.{" "}
+                  <b>{session?.data?.user?.email}</b>
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button
-            type="submit"
-            className={cn("disabled:bg-gray-500 w-full mt-4")}
-            disabled={form.formState.isSubmitting}
-          >
-            Verify OTP
-          </Button>
+          {isError && <ErrorAlert isError={isError} setIsError={setIsError} />}
+          {emailVerificationStatus === "started" ? (
+            <Button
+              type="submit"
+              className={cn("disabled:bg-gray-500 w-full mt-4 py-1")}
+            >
+              Verify OTP
+            </Button>
+          ) : emailVerificationStatus === "verifying" ? (
+            <div className="flex items-center justify-center gap-2 py-1">
+              <ButtonSpinner className="w-5 h-5" /> Verifying OTP!
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2 py-1">
+              {" "}
+              <ButtonSpinner className="w-5 h-5" /> Redirecting to dashboard!
+            </div>
+          )}
         </form>
       </Form>
-      <Separator className={cn("my-6")} orientation="horizontal" />
-      <TypographyMuted className="text-center">
-        By clicking continue, you agree to our Terms of Service and Privacy
-        Policy.
-      </TypographyMuted>
+
+      <OTPCountdownTimmer
+        onComplete={handleTimerComplete}
+        setIsError={setIsError}
+      />
     </AuthWrapper>
   );
 };

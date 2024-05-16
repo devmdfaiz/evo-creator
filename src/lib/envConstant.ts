@@ -1,17 +1,19 @@
 interface Evar {
-  jwtSession: string;
-  appwriteEndpoint: string;
-  appwriteProjectId: string;
+  projectName: string;
+  jwtSec: string;
   razorpayKey: string;
   razorpaySec: string;
   domain: string;
+  resendApiKey: string;
+  otpSec: string;
 }
 
 export const evar: Evar = {
-  jwtSession: process.env.JWT_SECRET!,
-  appwriteEndpoint: process.env.APPWRITE_PROJECT_ID!,
-  appwriteProjectId: process.env.APPWRITE_ENDPOINT!,
+  projectName: process.env.PROJECT_NAME!,
+  jwtSec: process.env.JWT_SECRET!,
   razorpayKey: process.env.RAZORPAY_KEY_ID!,
   razorpaySec: process.env.RAZORPAY_KEY_SEC!,
-  domain: process.env.DOMAIN!
+  domain: process.env.DOMAIN!,
+  resendApiKey: process.env.RESEND_API_KEY!,
+  otpSec: process.env.OTP_KEY!,
 };

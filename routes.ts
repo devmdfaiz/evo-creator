@@ -1,3 +1,5 @@
-export const nextAuthApiRoute: string[] = ["/api/auth"]
+export const publicApiRoute: string = "/api/auth" || "/api/sign-in" || "/api/sign-up"
 
-export const routesForLoggedinUsers: string[] = ["/automation", "/customers", "/orders", "/overview", "/pages", "/setting", "/wallet"]
+export const routesForVerifiedUsers: string[] = ["/automation", "/customers", "/orders", "/overview", "/pages", "/setting", "/wallet"]
+
+export const routesForUnverifiedUsers: string[] = ["/automation", "/customers", "/orders", "/overview", "/pages", "/setting", "/wallet"]

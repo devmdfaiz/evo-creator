@@ -266,28 +266,6 @@ export const formValuesArrFun = (form: any) => {
 };
 
 /**
- * This zod schema for sign in form
- */
-export const formSchemaLogin = z.object({
-  phone: z
-    .string()
-    .min(10, {
-      message: "Phone number must be at least 10 digit",
-    })
-    .max(10, {
-      message: "Phone number must be contain 10 digit",
-    }),
-  password: z
-    .string()
-    .min(8, {
-      message: "Password must be at least 8 characters",
-    })
-    .max(16, {
-      message: "Password max contain 16 characters",
-    }),
-});
-
-/**
  * This Zod schema for sign up form
  */
 export const formSchemaSignUp = z.object({
@@ -314,7 +292,6 @@ export const formSchemaSignUp = z.object({
     }),
 });
 
-
 //!! ZOD schema for page meta data
 export const pageShortFormSchema = z.object({
   metaTitle: z
@@ -335,4 +312,43 @@ export const pageShortFormSchema = z.object({
   // pageType: z.enum(["simple-page", "with-page-builder"], {
   //   required_error: "You need to select a notification type.",
   // }),
+});
+
+/**
+ * This zod schema for sign in form
+ */
+export const formSchemaLogin = z.object({
+  phone: z
+    .string()
+    .min(10, {
+      message: "Phone number must be at least 10 digit",
+    })
+    .trim()
+    .max(10, {
+      message: "Phone number must be contain 10 digit",
+    }),
+  password: z
+    .string()
+    .min(8, {
+      message: "Password must be at least 8 characters",
+    })
+    .max(16, {
+      message: "Password max contain 16 characters",
+    })
+    .trim(),
+});
+
+/**
+ * This zod schema for forgot password phone input
+ */
+export const formSchemaForgotPassword = z.object({
+  phone: z
+    .string()
+    .min(10, {
+      message: "Phone number must be at least 10 digit",
+    })
+    .trim()
+    .max(10, {
+      message: "Phone number must be contain 10 digit",
+    }),
 });
