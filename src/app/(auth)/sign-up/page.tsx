@@ -29,7 +29,8 @@ import { useEffect, useState } from "react";
 import ErrorAlert from "@/components/global/form/ErrorAlert";
 import { formSchemaSignUp } from "@/lib/zod/index.zodSchema";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast as reactToastify } from "react-toastify";
+import toast from "react-hot-toast";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import OtpVerificationCom from "@/components/global/auth/OtpVerification";
 
@@ -50,7 +51,7 @@ const SignUpPage = () => {
 
     toast
       .promise(axios.post("/api/user/signup", values), {
-        pending: "Signing you up...",
+        loading: "Signing you up...",
         success: "Signed up successfully!",
         error: "Failed to sign up. Please try again.",
       })
@@ -63,8 +64,28 @@ const SignUpPage = () => {
         if (status === 201) {
           const payload = user;
 
-          signIn("credentials", { redirect: false, ...payload });
-          setSignupStatus("redirecting");
+          signIn("credentials", { redirect: false, ...payload })
+            .then(() => {
+              toast.success("Redirecting to verification page");
+              setSignupStatus("redirecting");
+            })
+            .catch((error) => {
+              setSignupStatus("started");
+              let errorMessage = "An unexpected error occurred.";
+
+              if (
+                error &&
+                typeof error === "object" &&
+                "response" in error &&
+                (error as any).response?.data?.message
+              ) {
+                // Check if the error has a response with a data object containing the message
+                errorMessage = (error as any).response.data.message;
+              }
+
+              setIsError(errorMessage); // Set the extracted message as the error state
+            });
+
           return;
         }
         setSignupStatus("started");
@@ -89,9 +110,9 @@ const SignUpPage = () => {
 
   useEffect(() => {
     if (signupStatus === "redirecting") {
-      toast.info("Redirection to verification page");
+      toast.success("Redirection to verification page");
       rout.push("/sign-up?verify=true");
-      setSignupStatus("started")
+      setSignupStatus("started");
     }
   }, [signupStatus]);
 

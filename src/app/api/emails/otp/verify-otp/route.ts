@@ -28,10 +28,15 @@ export async function POST(req: Request) {
     // Verify the provided OTP using the custom verification function
     const isOtpValid = verifyOTP(otp);
 
-    const user = await User.findOneAndUpdate(
-      { userId: sub },
-      { isEmailVerified: true }
-    );
+
+    const user = await User.aggregate([
+      {
+        $match: { userId: sub } // Replace "YOUR_USER_ID" with the actual userId value
+      },
+      {
+        $set: { emailVerificationStatus: "verified" }
+      }
+    ])
 
     if (!user) {
       return NextResponse.json(
@@ -51,7 +56,7 @@ export async function POST(req: Request) {
         {
           message: "OTP verified!",
           isOtpValid, // True if the OTP verification was successful
-          user,
+          user: user[0],
           error: null,
         },
         { status: 200 } // HTTP 200 OK for successful operation

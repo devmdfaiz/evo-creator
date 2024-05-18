@@ -32,7 +32,7 @@ export const authOptions = {
         token.sub = user.userId;
         token.name = user.fullname;
         token.phone = user.phone;
-        token.isEmailVerified = user.isEmailVerified;
+        token.emailVerificationStatus = user.emailVerificationStatus;
         //TODO: isPhoneVerified letter
         // token.isPhoneVerified = user.isPhoneVerified
         token.userRole = user.userRole;
@@ -43,7 +43,7 @@ export const authOptions = {
     async session({ session, token, user }) {
       if (token) {
         session.user.sub = token?.sub;
-        session.user.isEmailVerified = token?.isEmailVerified;
+        session.user.emailVerificationStatus = token?.emailVerificationStatus;
         //TODO: isPhoneVerified letter
         // session.user.isPhoneVerified = token?.isPhoneVerified
       }

@@ -3,12 +3,13 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import NextAuthSessionProvider from "@/context/NextAuthSessionProvider";
 import ProgressBarProvider from "@/context/ProgressBarProvider";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster as ShadcnToast } from "@/components/ui/sonner";
 import PageFieldsProvider from "@/context/PageFieldsProvider";
 import ReactHookFormProvider from "@/context/ReactHookFormProvider";
 import Script from "next/script";
 import DateProvider from "@/context/DateProvider";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer as Toastify } from "react-toastify";
+import { Toaster as HotToast } from "react-hot-toast";
 import "react-toastify/dist/ReactToastify.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -32,8 +33,8 @@ export default function RootLayout({
               <ReactHookFormProvider>
                 <DateProvider>
                   <main className="min-h-screen">{children}</main>
-                  <Toaster />
-                  <ToastContainer
+                  <ShadcnToast />
+                  <Toastify
                     position="top-right"
                     autoClose={5000}
                     hideProgressBar={false}
@@ -45,6 +46,7 @@ export default function RootLayout({
                     pauseOnHover
                     theme="light"
                   />
+                  <HotToast position="top-center" reverseOrder={false} />
                 </DateProvider>
               </ReactHookFormProvider>
             </PageFieldsProvider>

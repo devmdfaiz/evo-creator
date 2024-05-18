@@ -10,17 +10,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
-
-  const isEmailVerified = session?.user?.isEmailVerified
-
-  const user = session?.user
-
-  if(!user || user){
-    if(!isEmailVerified){
-       redirect("/sign-in")
-    }
-  }
 
   return (
     <>

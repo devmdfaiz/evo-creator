@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { formatInTimeZone } from "date-fns-tz";
 import { format } from "date-fns";
+import { string } from "zod";
 
 const userSchema = new Schema(
   {
@@ -32,14 +33,16 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    isEmailVerified: {
-      type: Boolean,
-      default: false,
+    emailVerificationStatus: {
+      type: String,
+      default: "unverified",
+      enum: ["verified", "unverified"],
       required: true,
     },
-    isPhoneVerified: {
-      type: Boolean,
-      default: false,
+    phoneVerificationStatus: {
+      type: String,
+      default: "unverified",
+      enum: ["verified", "unverified"],
       required: true,
     },
     pagesCreated: [
@@ -72,10 +75,7 @@ userSchema.pre("save", function (next) {
       formatStringWithTimeZone
     );
 
-    this.CreatedAtDate = format(
-      this.createdAt,
-      "dd/MM/yyyy"
-    );
+    this.CreatedAtDate = format(this.createdAt, "dd/MM/yyyy");
   }
 
   this.formattedUpdatedAt = formatInTimeZone(

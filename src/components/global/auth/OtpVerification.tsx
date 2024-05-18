@@ -17,12 +17,12 @@ import {
 } from "@/components/ui/form";
 import TypographyH3 from "@/components/typography/TypographyH3";
 import TypographyMuted from "@/components/typography/TypographyMuted";
-import { Separator } from "@/components/ui/separator";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
-import { toast } from "react-toastify";
+import { toast as reactToastify } from "react-toastify";
+import toast from "react-hot-toast";
 import ErrorAlert from "../form/ErrorAlert";
 import ButtonSpinner from "../spinner/ButtonSpinner";
 import {
@@ -109,7 +109,7 @@ const OTPCountdownTimmer = ({ onComplete, setIsError }: any) => {
             onClick={async () => {
               toast
                 .promise(axios.get("/api/emails/otp/send-otp"), {
-                  pending: "Generating OTP...",
+                  loading: "Generating OTP...",
                   success: "OTP generated successfully!",
                   error: "Failed to generating OTP. Please try again.",
                 })
@@ -199,7 +199,7 @@ const OtpVerificationCom = ({
 
     toast
       .promise(axios.post("/api/emails/otp/verify-otp", values), {
-        pending: "Verifying OTP...",
+        loading: "Verifying OTP...",
         success: "OTP verified",
         error: "Invalid OTP!",
       })
@@ -212,8 +212,31 @@ const OtpVerificationCom = ({
         if (status === 200 && isOtpValid) {
           const payload = user;
 
-          signIn("credentials", { redirect: false, ...payload });
-          setEmailVerificationStatus("redirecting");
+          console.log("payload", payload);
+
+          signIn("credentials", { redirect: false, ...payload })
+            .then(() => {
+              toast.success("Redirecting to dashboard");
+              setEmailVerificationStatus("redirecting");
+              // Refresh the session after signIn
+              window.location.reload();
+            })
+            .catch((error) => {
+              setEmailVerificationStatus("started");
+              let errorMessage = "An unexpected error occurred.";
+
+              if (
+                error &&
+                typeof error === "object" &&
+                "response" in error &&
+                (error as any).response?.data?.message
+              ) {
+                // Check if the error has a response with a data object containing the message
+                errorMessage = (error as any).response.data.message;
+              }
+
+              setIsError(errorMessage); // Set the extracted message as the error state
+            });
           return;
         }
 
@@ -242,12 +265,13 @@ const OtpVerificationCom = ({
       });
   }
 
-  useEffect(() => {
-    if (emailVerificationStatus === "redirecting") {
-      toast.info("Redirection to dashboard");
-      rout.push("/");
-    }
-  }, [emailVerificationStatus]);
+  // useEffect(() => {
+  //   if (emailVerificationStatus === "redirecting") {
+  //     toast.info("Redirecting to dashboard");
+  //     console.log("push");
+  //     rout.push("/");
+  //   }
+  // }, [emailVerificationStatus, rout]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

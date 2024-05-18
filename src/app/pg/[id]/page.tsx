@@ -19,7 +19,7 @@ const PaymentPage = async ({
   params: { id: string };
   searchParams: { checkout?: string };
 }) => {
-  const { fieldValue } = await getPageData(id);
+  const fieldValue = await getPageData(id);
   const color = fieldValue?.theme?.color;
   const theme = fieldValue?.theme?.template;
 

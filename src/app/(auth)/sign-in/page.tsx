@@ -28,7 +28,8 @@ import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import ErrorAlert from "@/components/global/form/ErrorAlert";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast as reactToastify } from "react-toastify";
+import toast from "react-hot-toast";
 import OtpVerificationCom from "@/components/global/auth/OtpVerification";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import { ChevronLeftIcon } from "@radix-ui/react-icons";
@@ -55,7 +56,7 @@ const SignInPage = () => {
 
     toast
       .promise(axios.post("/api/user/signin", values), {
-        pending: "Signing you up...",
+        loading: "Signing you up...",
         success: "Signed up successfully!",
         error: "Failed to sign in. Please try again.",
       })
@@ -68,8 +69,28 @@ const SignInPage = () => {
         if (status === 200) {
           const payload = user;
 
-          signIn("credentials", { redirect: false, ...payload });
-          setSigninStatus("redirecting");
+          signIn("credentials", { redirect: false, ...payload })
+            .then(() => {
+              toast.success("Redirecting to verification page");
+              setSigninStatus("redirecting");
+            })
+            .catch((error) => {
+              setSigninStatus("started");
+              let errorMessage = "An unexpected error occurred.";
+
+              if (
+                error &&
+                typeof error === "object" &&
+                "response" in error &&
+                (error as any).response?.data?.message
+              ) {
+                // Check if the error has a response with a data object containing the message
+                errorMessage = (error as any).response.data.message;
+              }
+
+              setIsError(errorMessage); // Set the extracted message as the error state
+            });
+
           return;
         }
         setSigninStatus("started");
@@ -94,7 +115,7 @@ const SignInPage = () => {
 
   useEffect(() => {
     if (signinStatus === "redirecting") {
-      toast.info("Redirection to verification page");
+      toast.success("Redirection to verification page");
       rout.push("/sign-in?verify=true");
       setSigninStatus("started");
     }
@@ -214,8 +235,6 @@ function ForgotPasswordInput() {
   >("started");
   const [userEmail, setUserEmail] = useState("");
 
-  const searchParams = useSearchParams();
-
   const form = useForm<z.infer<typeof formSchemaForgotPassword>>({
     resolver: zodResolver(formSchemaForgotPassword),
     defaultValues: {
@@ -229,7 +248,7 @@ function ForgotPasswordInput() {
 
     toast
       .promise(axios.post("/api/user/signin/forgot-password", values), {
-        pending: "Verifying phone number...",
+        loading: "Verifying phone number...",
         success: "Phone number verified and OTP send successfully!",
         error: "Failed to verify phone number. Please try again.",
       })
@@ -271,10 +290,10 @@ function ForgotPasswordInput() {
     >
       {forgotPassPhoneInputStatus === "sended" ? (
         <TypographySmall>
-          A password reset link has been sent to your email address: <b>{userEmail}</b>
-          . Please check your inbox and follow the instructions in the email to
-          reset your password. If you do not see the email, be sure to check
-          your spam or junk folder.
+          A password reset link has been sent to your email address:{" "}
+          <b>{userEmail}</b>. Please check your inbox and follow the
+          instructions in the email to reset your password. If you do not see
+          the email, be sure to check your spam or junk folder.
         </TypographySmall>
       ) : (
         <>
