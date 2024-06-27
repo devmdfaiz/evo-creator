@@ -17,7 +17,7 @@ export const showToast = (
 };
 
 export const pageFieldSchema = z.object({
-  fieldType: z.string({
+  type: z.string({
     required_error: "Please select an field type.",
   }),
   placeholder: z
@@ -25,7 +25,7 @@ export const pageFieldSchema = z.object({
       required_error: "Please select an field type.",
     })
     .trim(),
-  isRequired: z.boolean().optional(),
+  required: z.boolean().optional(),
 });
 
 export const pageFormSchema = z
@@ -196,74 +196,6 @@ export const pageFormSchema = z
     }
     return true; // Validation passed
   });
-
-export const formValuesFun = (
-  form: any,
-  faqs: any,
-  policies: any,
-  testimonialsFields: any,
-  fieldDetails: any
-) => {
-  return {
-    //!! product page fields
-    extProductLinks: form.watch("extProductLinks"),
-    price: form.watch("price"),
-    priceType: form.watch("priceType"),
-    baseAuctionPrice: form.watch("baseAuctionPrice"),
-    discountedPrice: form.watch("discountedPrice"),
-    offerDiscountedPrice: form.watch("offerDiscountedPrice"),
-    //!! details page fields
-    title: form.watch("title"),
-    coverImg: form.watch("coverImg"),
-    pageDesc: form.watch("pageDesc"),
-    contPhone: form.watch("contPhone"),
-    contEmail: form.watch("contEmail"),
-    faqs,
-    policies,
-    testimonialsFields,
-    //!! setting page fields
-    fieldDetails,
-    thankYouNote: form.watch("thankYouNote"),
-    redirectionUrl: form.watch("redirectionUrl"),
-    metaPixel: form.watch("metaPixel"),
-    googleAnalytics: form.watch("googleAnalytics"),
-    whatsappSupport: form.watch("whatsappSupport"),
-    pageExpiry: form.watch("pageExpiry"),
-    pageExpiryDate: form.watch("pageExpiryDate"),
-    deactivateSales: form.watch("deactivateSales"),
-    //!! Customise page section
-    pageOwner: form.watch("pageOwner"),
-    template: form.watch("template"),
-    color: form.watch("color"),
-  };
-};
-
-export const formValuesArrFun = (form: any) => {
-  return [
-    form.watch("extProductLinks"),
-    form.watch("price"),
-    form.watch("priceType"),
-    form.watch("baseAuctionPrice"),
-    form.watch("discountedPrice"),
-    form.watch("offerDiscountedPrice"),
-    form.watch("title"),
-    form.watch("coverImg"),
-    form.watch("pageDesc"),
-    form.watch("contPhone"),
-    form.watch("contEmail"),
-    form.watch("thankYouNote"),
-    form.watch("redirectionUrl"),
-    form.watch("metaPixel"),
-    form.watch("googleAnalytics"),
-    form.watch("whatsappSupport"),
-    form.watch("pageExpiry"),
-    form.watch("pageExpiryDate"),
-    form.watch("deactivateSales"),
-    form.watch("pageOwner"),
-    form.watch("template"),
-    form.watch("color"),
-  ];
-};
 
 /**
  * This Zod schema for sign up form

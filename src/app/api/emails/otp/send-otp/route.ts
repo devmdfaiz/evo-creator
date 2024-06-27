@@ -1,22 +1,12 @@
 import { resend } from "@/lib/resend/resend"; // Library for sending emails
 import SendOtp from "../../../../../../emails/otp.email"; // React component to generate OTP email content
 import { NextResponse } from "next/server"; // Response object for Next.js Serverless functions
-import { authenticator } from "otplib"; // Library for OTP generation and verification
 import { evar } from "@/lib/envConstant"; // Environment variables for sensitive data
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../../../AuthOptions";
-
-// Function to generate a new OTP
-const generateOTP = () => {
-  // Generate a 6-digit OTP using a secret key from environment variables
-  const otp = authenticator.generate(evar.otpSec);
-  return otp;
-};
+import { generateOTP } from "@/lib/otplib/otplib";
 
 export async function GET(req: Request) {
-  // Configure OTP settings
-  authenticator.options = { window: 5 }; // Time window for OTP validation (in minutes)
-  authenticator.options = { digits: 6 }; // Length of the OTP
 
   try {
     // Generate a new OTP

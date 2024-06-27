@@ -37,6 +37,7 @@ import {
   formSchemaForgotPassword,
   formSchemaLogin,
 } from "@/lib/zod/index.zodSchema";
+import { clientError } from "@/lib/utils/error/errorExtractor";
 
 // react components starts here
 const SignInPage = () => {
@@ -76,17 +77,7 @@ const SignInPage = () => {
             })
             .catch((error) => {
               setSigninStatus("started");
-              let errorMessage = "An unexpected error occurred.";
-
-              if (
-                error &&
-                typeof error === "object" &&
-                "response" in error &&
-                (error as any).response?.data?.message
-              ) {
-                // Check if the error has a response with a data object containing the message
-                errorMessage = (error as any).response.data.message;
-              }
+              const errorMessage = clientError(error);
 
               setIsError(errorMessage); // Set the extracted message as the error state
             });
@@ -97,17 +88,7 @@ const SignInPage = () => {
       })
       .catch((error) => {
         setSigninStatus("started");
-        let errorMessage = "An unexpected error occurred.";
-
-        if (
-          error &&
-          typeof error === "object" &&
-          "response" in error &&
-          (error as any).response?.data?.message
-        ) {
-          // Check if the error has a response with a data object containing the message
-          errorMessage = (error as any).response.data.message;
-        }
+        const errorMessage = clientError(error);
 
         setIsError(errorMessage); // Set the extracted message as the error state
       });

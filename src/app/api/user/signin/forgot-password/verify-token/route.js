@@ -1,5 +1,6 @@
 import { evar } from "@/lib/envConstant";
 import connectToDb from "@/lib/mongodb/connection/db";
+import { serverError } from "@/lib/utils/error/errorExtractor";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 
@@ -47,12 +48,12 @@ export async function POST(req) {
       { status: 200 } // 200 OK: The request has succeeded.
     );
   } catch (error) {
-    console.log("JWT error is:", error);
+    const errorMessage = serverError(error);
 
     return NextResponse.json(
       {
-        message: "There is an error",
-        error: error.message,
+        message: `${errorMessage}. Please try again or contact support.`,
+        error: error,
         user: null,
       },
       { status: 500 } // 500 Internal Server Error: The server encountered an unexpected condition.

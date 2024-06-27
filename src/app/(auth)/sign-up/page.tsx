@@ -33,6 +33,7 @@ import { toast as reactToastify } from "react-toastify";
 import toast from "react-hot-toast";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import OtpVerificationCom from "@/components/global/auth/OtpVerification";
+import { clientError } from "@/lib/utils/error/errorExtractor";
 
 // React conponent startss here
 const SignUpPage = () => {
@@ -71,17 +72,7 @@ const SignUpPage = () => {
             })
             .catch((error) => {
               setSignupStatus("started");
-              let errorMessage = "An unexpected error occurred.";
-
-              if (
-                error &&
-                typeof error === "object" &&
-                "response" in error &&
-                (error as any).response?.data?.message
-              ) {
-                // Check if the error has a response with a data object containing the message
-                errorMessage = (error as any).response.data.message;
-              }
+              const errorMessage = clientError(error);
 
               setIsError(errorMessage); // Set the extracted message as the error state
             });
@@ -92,17 +83,7 @@ const SignUpPage = () => {
       })
       .catch((error) => {
         setSignupStatus("started");
-        let errorMessage = "An unexpected error occurred.";
-
-        if (
-          error &&
-          typeof error === "object" &&
-          "response" in error &&
-          (error as any).response?.data?.message
-        ) {
-          // Check if the error has a response with a data object containing the message
-          errorMessage = (error as any).response.data.message;
-        }
+        const errorMessage = clientError(error);
 
         setIsError(errorMessage); // Set the extracted message as the error state
       });

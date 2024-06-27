@@ -1,3 +1,4 @@
+import { formatInTimeZone } from "date-fns-tz";
 import mongoose, { Schema } from "mongoose";
 
 //?? Meta Data schema starts here
@@ -98,7 +99,7 @@ const pageSchema = new Schema(
       },
     ],
     creator: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: "User",
       required: true,
     },

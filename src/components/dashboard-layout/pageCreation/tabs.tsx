@@ -19,7 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useContext, useEffect, useState } from "react";
+import { useState } from "react";
 import {
   CalendarIcon,
   Cross1Icon,
@@ -40,13 +40,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Image from "next/image";
 import { SliderPicker } from "react-color";
-import { PageContext } from "@/context/PageFieldsProvider";
-import {
-  formValuesArrFun,
-  formValuesFun,
-  pageFormSchema,
-  showToast,
-} from "@/lib/zod/index.zodSchema";
+import { pageFormSchema } from "@/lib/zod/index.zodSchema";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
@@ -67,22 +61,25 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import TypographyP from "@/components/typography/TypographyP";
-import { categoriesData } from "@/lib/utils/constants";
 import {
   TDetailsFields,
   TFieldAddEditDialog,
-  TFieldDetails,
   TPageFaqs,
   TPagePolicies,
-  TPageTestimonialsFields,
   TSettingFields,
+  TTestimonials,
 } from "@/lib/types/index.type";
-import { defaultFieldValue } from "@/lib/constants/index.constant";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { setLsItem } from "@/lib/utils/storage/localstorage";
+import { usePathname, useRouter } from "next/navigation";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import axios from "axios";
+import { useZustandSelector } from "@/context/zustand/slectors";
+import { usePageFormInputs } from "@/context/zustand/store";
+import FileUploader from "@/components/upload/FileUploader";
+import {
+  COMPRESSED_FILE,
+  SUPPORTED_IMAGE_FORMATES,
+} from "@/lib/constants/index.constant";
 
 /**
  * This function contains all the forms and inputs for page editor and creator. This use shadcn's tab components, zod validation, react-hook-form and shadcn's sonner.
@@ -90,93 +87,27 @@ import axios from "axios";
  * @returns
  */
 const PageTabs = ({ pageId }: { pageId: string }) => {
-  const [testimonialsFields, setTestimonialsFieds] = useState<
-    TPageTestimonialsFields[]
-  >([{ testiName: "", testiMsg: "" }]);
-  const [faqs, setFaqs] = useState<TPageFaqs[]>([{ question: "", answer: "" }]);
-  const [policies, setPolicies] = useState<TPagePolicies[]>([
-    { title: "", content: "" },
-  ]);
-  const [fieldDetails, setFieldDetails] =
-    useState<TFieldDetails[]>(defaultFieldValue);
-  const { setfieldValue }: any = useContext(PageContext);
   const path = usePathname();
   const rout = useRouter();
+
+  const pageInputsState = useZustandSelector(usePageFormInputs);
+
+  const inputs = usePageFormInputs();
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof pageFormSchema>>({
     resolver: zodResolver(pageFormSchema),
-    defaultValues: {
-      //!! product page fields
-      extProductLinks: "",
-      category: "",
-      price: null,
-      priceType: "fixedPrice",
-      baseAuctionPrice: null,
-      discountedPrice: null, // Optional field
-      offerDiscountedPrice: false,
-      //!! details page fields
-      title: "",
-      coverImg: "",
-      pageDesc: "",
-      contPhone: null,
-      contEmail: "",
-      //!! setting page fields
-      pageField: {
-        fieldType: "",
-        placeholder: "",
-        isRequired: false,
-      },
-      thankYouNote: "",
-      redirectionUrl: "",
-      metaPixel: "",
-      googleAnalytics: "",
-      whatsappSupport: null,
-      pageExpiry: false,
-      pageExpiryDate: null,
-      deactivateSales: false,
-      //!! Customise page section
-      pageOwner: "",
-      template: "light",
-      color: { hex: "#E9570C" },
-    },
   });
-
-  const formValuesArr: any = formValuesArrFun(form);
-
-  const formValues = formValuesFun(
-    form,
-    faqs,
-    policies,
-    testimonialsFields,
-    fieldDetails
-  );
-
-  useEffect(() => {
-    setfieldValue(formValues);
-    setLsItem("fieldValue", formValues);
-  }, [
-    ...formValuesArr,
-    faqs.length,
-    policies.length,
-    testimonialsFields.length,
-    fieldDetails.length,
-  ]);
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof pageFormSchema>) {
-    console.log("i clicked");
-
     const fieldsInput = {
       values,
-      testimonialsFields,
-      faqs,
-      policies,
-      fieldDetails,
+      testimonialsFields: inputs.testimonials,
+      faqs: inputs.faqs,
+      policies: inputs.policies,
       pageId,
     };
-
-    console.log("i clicked");
 
     axios.post("/api/page/update", fieldsInput).then((res) => {
       const { data } = res;
@@ -202,8 +133,8 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
             <Cross1Icon />
           </Button>
           <div className="grow max-h-14 overflow-hidden">
-            <TypographyP>{`${form.watch("title").slice(0, 35)}${
-              form.watch("title").length > 35 ? "..." : ""
+            <TypographyP>{`${inputs.title?.slice(0, 35)}${
+              inputs.title?.length > 35 ? "..." : ""
             }`}</TypographyP>
           </div>
           <Link
@@ -230,26 +161,12 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
           </TabsContent>
           <TabsContent value="details">
             <ScrollArea className="h-[90vh] w-full">
-              <DetailsFields
-                form={form}
-                testimonialsFields={testimonialsFields}
-                setTestimonialsFieds={setTestimonialsFieds}
-                faqs={faqs}
-                setFaqs={setFaqs}
-                policies={policies}
-                setPolicies={setPolicies}
-                formValues={formValues}
-              />
+              <DetailsFields form={form} />
             </ScrollArea>
           </TabsContent>
           <TabsContent value="settings">
             <ScrollArea className="h-[90vh] w-full">
-              <SettingFields
-                fieldDetails={fieldDetails}
-                setFieldDetails={setFieldDetails}
-                form={form}
-                formValues={formValues}
-              />
+              <SettingFields form={form} />
             </ScrollArea>
           </TabsContent>
           <TabsContent value="customise">
@@ -278,7 +195,7 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
  * @returns
  */
 export function ProductFields({ form }: { form: any }) {
-  const [categories, setCategories] = useState<string[]>(categoriesData);
+  const inputs = usePageFormInputs();
 
   return (
     <div className="py-4 w-[90%] ml-0 h-full">
@@ -288,36 +205,11 @@ export function ProductFields({ form }: { form: any }) {
       <div className="flex flex-col gap-4 h-full">
         {/* File uploading */}
         <TypographyH4>Upload your digital files</TypographyH4>
-        <div className="border border-foreground/30 border-dashed rounded-md py-4 px-6 ">
-          {/* Uploadthing file upload */}
-          <p>TODO: Upload thing file upload</p>
-
-          <div>
-            <FormField
-              control={form.control}
-              name="extProductLinks"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Add external link</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center justify-start gap-2 py-1">
-                      <Input
-                        placeholder="Add your file link"
-                        // value={field.value}
-                        // onChange={field.onChange}
-                        {...field}
-                      />
-                      <Button type="button" variant="outline">
-                        Add
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
+        <FileUploader
+          fileType={COMPRESSED_FILE}
+          sizeLimit={1}
+          from="product"
+        />
 
         <Separator className="bg-foreground/20 h-2" />
 
@@ -328,20 +220,30 @@ export function ProductFields({ form }: { form: any }) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Category</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={(e) => {
+                  inputs.setCategory(e);
+                  field.onChange(e);
+                }}
+                defaultValue={inputs.category}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Please select category" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {categories.map((category, i) => (
+                  {inputs.categoriesValues.map((category, i) => (
                     <SelectItem key={i} value={category}>
                       {category}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <FormDescription>
+                <b>Selected category: </b>{" "}
+                {!inputs.category ? "None" : inputs.category}
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -359,8 +261,12 @@ export function ProductFields({ form }: { form: any }) {
               <FormItem>
                 <FormControl>
                   <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    onValueChange={(e) => {
+                      inputs.setPriceType(e);
+                      field.onChange(e);
+                    }}
+                    defaultValue={inputs.priceType}
+                    // {...field}
                     className="flex"
                   >
                     <FormItem
@@ -410,7 +316,7 @@ export function ProductFields({ form }: { form: any }) {
         </div>
 
         {/* fixed price */}
-        {form.watch("priceType") === "fixedPrice" && (
+        {inputs.priceType === "fixedPrice" && (
           <div>
             <FormField
               control={form.control}
@@ -432,7 +338,11 @@ export function ProductFields({ form }: { form: any }) {
                       <Input
                         type="number"
                         placeholder="Enter your product selling price"
-                        {...field}
+                        value={JSON.stringify(inputs.price)}
+                        onChange={(e) => {
+                          inputs.setPrice(parseInt(e.target.value));
+                          field.onChange(e);
+                        }}
                       />
                     </div>
                   </FormControl>
@@ -444,7 +354,7 @@ export function ProductFields({ form }: { form: any }) {
         )}
 
         {/* discounted price section */}
-        {form.watch("priceType") === "fixedPrice" && (
+        {inputs.priceType === "fixedPrice" && (
           <div className="rounded-lg border p-3 shadow-sm">
             <FormField
               control={form.control}
@@ -460,15 +370,18 @@ export function ProductFields({ form }: { form: any }) {
                   </div>
                   <FormControl>
                     <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+                      checked={inputs.offerDiscountedPrice}
+                      onCheckedChange={(e) => {
+                        inputs.setOfferDiscountedPrice(e);
+                        field.onChange(e);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
               )}
             />
 
-            {form.watch("offerDiscountedPrice") && (
+            {inputs.offerDiscountedPrice && (
               <>
                 <br />
                 <FormField
@@ -491,7 +404,14 @@ export function ProductFields({ form }: { form: any }) {
                           <Input
                             type="number"
                             placeholder="Enter your product discounted price"
-                            {...field}
+                            value={JSON.stringify(inputs.discountedPrice)}
+                            onChange={(e) => {
+                              inputs.setDiscountedPrice(
+                                parseInt(e.target.value)
+                              );
+                              field.onChange(e);
+                            }}
+                            // {...field}
                           />
                         </div>
                       </FormControl>
@@ -505,7 +425,7 @@ export function ProductFields({ form }: { form: any }) {
         )}
 
         {/* Auction Price */}
-        {form.watch("priceType") === "auctionPrice" && (
+        {inputs.priceType === "auctionPrice" && (
           <div>
             <FormField
               control={form.control}
@@ -527,7 +447,11 @@ export function ProductFields({ form }: { form: any }) {
                       <Input
                         type="number"
                         placeholder="Enter your product base price"
-                        {...field}
+                        value={JSON.stringify(inputs.baseAuctionPrice)}
+                        onChange={(e) => {
+                          inputs.setBaseAuctionPrice(parseInt(e.target.value));
+                          field.onChange(e);
+                        }}
                       />
                     </div>
                   </FormControl>
@@ -547,108 +471,8 @@ export function ProductFields({ form }: { form: any }) {
  * @location components/dashboard-layout/pageCreation/tabs.tsx
  * @returns
  */
-export function DetailsFields({
-  form,
-  testimonialsFields,
-  setTestimonialsFieds,
-  faqs,
-  setFaqs,
-  policies,
-  setPolicies,
-  formValues,
-}: TDetailsFields) {
-  const { setfieldValue }: any = useContext(PageContext);
-
-  //!!: handler functions starts here
-  // ??: handler functions for testimonial
-  function handleTestimonialFieldAdd() {
-    if (testimonialsFields.length < 4) {
-      setTestimonialsFieds((prev: any) => {
-        const newField = { testiName: "", testiMsg: "" };
-        return [...prev, newField];
-      });
-      // setfieldValue(formValues);
-    }
-  }
-
-  function handleTestimonialFieldDelete(i: number) {
-    setTestimonialsFieds((prev: any) => {
-      const filteredFields = prev.filter((d: string, index: number) => {
-        return index !== i;
-      });
-      return [...filteredFields];
-    });
-    // setfieldValue(formValues);
-  }
-
-  function handleTestiInput(e: any, props: string, index: number) {
-    const input = e.target.value;
-
-    setTestimonialsFieds((prev: any) => {
-      const newValue = [...prev];
-      newValue[index][props] = input;
-      return newValue;
-    });
-    setfieldValue(formValues);
-  }
-
-  // ??: handler functions for faq
-  function handleFaqFieldAdd() {
-    setFaqs((prev: any) => {
-      const newField = { question: "", answer: "" };
-      return [...prev, newField];
-    });
-    // setfieldValue(formValues);
-  }
-  function handleFaqFieldDelete(i: number) {
-    setFaqs((prev: any) => {
-      const filteredFields = prev.filter((d: string, index: number) => {
-        return index !== i;
-      });
-      return [...filteredFields];
-    });
-    // setfieldValue(formValues);
-  }
-
-  function handleFaqInput(e: any, props: string, index: number) {
-    const input = e.target.value;
-
-    setFaqs((prev: any) => {
-      const newValue = [...prev];
-      newValue[index][props] = input;
-      return newValue;
-    });
-    setfieldValue(formValues);
-  }
-
-  // ??: handler functions for policy
-  function handlePolicyFieldAdd() {
-    setPolicies((prev: any) => {
-      const newField = { title: "", content: "" };
-      return [...prev, newField];
-    });
-    // setfieldValue(formValues);
-  }
-  function handlePolicyFieldDelete(i: number) {
-    setPolicies((prev: any) => {
-      const filteredFields = prev.filter((d: string, index: number) => {
-        return index !== i;
-      });
-      return [...filteredFields];
-    });
-    // setfieldValue(formValues);
-  }
-
-  function handlePolicyInput(e: any, props: string, index: number) {
-    const input = e.target.value;
-
-    setPolicies((prev: any) => {
-      const newValue = [...prev];
-      newValue[index][props] = input;
-      return newValue;
-    });
-    setfieldValue(formValues);
-  }
+export function DetailsFields({ form }: TDetailsFields) {
+  const inputs = usePageFormInputs();
 
   return (
     <div className="py-4 w-[90%] ml-0 h-full">
@@ -670,7 +494,11 @@ export function DetailsFields({
                   <Input
                     className="w-full"
                     placeholder="Enter your page title"
-                    {...field}
+                    value={inputs.title}
+                    onChange={(e) => {
+                      inputs.setTitle(e.target.value);
+                      field.onChange(e);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -679,35 +507,13 @@ export function DetailsFields({
           />
         </div>
 
-        {/* TODO: category section */}
-
         {/* cover upload */}
-        <Label>Cover Image</Label>
-        <div className="border border-foreground/30 border-dashed rounded-md py-4 px-6 w-full">
-          {/* Uploadthing file upload */}
-          <p>TODO: Upload thing file upload</p>
-
-          <div className="flex items-center justify-start gap-2 py-1 w-full">
-            <FormField
-              control={form.control}
-              name="coverImg"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Add external link</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center justify-start gap-2 py-1 w-full">
-                      <Input placeholder="Add your file link" {...field} />
-                      <Button type="button" variant="outline">
-                        Add
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
+        <FormLabel>Product Images</FormLabel>
+        <FileUploader
+          fileType={SUPPORTED_IMAGE_FORMATES}
+          sizeLimit={7}
+          from="details"
+        />
 
         {/* description */}
         <div>
@@ -750,7 +556,11 @@ export function DetailsFields({
                       <Input
                         type="number"
                         placeholder="eg: 1234567890"
-                        {...field}
+                        value={JSON.stringify(inputs.contPhone)}
+                        onChange={(e) => {
+                          inputs.setContPhone(parseInt(e.target.value));
+                          field.onChange(e);
+                        }}
                       />
                     </div>
                   </FormControl>
@@ -758,6 +568,8 @@ export function DetailsFields({
                 </FormItem>
               )}
             />
+
+            {/* contact email */}
             <FormField
               control={form.control}
               name="contEmail"
@@ -765,7 +577,14 @@ export function DetailsFields({
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Add your contact email" {...field} />
+                    <Input
+                      placeholder="Add your contact email"
+                      value={inputs.contEmail}
+                      onChange={(e) => {
+                        inputs.setContEmail(e.target.value);
+                        field.onChange(e);
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -777,74 +596,71 @@ export function DetailsFields({
         {/* testimonial */}
         <div>
           <TypographyH4>Testimonial(s)</TypographyH4>
-          {testimonialsFields.map(
-            (
-              testimonial: { testiName: string; testiMsg: string },
-              i: number
-            ) => (
-              <div
-                key={i}
-                className={`border-muted border-2 px-5 pb-5 ${
-                  i !== 0 ? "pt-8" : "pt-5"
-                } rounded-md my-2 relative`}
-              >
-                <Label htmlFor="tesName">Name</Label>
-                <Input
-                  id="tesName"
-                  placeholder="Name"
-                  value={testimonial.testiName}
-                  onChange={(e) => handleTestiInput(e, "testiName", i)}
-                />
-                <br />
-                <Label htmlFor="tesMsg">Message</Label>
-                <Textarea
-                  id="tesMsg"
-                  placeholder="Message by customers"
-                  value={testimonial.testiMsg}
-                  onChange={(e) => handleTestiInput(e, "testiMsg", i)}
-                />
-                {i !== 0 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="top-2 right-2 absolute"
-                    onClick={() => handleTestimonialFieldDelete(i)}
-                  >
-                    <Cross1Icon />
-                  </Button>
-                )}
-              </div>
-            )
-          )}
-          {testimonialsFields.length < 4 && (
-            <Button
-              variant="outline"
-              type="button"
-              className={cn(
-                "w-full mt-4 rounded-md flex justify-center items-center gap-1"
-              )}
-              onClick={handleTestimonialFieldAdd}
+          {inputs.testimonials.map((testimonial: TTestimonials, i: number) => (
+            <div
+              key={i}
+              className={`border-muted border-2 px-5 pb-5 ${
+                i !== 0 ? "pt-8" : "pt-5"
+              } rounded-md my-2 relative`}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                className="lucide lucide-circle-plus"
+              <Label htmlFor="tesName">Name</Label>
+              <Input
+                id="tesName"
+                placeholder="Name"
+                value={inputs.testimonials[i].testiName}
+                onChange={(e) =>
+                  inputs.setTestimonials(e.target.value, "testiName", i)
+                }
+              />
+              <br />
+              <Label htmlFor="tesMsg">Message</Label>
+              <Textarea
+                id="tesMsg"
+                placeholder="Message by customers"
+                value={inputs.testimonials[i].testiMsg}
+                onChange={(e) =>
+                  inputs.setTestimonials(e.target.value, "testiMsg", i)
+                }
+              />
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="top-2 right-2 absolute"
+                onClick={() => inputs.removeTestimonials(i)}
               >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M8 12h8" />
-                <path d="M12 8v8" />
-              </svg>{" "}
-              Add more testimonial fields {`${testimonialsFields.length}/4`}
-            </Button>
-          )}
+                <Cross1Icon />
+              </Button>
+            </div>
+          ))}
+
+          <Button
+            variant="outline"
+            type="button"
+            className={cn(
+              "w-full mt-4 rounded-md flex justify-center items-center gap-1"
+            )}
+            onClick={inputs.addTestimonials}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              className="lucide lucide-circle-plus"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 12h8" />
+              <path d="M12 8v8" />
+            </svg>{" "}
+            Add more testimonial fields: {`${inputs.testimonials.length}`}
+          </Button>
         </div>
 
         <Separator className="bg-foreground/20 h-2" />
@@ -852,7 +668,7 @@ export function DetailsFields({
         {/* Faq */}
         <div>
           <TypographyH4>Frequently Asked Questions (FAQs)</TypographyH4>
-          {faqs.map((faq: { question: string; answer: string }, i: number) => (
+          {inputs.faqs.map((faq: TPageFaqs, i: number) => (
             <div
               key={i}
               className={`border-muted border-2 px-5 pb-5 ${
@@ -863,28 +679,27 @@ export function DetailsFields({
               <Input
                 id="question"
                 placeholder="Add your question"
-                value={faq.question}
-                onChange={(e) => handleFaqInput(e, "question", i)}
+                value={inputs.faqs[i].question}
+                onChange={(e) => inputs.setFaqs(e.target.value, "question", i)}
               />
               <br />
               <Label htmlFor="answer">Answer</Label>
               <Textarea
                 id="answer"
                 placeholder="Add your answer"
-                value={faq.answer}
-                onChange={(e) => handleFaqInput(e, "answer", i)}
+                value={inputs.faqs[i].answer}
+                onChange={(e) => inputs.setFaqs(e.target.value, "answer", i)}
               />
-              {i !== 0 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="top-2 right-2 absolute"
-                  onClick={() => handleFaqFieldDelete(i)}
-                >
-                  <Cross1Icon />
-                </Button>
-              )}
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="top-2 right-2 absolute"
+                onClick={() => inputs.removeFaqs(i)}
+              >
+                <Cross1Icon />
+              </Button>
             </div>
           ))}
 
@@ -894,7 +709,7 @@ export function DetailsFields({
             className={cn(
               "w-full mt-4 rounded-md flex justify-center items-center gap-1"
             )}
-            onClick={handleFaqFieldAdd}
+            onClick={inputs.addFaqs}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -912,7 +727,7 @@ export function DetailsFields({
               <path d="M8 12h8" />
               <path d="M12 8v8" />
             </svg>{" "}
-            Add more faq fields
+            Add more faq fields: {inputs.faqs.length}
           </Button>
         </div>
 
@@ -921,43 +736,42 @@ export function DetailsFields({
         {/* policy */}
         <div>
           <TypographyH4>Policies</TypographyH4>
-          {policies.map(
-            (policy: { title: string; content: string }, i: number) => (
-              <div
-                key={i}
-                className={`border-muted border-2 px-5 pb-5 ${
-                  i !== 0 ? "pt-8" : "pt-5"
-                } rounded-md my-2 relative`}
+          {inputs.policies.map((policy: TPagePolicies, i: number) => (
+            <div
+              key={i}
+              className={`border-muted border-2 px-5 pb-5 ${
+                i !== 0 ? "pt-8" : "pt-5"
+              } rounded-md my-2 relative`}
+            >
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                placeholder="Enter your title"
+                value={inputs.policies[i].title}
+                onChange={(e) => inputs.setPolicies(e.target.value, "title", i)}
+              />
+              <br />
+              <Label htmlFor="content">Content</Label>
+              <Textarea
+                id="content"
+                placeholder="Enter your content"
+                value={inputs.policies[i].content}
+                onChange={(e) =>
+                  inputs.setPolicies(e.target.value, "content", i)
+                }
+              />
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="top-2 right-2 absolute"
+                onClick={() => inputs.removePolicies(i)}
               >
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  placeholder="Enter your title"
-                  value={policy.title}
-                  onChange={(e) => handlePolicyInput(e, "title", i)}
-                />
-                <br />
-                <Label htmlFor="content">Content</Label>
-                <Textarea
-                  id="content"
-                  placeholder="Enter your content"
-                  value={policy.content}
-                  onChange={(e) => handlePolicyInput(e, "content", i)}
-                />
-                {i !== 0 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="top-2 right-2 absolute"
-                    onClick={() => handlePolicyFieldDelete(i)}
-                  >
-                    <Cross1Icon />
-                  </Button>
-                )}
-              </div>
-            )
-          )}
+                <Cross1Icon />
+              </Button>
+            </div>
+          ))}
 
           <Button
             type="button"
@@ -965,7 +779,7 @@ export function DetailsFields({
             className={cn(
               "w-full mt-4 rounded-md flex justify-center items-center gap-1"
             )}
-            onClick={handlePolicyFieldAdd}
+            onClick={inputs.addPolicies}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -983,7 +797,7 @@ export function DetailsFields({
               <path d="M8 12h8" />
               <path d="M12 8v8" />
             </svg>{" "}
-            Add more policy fields
+            Add more policy fields: {inputs.policies.length}
           </Button>
         </div>
       </div>
@@ -996,20 +810,8 @@ export function DetailsFields({
  * @location components/dashboard-layout/pageCreation/tabs.tsx
  * @returns
  */
-export function SettingFields({
-  form,
-  fieldDetails,
-  setFieldDetails,
-  formValues,
-}: TSettingFields) {
-  console.log("fieldDetails", fieldDetails);
-
-  function handleDelField(index: number) {
-    setFieldDetails((prev: any[]) => {
-      const filter = prev.filter((_, i) => index !== i);
-      return filter;
-    });
-  }
+export function SettingFields({ form }: TSettingFields) {
+  const inputs = usePageFormInputs();
 
   return (
     <div className="py-4 w-[90%] ml-0 h-full relative">
@@ -1024,8 +826,8 @@ export function SettingFields({
         </TypographyMuted>
 
         {/* Display for avil field(s) */}
-        {fieldDetails.length > 0 &&
-          fieldDetails.map((field, i) => (
+        {inputs.pageOrderInputs.length > 0 &&
+          inputs.pageOrderInputs.map((field, i) => (
             <div
               key={i}
               className="border rounded-md px-4 py-2 flex justify-between items-center"
@@ -1036,7 +838,7 @@ export function SettingFields({
                   Placeholder - {field?.placeholder}
                 </TypographyP>
                 <TypographyMuted className="text-xs">
-                  Field type - {field?.type.split("-")[1]}
+                  Field type - {field?.type?.split("-")[0]}
                 </TypographyMuted>
                 <TypographyMuted className="text-xs">
                   Required - {`${field?.required ? "Yes" : "No"}`}
@@ -1048,11 +850,8 @@ export function SettingFields({
                   <div className="space-x-2">
                     <FieldAddEditDialog
                       form={form}
-                      action="Add field"
-                      // fieldDetails={fieldDetails}
-                      setFieldDetails={setFieldDetails}
+                      action="Edit field"
                       actionType="edit"
-                      formValues={formValues}
                       index={i}
                     >
                       {/* handling edit */}
@@ -1061,23 +860,7 @@ export function SettingFields({
                         variant="outline"
                         size="icon"
                         onClick={() => {
-                          setFieldDetails((prev: any[]) => {
-                            //!! Getting avil value and setting in field add dialog input
-                            form.setValue(
-                              "pageField.fieldType",
-                              prev[i]["type"]
-                            );
-                            form.setValue(
-                              "pageField.placeholder",
-                              prev[i]["placeholder"]
-                            );
-                            form.setValue(
-                              "pageField.isRequired",
-                              prev[i]["required"]
-                            );
-
-                            return [...prev];
-                          });
+                          inputs.refillPageOrderInputs(i);
                         }}
                       >
                         <Pencil1Icon />
@@ -1090,7 +873,7 @@ export function SettingFields({
                       variant="outline"
                       size="icon"
                       onClick={() => {
-                        handleDelField(i);
+                        inputs.operationOnPageOrderInputs(i, "delete");
                       }}
                     >
                       <TrashIcon />
@@ -1105,22 +888,6 @@ export function SettingFields({
                     disabled={true}
                     variant="outline"
                     size="icon"
-                    onClick={() => {
-                      setFieldDetails((prev: any[]) => {
-                        //!! Getting avil value and setting in field add dialog input
-                        form.setValue("pageField.fieldType", prev[i]["type"]);
-                        form.setValue(
-                          "pageField.placeholder",
-                          prev[i]["placeholder"]
-                        );
-                        form.setValue(
-                          "pageField.isRequired",
-                          prev[i]["required"]
-                        );
-
-                        return [...prev];
-                      });
-                    }}
                   >
                     <Pencil1Icon />
                   </Button>
@@ -1131,9 +898,6 @@ export function SettingFields({
                     disabled={true}
                     variant="outline"
                     size="icon"
-                    onClick={() => {
-                      handleDelField(i);
-                    }}
                   >
                     <TrashIcon />
                   </Button>
@@ -1147,21 +911,13 @@ export function SettingFields({
           <FieldAddEditDialog
             form={form}
             action="Add field"
-            // fieldDetails={fieldDetails}
-            setFieldDetails={setFieldDetails}
             actionType="create"
-            formValues={formValues}
             index={-1}
           >
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                // setting dialog input to deafult
-                form.setValue("pageField.fieldType", "");
-                form.setValue("pageField.placeholder", "");
-                form.setValue("pageField.isRequired", false);
-              }}
+              onClick={inputs.resetPageOrderInputs}
             >
               + Add field
             </Button>
@@ -1184,7 +940,14 @@ export function SettingFields({
                   Show a thank you message to the buyer after purchase
                 </FormDescription>
                 <FormControl>
-                  <Textarea placeholder="Enter your message" {...field} />
+                  <Textarea
+                    placeholder="Enter your message"
+                    value={inputs.thankYouNote}
+                    onChange={(e) => {
+                      inputs.setThankYouNote(e.target.value);
+                      field.onChange(e);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -1204,7 +967,14 @@ export function SettingFields({
                   The URL you want the buyer to visit after completing a payment
                 </FormDescription>
                 <FormControl>
-                  <Input placeholder="eg: https://example.com" {...field} />
+                  <Input
+                    placeholder="eg: https://example.com"
+                    value={inputs.redirectionUrl}
+                    onChange={(e) => {
+                      inputs.setRedirectionUrl(e.target.value);
+                      field.onChange(e);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -1229,7 +999,14 @@ export function SettingFields({
                   campaigns on Meta Business
                 </FormDescription>
                 <FormControl>
-                  <Input placeholder="eg: 123456789012" {...field} />
+                  <Input
+                    placeholder="eg: 123456789012"
+                    value={inputs.metaPixel}
+                    onChange={(e) => {
+                      inputs.setMetaPixel(e.target.value);
+                      field.onChange(e);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -1253,7 +1030,14 @@ export function SettingFields({
                   level data on your GA dashboard
                 </FormDescription>
                 <FormControl>
-                  <Input placeholder="eg: UA-123456789-1" {...field} />
+                  <Input
+                    placeholder="eg: UA-123456789-1"
+                    value={inputs.googleAnalytics}
+                    onChange={(e) => {
+                      inputs.setGoogleAnalytics(e.target.value);
+                      field.onChange(e);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -1292,7 +1076,11 @@ export function SettingFields({
                     <Input
                       type="number"
                       placeholder="eg: 1234567890"
-                      {...field}
+                      value={JSON.stringify(inputs.whatsappSupport)}
+                      onChange={(e) => {
+                        inputs.setWhatsappSupport(parseInt(e.target.value));
+                        field.onChange(e);
+                      }}
                     />
                   </div>
                 </FormControl>
@@ -1318,15 +1106,18 @@ export function SettingFields({
                 </div>
                 <FormControl>
                   <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
+                    checked={inputs.pageExpiry}
+                    onCheckedChange={(e) => {
+                      inputs.setPageExpiry(e);
+                      field.onChange(e);
+                    }}
                   />
                 </FormControl>
               </FormItem>
             )}
           />
 
-          {form.watch("pageExpiry") && (
+          {inputs.pageExpiry && (
             <>
               <br />
               <FormField
@@ -1345,8 +1136,8 @@ export function SettingFields({
                               !field.value && "text-muted-foreground"
                             )}
                           >
-                            {field.value ? (
-                              format(field.value, "PPP")
+                            {inputs.pageExpiryDate ? (
+                              format(inputs.pageExpiryDate, "PPP")
                             ) : (
                               <span>Pick a date</span>
                             )}
@@ -1357,8 +1148,11 @@ export function SettingFields({
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
+                          selected={inputs.pageExpiryDate}
+                          onSelect={(e) => {
+                            inputs.setPageExpiryDate(e);
+                            field.onChange(e);
+                          }}
                           initialFocus
                         />
                       </PopoverContent>
@@ -1390,8 +1184,11 @@ export function SettingFields({
                 </div>
                 <FormControl>
                   <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
+                    checked={inputs.deactivateSales}
+                    onCheckedChange={(e) => {
+                      inputs.setDeactivateSales(e);
+                      field.onChange(e);
+                    }}
                   />
                 </FormControl>
               </FormItem>
@@ -1409,6 +1206,8 @@ export function SettingFields({
  * @returns
  */
 export function CustomiseFields({ form }: { form: any }) {
+  const inputs = usePageFormInputs();
+
   return (
     <div className="py-4 w-[90%] ml-0 h-full relative">
       <TypographyMuted className={cn("font-semibold py-3")}>
@@ -1416,7 +1215,11 @@ export function CustomiseFields({ form }: { form: any }) {
       </TypographyMuted>
       <div className="flex flex-col gap-4 h-full">
         <TypographyH4>Customise your page</TypographyH4>
-        <div>TODO: page logo upload</div>
+        <FileUploader
+          fileType={SUPPORTED_IMAGE_FORMATES}
+          from="customise"
+          sizeLimit={1}
+        />
 
         {/* page owner field */}
         <div>
@@ -1427,7 +1230,14 @@ export function CustomiseFields({ form }: { form: any }) {
               <FormItem>
                 <FormLabel>Page Owner</FormLabel>
                 <FormControl>
-                  <Input placeholder="eg: layaro.shop" {...field} />
+                  <Input
+                    placeholder="eg: layaro.shop"
+                    value={inputs.pageOwner}
+                    onChange={(e) => {
+                      inputs.setPageOwner(e.target.value);
+                      field.onChange(e);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -1447,14 +1257,17 @@ export function CustomiseFields({ form }: { form: any }) {
               <FormItem className="space-y-3">
                 <FormControl>
                   <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    onValueChange={(e) => {
+                      inputs.setTemplate(e);
+                      field.onChange(e);
+                    }}
+                    defaultValue={inputs.template}
                     className="flex justify-start items-center gap-5"
                   >
                     {/* light radio */}
                     <FormItem
                       className={`${
-                        field.value === "light" &&
+                        inputs.template === "light" &&
                         "border border-primary w-fit h-fit rounded-md px-3 py-2"
                       }`}
                     >
@@ -1464,7 +1277,7 @@ export function CustomiseFields({ form }: { form: any }) {
                         </FormControl>
                         <FormLabel
                           className={`font-normal flex justify-center flex-col items-center gap-2 cursor-pointer ${
-                            field.value === "light" && "text-primary"
+                            inputs.template === "light" && "text-primary"
                           }`}
                         >
                           <div className="w-fit h-fit rounded-md overflow-hidden">
@@ -1484,7 +1297,7 @@ export function CustomiseFields({ form }: { form: any }) {
                     {/* dark radio */}
                     <FormItem
                       className={`${
-                        field.value === "dark" &&
+                        inputs.template === "dark" &&
                         "border border-primary w-fit h-fit rounded-md px-3 py-2"
                       }`}
                     >
@@ -1494,7 +1307,7 @@ export function CustomiseFields({ form }: { form: any }) {
                         </FormControl>
                         <FormLabel
                           className={`font-normal flex justify-center flex-col items-center gap-2 cursor-pointer ${
-                            field.value === "dark" && "text-primary"
+                            inputs.template === "dark" && "text-primary"
                           }`}
                         >
                           <div className="w-fit h-fit rounded-md overflow-hidden">
@@ -1529,8 +1342,11 @@ export function CustomiseFields({ form }: { form: any }) {
                 <FormControl>
                   <>
                     <SliderPicker
-                      color={field.value}
-                      onChange={field.onChange}
+                      color={inputs.color.hex}
+                      onChange={(e) => {
+                        inputs.setColor(e.hex);
+                        field.onChange(e.hex);
+                      }}
                     />
                   </>
                 </FormControl>
@@ -1552,69 +1368,12 @@ export function CustomiseFields({ form }: { form: any }) {
 export const FieldAddEditDialog = ({
   form,
   action,
-  setFieldDetails,
   children,
   actionType,
   index,
-  formValues,
 }: TFieldAddEditDialog) => {
-  const { setfieldValue }: any = useContext(PageContext);
+  const inputs = usePageFormInputs();
 
-  function handleDialogAction() {
-    if (actionType === "create") {
-      setFieldDetails((prev: any) => {
-        const newFields = {
-          type: form.watch("pageField.fieldType"),
-          placeholder: form.watch("pageField.placeholder"),
-          required: form.watch("pageField.isRequired"),
-        };
-
-        //!! if not filed any value show a tost to please fill value
-        if (
-          form.getValues("pageField.fieldType") === "" ||
-          form.getValues("pageField.placeholder") === ""
-        ) {
-          showToast(
-            "Type & Placeholder is required",
-            "If you want to extra fields then please select field type and enter placeholder",
-            "Close",
-            () => {}
-          );
-          return [...prev];
-        }
-
-        return [...prev, newFields];
-      });
-    }
-
-    if (actionType === "edit") {
-      setFieldDetails((prev: any) => {
-        const newFields = [...prev];
-
-        newFields[index]["type"] = form.watch("pageField.fieldType");
-        newFields[index]["placeholder"] = form.watch("pageField.placeholder");
-        newFields[index]["required"] = form.watch("pageField.isRequired");
-
-        // !! if fields are then no value are set
-        if (
-          form.getValues("pageField.fieldType") === "" ||
-          form.getValues("pageField.placeholder") === ""
-        ) {
-          return [...prev];
-        }
-
-        return [...newFields];
-      });
-
-      setfieldValue(formValues);
-    }
-
-    setTimeout(() => {
-      form.setValue("pageField.fieldType", "");
-      form.setValue("pageField.placeholder", "");
-      form.setValue("pageField.isRequired", false);
-    }, 300);
-  }
   return (
     <Dialog>
       <DialogTrigger>{children}</DialogTrigger>
@@ -1627,15 +1386,16 @@ export const FieldAddEditDialog = ({
             <div>
               <FormField
                 control={form.control}
-                name="pageField.fieldType"
+                name="pageField.type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Select field type</FormLabel>
                     <Select
                       onValueChange={(e) => {
+                        inputs.setPageOrderInputs(e, "type");
                         field.onChange(e);
                       }}
-                      defaultValue={field.value}
+                      defaultValue={inputs.pageOrderInputsInitial.type}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -1672,8 +1432,12 @@ export const FieldAddEditDialog = ({
                   <FormControl>
                     <Input
                       placeholder="Placeholder"
-                      value={field.value}
+                      value={inputs.pageOrderInputsInitial.placeholder}
                       onChange={(e) => {
+                        inputs.setPageOrderInputs(
+                          e.target.value,
+                          "placeholder"
+                        );
                         field.onChange(e);
                       }}
                     />
@@ -1686,13 +1450,14 @@ export const FieldAddEditDialog = ({
             {/* checkbox */}
             <FormField
               control={form.control}
-              name="pageField.isRequired"
+              name="pageField.required"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
                   <FormControl>
                     <Checkbox
-                      checked={field.value}
+                      checked={inputs.pageOrderInputsInitial.required}
                       onCheckedChange={(e) => {
+                        inputs.setPageOrderInputs(e, "required");
                         field.onChange(e);
                       }}
                     />
@@ -1710,7 +1475,9 @@ export const FieldAddEditDialog = ({
         <DialogFooter>
           <DialogClose
             className="bg-primary text-primary-foreground shadow hover:bg-primary/90 px-4 py-1 rounded-sm"
-            onClick={handleDialogAction}
+            onClick={() => {
+              inputs.operationOnPageOrderInputs(index, actionType);
+            }}
           >
             {action}
           </DialogClose>

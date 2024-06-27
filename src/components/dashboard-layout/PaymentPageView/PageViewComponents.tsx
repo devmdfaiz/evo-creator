@@ -17,43 +17,13 @@ import {
 import { TPagePrice } from "@/lib/types/index.type";
 import { ReactNode } from "react";
 
-{
-  /* <ProductPageForm
-fieldsData={
-  mode === "preview"
-    ? fieldValue?.fieldDetails
-    : fieldValue?.settings?.formInputs
-}
-priceDetails={mode === "preview" ? pagePrice! : fieldValue?.pagePrice!}
-color={color}
-theme={theme}
-/>
-<ProductPageFormMobile
-priceDetails={mode === "preview" ? pagePrice! : fieldValue?.pagePrice}
-color={color}
-theme={theme}
-action="Checkout"
-/>
-{mode === "preview"
-? fieldValue?.whatsappSupport
-: fieldValue?.settings?.whatsappSupport && (
-    <WhatsappSupprotBar
-      WNumber={
-        mode === "preview"
-          ? fieldValue?.whatsappSupport
-          : fieldValue?.settings?.whatsappSupport
-      }
-    />
-  )} */
-}
-
 /**
  * This function is for structure page components according to dispay sizes, theme and color
  * @location api/pg/[id]
  * @param param0
  * @returns
  */
-export const PageCont = ({
+export const PageWrapper = ({
   fieldValue,
   color,
   theme,
@@ -70,23 +40,30 @@ export const PageCont = ({
 }) => {
   return (
     <main className="bg-white min-h-screen">
-      <div className="w-[1280px] mx-auto flex gap-10">
-        <div className="" style={{ flex: "1" }}>
+      <div className="container mx-auto flex gap-10">
+        <div className="pb-36 lg:pb-0" style={{ flex: "1" }}>
           {children}
         </div>
         <div className="" style={{ flex: ".5" }}>
           <ProductPageForm
-            fieldsData={
-              mode === "preview"
-                ? fieldValue?.fieldDetails
-                : fieldValue?.settings?.formInputs
-            }
-            priceDetails={
-              mode === "preview" ? pagePrice! : fieldValue?.pagePrice!
-            }
+            fieldsData={fieldValue?.settings?.formInputs}
+            priceDetails={fieldValue?.pagePrice!}
             color={color}
             theme={theme}
           />
+
+          <ProductPageFormMobile
+            priceDetails={fieldValue?.pagePrice!}
+            color={color}
+            theme={theme}
+            action="Checkout"
+          />
+
+          {fieldValue?.settings?.whatsappSupport && (
+            <WhatsappSupprotBar
+              WNumber={fieldValue?.settings?.whatsappSupport}
+            />
+          )}
         </div>
       </div>
     </main>

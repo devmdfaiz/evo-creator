@@ -21,8 +21,21 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Link from "@tiptap/extension-link";
 import { useCallback } from "react";
+import { useZustandSelector } from "@/context/zustand/slectors";
+import { usePageFormInputs } from "@/context/zustand/store";
+import { ControllerRenderProps, FieldValues } from "react-hook-form";
 
-const Tiptap = ({ field }: any) => {
+const Tiptap = ({
+  field,
+}: {
+  field: ControllerRenderProps<FieldValues, "pageDesc">;
+}) => {
+  const pageInputsState = useZustandSelector(usePageFormInputs);
+  const inputs = {
+    pageDesc: pageInputsState.use.pageDesc(),
+    setPageDesc: pageInputsState.use.setPageDesc(),
+  };
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -35,12 +48,13 @@ const Tiptap = ({ field }: any) => {
         autolink: true,
       }),
     ],
-    content: field.value
-      ? field.value
+    content: inputs.pageDesc
+      ? inputs.pageDesc
       : "<p>Add your description here (Remove me)</p>",
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
-      field.onChange(html); // Update form field value on content change
+      inputs.setPageDesc(html);
+      field.onChange(html);
     },
     editorProps: {
       attributes: {

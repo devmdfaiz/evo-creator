@@ -38,6 +38,7 @@ import {
   removeLsItem,
   setLsItem,
 } from "@/lib/utils/storage/localstorage";
+import { clientError } from "@/lib/utils/error/errorExtractor";
 
 const formSchema = z.object({
   otp: z
@@ -223,17 +224,7 @@ const OtpVerificationCom = ({
             })
             .catch((error) => {
               setEmailVerificationStatus("started");
-              let errorMessage = "An unexpected error occurred.";
-
-              if (
-                error &&
-                typeof error === "object" &&
-                "response" in error &&
-                (error as any).response?.data?.message
-              ) {
-                // Check if the error has a response with a data object containing the message
-                errorMessage = (error as any).response.data.message;
-              }
+              const errorMessage = clientError(error);
 
               setIsError(errorMessage); // Set the extracted message as the error state
             });
@@ -249,29 +240,11 @@ const OtpVerificationCom = ({
       })
       .catch((error) => {
         setEmailVerificationStatus("started");
-        let errorMessage = "An unexpected error occurred.";
-
-        if (
-          error &&
-          typeof error === "object" &&
-          "response" in error &&
-          (error as any).response?.data?.message
-        ) {
-          // Check if the error has a response with a data object containing the message
-          errorMessage = (error as any).response.data.message;
-        }
+        const errorMessage = clientError(error);
 
         setIsError(errorMessage); // Set the extracted message as the error state
       });
   }
-
-  // useEffect(() => {
-  //   if (emailVerificationStatus === "redirecting") {
-  //     toast.info("Redirecting to dashboard");
-  //     console.log("push");
-  //     rout.push("/");
-  //   }
-  // }, [emailVerificationStatus, rout]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

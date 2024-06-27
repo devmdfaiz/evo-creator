@@ -1,5 +1,6 @@
 import connectToDb from "@/lib/mongodb/connection/db";
 import { User } from "@/lib/mongodb/models/user.model";
+import { serverError } from "@/lib/utils/error/errorExtractor";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 
@@ -38,11 +39,11 @@ export async function POST(req: Request) {
       { status: 200 } // 200 OK: The request has succeeded, and the password has been changed.
     );
   } catch (error) {
-    console.error("Error updating password:", error);
+    const errorMessage = serverError(error);
 
     return NextResponse.json(
       {
-        message: "Internal Server Error",
+        message: `${errorMessage}. Please try again or contact support.`,
         changed: false,
         error,
       },

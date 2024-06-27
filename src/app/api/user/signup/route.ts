@@ -4,24 +4,14 @@ import { User } from "@/lib/mongodb/models/user.model";
 import { resend } from "@/lib/resend/resend";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { authenticator } from "otplib";
 import uniqid from "uniqid";
 import SendOtp from "../../../../../emails/otp.email"; // React component to generate OTP email content
-
-// Function to generate a new OTP
-export const generateOTP = () => {
-  // Generate a 6-digit OTP using a secret key from environment variables
-  const otp = authenticator.generate(evar.otpSec);
-  return otp;
-};
+import { generateOTP } from "@/lib/otplib/otplib";
+import { serverError } from "@/lib/utils/error/errorExtractor";
 
 export async function POST(req: Request) {
   // Connect to the database
   await connectToDb();
-
-  // Configure OTP settings
-  authenticator.options = { window: 5 }; // Time window for OTP validation (in minutes)
-  authenticator.options = { digits: 6 }; // Length of the OTP
 
   const { fullname, email, password, phone } = await req.json();
 
@@ -122,25 +112,11 @@ export async function POST(req: Request) {
       { status: 201 } // 201 Created
     );
   } catch (error) {
-    let errorMessage =
-      "An error occurred while creating your account. Please try again or contact support.";
-
-    if (error instanceof Error) {
-      // If it's a standard Error object, get the message
-      errorMessage = error.message;
-    } else if (typeof error === "string") {
-      // If it's a string, use it directly
-      errorMessage = error;
-    } else if (error && typeof error === "object" && "message" in error) {
-      // If it's an object with a message property, use it
-      errorMessage = (error as { message: string }).message;
-    }
-
-    console.error("Error creating user:", error);
+    const errorMessage = serverError(error);
 
     return NextResponse.json(
       {
-        message: `${errorMessage}. Please try again!`,
+        message: `${errorMessage}. Please try again or contact support.`,
         user: null,
         error: error,
       },

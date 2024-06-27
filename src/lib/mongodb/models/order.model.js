@@ -1,3 +1,4 @@
+import { formatInTimeZone } from "date-fns-tz";
 import mongoose, { Schema } from "mongoose";
 
 const orderSchema = new Schema(
@@ -41,7 +42,7 @@ const orderSchema = new Schema(
       default: 0,
     },
     owner: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: "User",
       required: true
     },

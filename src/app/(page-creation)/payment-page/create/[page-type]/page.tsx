@@ -14,12 +14,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LaptopIcon, MobileIcon } from "@radix-ui/react-icons";
 import { TPagePrice } from "@/lib/types/index.type";
-import { pageThemeProvider } from "@/lib/constants/index.constant";
 import { useSearchParams } from "next/navigation";
 import { getLsItem } from "@/lib/utils/storage/localstorage";
 import PageSpinner from "@/components/global/spinner/PageSpinner";
-import { PreviewBoxDesktop, PreviewBoxMobile, PreviewCont } from "@/components/dashboard-layout/pageCreation/PageEditorComponents";
-import { PageCont } from "@/components/dashboard-layout/PaymentPageView/PageViewComponents";
+import {
+  PreviewBoxDesktop,
+  PreviewBoxMobile,
+  PreviewCont,
+} from "@/components/dashboard-layout/pageCreation/PageEditorComponents";
+import { PageWrapper } from "@/components/dashboard-layout/PaymentPageView/PageViewComponents";
+import { useZustandSelector } from "@/context/zustand/slectors";
+import { usePageFormInputs } from "@/context/zustand/store";
 
 /**
  * Page creator and editor main component
@@ -27,43 +32,35 @@ import { PageCont } from "@/components/dashboard-layout/PaymentPageView/PageView
  * @returns
  */
 const PageEditor = ({ params }: { params: { ["page-type"]: string } }) => {
-  const [isMounted, setIsMounted] = useState(false);
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode");
 
-  const fieldValue = getLsItem("fieldValue");
+  const pageInputsState = useZustandSelector(usePageFormInputs);
+  const inputs = usePageFormInputs();
 
-  const color = fieldValue?.color?.hex;
-  const theme = fieldValue?.template;
+  const color = inputs?.color?.hex;
+  const theme = inputs?.template;
 
   const pagePrice: TPagePrice = {
-    offerDiscountedPrice: fieldValue?.offerDiscountedPrice,
-    price: fieldValue?.price,
-    discountedPrice: fieldValue?.discountedPrice,
-    priceType: fieldValue?.priceType,
-    baseAuctionPrice: fieldValue?.baseAuctionPrice,
+    offerDiscountedPrice: inputs?.offerDiscountedPrice,
+    price: inputs?.price,
+    discountedPrice: inputs?.discountedPrice,
+    priceType: inputs?.priceType,
+    baseAuctionPrice: inputs?.baseAuctionPrice,
   };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   if (mode === "preview") {
     return (
       <>
-        {isMounted ? (
-          <PageCont
-            color={color}
-            fieldValue={fieldValue}
-            theme={theme}
-            mode={mode}
-            pagePrice={pagePrice}
-          >
-            <PreviewCont fieldValue={fieldValue} mode={mode} />
-          </PageCont>
-        ) : (
-          <PageSpinner />
-        )}
+        <PageWrapper
+          color={color}
+          fieldValue={inputs}
+          theme={theme}
+          mode={mode}
+          pagePrice={pagePrice}
+        >
+          <PreviewCont fieldValue={inputs} mode={mode} />
+        </PageWrapper>
       </>
     );
   }
@@ -88,10 +85,10 @@ const PageEditor = ({ params }: { params: { ["page-type"]: string } }) => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="desktop">
-            <PreviewBoxDesktop />
+            {/* <PreviewBoxDesktop /> */}
           </TabsContent>
           <TabsContent value="mobile">
-            <PreviewBoxMobile />
+            {/* <PreviewBoxMobile /> */}
           </TabsContent>
         </Tabs>
       </div>

@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 
-export interface TFieldDetails {
+export interface TPageOrderInputs {
   placeholder: string;
   required: boolean;
   type: string;
@@ -13,7 +13,7 @@ export interface Navlinks {
   icon: ReactNode;
 }
 
-export interface TPageTestimonialsFields {
+export interface TTestimonials {
   testiName: string;
   testiMsg: string;
 }
@@ -30,30 +30,18 @@ export interface TPagePolicies {
 
 export interface TDetailsFields {
   form: any;
-  testimonialsFields: TPageTestimonialsFields[];
-  setTestimonialsFieds: (prev: any) => void | any;
-  faqs: TPageFaqs[];
-  setFaqs: (prev: any) => void | any;
-  policies: TPagePolicies[];
-  setPolicies: (prev: any) => void | any;
-  formValues: any;
 }
 
 export interface TSettingFields {
   form: any;
-  fieldDetails: TFieldDetails[];
-  setFieldDetails: (prev: any) => void | any;
-  formValues: any;
 }
 
 export interface TFieldAddEditDialog {
   form: any;
   action: string;
-  setFieldDetails: (prev: any) => void | any;
   children: ReactNode;
-  actionType: string;
+  actionType: "create" | "edit";
   index: number;
-  formValues: any;
 }
 
 export interface TPagePrice {
@@ -65,7 +53,7 @@ export interface TPagePrice {
 }
 
 export interface TProductPageForm {
-  fieldsData: TFieldDetails[];
+  fieldsData: TPageOrderInputs[];
   priceDetails: TPagePrice;
   color: string;
   theme: string;
@@ -73,7 +61,7 @@ export interface TProductPageForm {
 }
 
 export interface TPageInputs {
-  fieldsData: TFieldDetails[];
+  fieldsData: TPageOrderInputs[];
   color: string;
   theme: string;
   register: UseFormRegister<any>;
@@ -99,3 +87,13 @@ export interface TPriceBreakdownFixed {
   priceDetails: TPagePrice;
   theme: string;
 }
+
+export interface TImagesPreview {
+  url: string;
+  file: File
+}
+
+export interface TValidFiles {
+  formates: string[];
+  size: number;
+} 

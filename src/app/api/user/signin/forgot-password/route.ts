@@ -6,6 +6,7 @@ import { evar } from "@/lib/envConstant";
 import PasswordResetLinkEmail from "../../../../../../emails/resetPassword.email";
 import jwt from "jsonwebtoken";
 import { addMinutes } from "date-fns";
+import { serverError } from "@/lib/utils/error/errorExtractor";
 
 export async function POST(req: Request, res: Response) {
   connectToDb();
@@ -26,12 +27,15 @@ export async function POST(req: Request, res: Response) {
       ); // Set HTTP status code 404 for resource not found
     }
 
-    const token = jwt.sign({
-      name: user.fullname,
-      phone: user.phone,
-      email: user.email,
-      expiry: addMinutes(new Date(), 5)
-    }, evar.jwtSec);
+    const token = jwt.sign(
+      {
+        name: user.fullname,
+        phone: user.phone,
+        email: user.email,
+        expiry: addMinutes(new Date(), 5),
+      },
+      evar.jwtSec
+    );
 
     // Send the OTP to a specific email address using the "resend" service
     const { data, error } = await resend.emails.send({
@@ -69,10 +73,11 @@ export async function POST(req: Request, res: Response) {
       { status: 200 }
     );
   } catch (error) {
-    console.log("There is a problem in login =>", error);
+    const errorMessage = serverError(error);
+
     return NextResponse.json(
       {
-        message: "Something went wrong. Please try again",
+        message: `${errorMessage}. Please try again or contact support.`,
         user: null,
         error,
       },

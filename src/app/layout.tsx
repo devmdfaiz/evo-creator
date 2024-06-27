@@ -4,7 +4,6 @@ import "./globals.css";
 import NextAuthSessionProvider from "@/context/NextAuthSessionProvider";
 import ProgressBarProvider from "@/context/ProgressBarProvider";
 import { Toaster as ShadcnToast } from "@/components/ui/sonner";
-import PageFieldsProvider from "@/context/PageFieldsProvider";
 import ReactHookFormProvider from "@/context/ReactHookFormProvider";
 import Script from "next/script";
 import DateProvider from "@/context/DateProvider";
@@ -29,7 +28,6 @@ export default function RootLayout({
       <body className={`${inter.className} debug-screens`}>
         <ProgressBarProvider>
           <NextAuthSessionProvider>
-            <PageFieldsProvider>
               <ReactHookFormProvider>
                 <DateProvider>
                   <main className="min-h-screen">{children}</main>
@@ -49,7 +47,6 @@ export default function RootLayout({
                   <HotToast position="top-center" reverseOrder={false} />
                 </DateProvider>
               </ReactHookFormProvider>
-            </PageFieldsProvider>
           </NextAuthSessionProvider>
         </ProgressBarProvider>
 

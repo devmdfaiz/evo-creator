@@ -3,6 +3,9 @@ import connectToDb from "./mongodb/connection/db";
 import { Order } from "@/lib/mongodb/models/order.model";
 import { Page } from "./mongodb/models/page.model";
 import fs from "fs";
+import { storageServer } from "./utils/appwrite/appwriteServer";
+import { ID } from "node-appwrite";
+import { evar } from "./envConstant";
 
 /**
  * Function (server action) that takes customer info which is collected form payment page via handleOrderFilledInfo(). Roll of this function takes customer info and save to database
@@ -77,4 +80,21 @@ export async function genDummyFile(jsonData: {
       console.log("JSON data successfully written to orders.json");
     }
   });
+}
+
+export const handleUploadAction = (imagesPreview: File) => {
+  const promise = storageServer.createFile(
+    evar.appwriteBucketId,
+    ID.unique(),
+    imagesPreview
+  );
+
+  promise.then(
+    function (response) {
+      console.log("succ", response); // Success
+    },
+    function (error) {
+      console.log("err", error); // Failure
+    }
+  );
 }

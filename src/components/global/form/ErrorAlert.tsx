@@ -16,6 +16,8 @@ const ErrorAlert = ({
   className?: string;
   setIsError: any;
 }) => {
+
+  
   if (isError) {
     setTimeout(() => {
       setIsError("");
@@ -23,8 +25,8 @@ const ErrorAlert = ({
   }
 
   return (
-    <Alert variant="destructive">
-      <InfoCircledIcon className="h-4 w-4" />
+    <Alert variant="destructive" className={cn(className)}>
+      <InfoCircledIcon className={cn("h-4 w-4")} />
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>{isError}</AlertDescription>
     </Alert>

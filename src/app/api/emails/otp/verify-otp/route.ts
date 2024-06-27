@@ -1,21 +1,12 @@
 import { NextResponse } from "next/server";
-import { authenticator } from "otplib"; // Library for OTP generation and verification
-import { evar } from "@/lib/envConstant"; // Environment variable containing the OTP secret key
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../../../AuthOptions";
 import { User } from "@/lib/mongodb/models/user.model";
 import connectToDb from "@/lib/mongodb/connection/db";
-
-// Function to verify if the provided OTP is correct
-const verifyOTP = (otp: string) => {
-  return authenticator.verify({ token: otp, secret: evar.otpSec });
-};
+import { verifyOTP } from "@/lib/otplib/otplib";
 
 export async function POST(req: Request) {
   connectToDb();
-  // Configure OTP settings
-  authenticator.options = { window: 5 }; // Allows for a small time window for OTP validity
-  authenticator.options = { digits: 6 }; // Specifies the length of the OTP
 
   // Extract the OTP from the incoming request
   const { otp } = await req.json();

@@ -2,17 +2,14 @@ import connectToDb from "@/lib/mongodb/connection/db";
 import { User } from "@/lib/mongodb/models/user.model";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { authenticator } from "otplib";
-import { generateOTP } from "../signup/route";
 import { resend } from "@/lib/resend/resend";
 import { evar } from "@/lib/envConstant";
 import SendOtp from "../../../../../emails/otp.email";
+import { generateOTP } from "@/lib/otplib/otplib";
+import { serverError } from "@/lib/utils/error/errorExtractor";
 
 export async function POST(req: Request, res: Response) {
   connectToDb();
-
-  // Configure OTP settings
-  authenticator.options = { window: 5, digits: 6 }; // Combine OTP options into one line
 
   const { phone, password } = await req.json();
 
@@ -79,10 +76,10 @@ export async function POST(req: Request, res: Response) {
       { status: 200 }
     );
   } catch (error) {
-    console.log("There is a problem in login =>", error);
+    const errorMessage = serverError(error);
     return NextResponse.json(
       {
-        message: "Something went wrong. Please try again",
+        message: `${errorMessage}. Please try again or contact support.`,
         user: null,
         error,
       },
