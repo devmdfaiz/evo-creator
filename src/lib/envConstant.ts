@@ -12,11 +12,11 @@ interface Evar {
 }
 
 export const evar: Evar = {
-  projectName: process.env.PROJECT_NAME!,
+  projectName: process.env.NEXT_PUBLIC_PROJECT_NAME!,
   jwtSec: process.env.JWT_SECRET!,
   razorpayKey: process.env.RAZORPAY_KEY_ID!,
   razorpaySec: process.env.RAZORPAY_KEY_SEC!,
-  domain: process.env.DOMAIN!,
+  domain: process.env.NEXT_PUBLIC_DOMAIN!,
   resendApiKey: process.env.RESEND_API_KEY!,
   otpSec: process.env.OTP_KEY!,
   appwriteApiKey: process.env.NEXT_PUBLIC_APPWRITE_API_KEY!,

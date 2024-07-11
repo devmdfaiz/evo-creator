@@ -3,32 +3,53 @@ import { Page } from "@/lib/mongodb/models/page.model";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "../../../../AuthOptions";
-import mongoose from "mongoose";
+import { serverError } from "@/lib/utils/error/errorExtractor";
 
 export async function POST(req: Request) {
-  connectToDb();
-
-  const {
-    user: { sub },
-  } = await getServerSession(authOptions);
-
-  const { fromDate, toDate } = await req.json();
-
   try {
+    // Connect to the database
+    await connectToDb();
+
+    // Get the user session
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        {
+          message: "User is not authenticated. Please log in.",
+          error: "User session not found",
+          pages: null,
+        },
+        { status: 401 }
+      );
+    }
+
+    // Parse the request body
+    const { fromDate, toDate } = await req.json();
+    if (!fromDate || !toDate) {
+      return NextResponse.json(
+        {
+          message:
+            "Invalid input. Please provide both 'fromDate' and 'toDate'.",
+          error: "Missing required fields",
+          pages: null,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Aggregate pages data based on the provided date range and user ID
     const pages = await Page.aggregate([
       {
         $match: {
           pageOrders: { $exists: true, $ne: [] },
-          creator: new mongoose.Types.ObjectId(sub),
+          creator: session.user.sub,
           createdAt: {
             $gte: new Date(fromDate),
             $lte: new Date(toDate),
           },
         },
       },
-      // Unwind the pageOrders array
       { $unwind: "$pageOrders" },
-      // Lookup orders for each page
       {
         $lookup: {
           from: "orders",
@@ -37,46 +58,49 @@ export async function POST(req: Request) {
           as: "order",
         },
       },
-      // Unwind the order array
       { $unwind: "$order" },
-      // Match only paid orders
       {
         $match: {
           "order.isPaid": true,
         },
       },
-      // Group by page and sum up the amount for paid orders
       {
         $group: {
           _id: "$_id",
           totalRevenue: { $sum: "$order.amount" },
           paidOrdersCount: { $sum: 1 },
-          // Include all other fields from the page document
           metaTitle: { $first: "$metaData.metaTitle" },
+          coverImg: { $first: "$pageContent.coverImg" },
+          pageId: { $first: "$pageId" },
           pagePrice: { $first: "$pagePrice" },
           pageView: { $first: "$pageView" },
-          // creator: { $first: "$creator" },
           isPublished: { $first: "$isPublished" },
-          // coupons: { $first: "$coupons" },
           createdAt: { $first: "$createdAt" },
         },
       },
     ]);
 
+    // Return a successful response with the aggregated pages data
     return NextResponse.json(
       {
-        msg: "Successful",
+        message: "Pages data retrieved successfully.",
         error: null,
         pages,
       },
       { status: 200 }
     );
   } catch (error) {
-    return NextResponse.json({
-      msg: "Error",
-      error,
-      pages: null,
-    });
+    console.error("Error retrieving pages data:", error);
+    const errorMessage = serverError(error);
+
+    // Return an error response
+    return NextResponse.json(
+      {
+        message: "Failed to retrieve pages data. Please try again later.",
+        error: errorMessage,
+        pages: null,
+      },
+      { status: 500 }
+    );
   }
 }
-

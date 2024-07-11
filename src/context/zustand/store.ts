@@ -3,10 +3,12 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { urlHashStorage } from "./urlHashStorage";
 import {
   TErrorHandler,
+  TFileHandler,
   TPageFormInputs,
   TPaymentPageFieldData,
 } from "./store.types";
 import { CATEGORIES_DATA } from "@/lib/constants/index.constant";
+import { showToast } from "@/lib/zod/index.zodSchema";
 
 // Stores for Payment page
 export const usePaymentPageFieldData = create<TPaymentPageFieldData>((set) => ({
@@ -229,6 +231,148 @@ export const usePageFormInputs = create(
     }),
     {
       name: "page-inputs-storage",
+      storage: createJSONStorage(() => urlHashStorage),
+    }
+  )
+);
+
+export const useFileHandler = create(
+  persist<TFileHandler>(
+    (set) => ({
+      imagesPreview: {
+        customise: [],
+        details: [],
+        product: [],
+      },
+      setImagesPreview: ({
+        validFiles,
+        countLimit,
+        from,
+        action,
+        index,
+        uploadingStatus,
+        uploadedFileId,
+        uploadedFileUrl,
+        filesToRePush,
+      }) => {
+        set((state) => {
+          const newImagesPreview = { ...state.imagesPreview };
+
+          if (action === "re-pushViaIndex" && index !== undefined) {
+            const updatedFiles = newImagesPreview[from].filter(
+              (_, i) => i !== index
+            );
+
+            updatedFiles.slice(0, countLimit); // Ensure we don't exceed countLimit
+
+            return {
+              imagesPreview: newImagesPreview,
+            };
+          }
+
+          if (action === "re-push" && filesToRePush !== undefined) {
+            const updatedFiles = [...filesToRePush];
+            newImagesPreview[from] = updatedFiles.slice(0, countLimit); // Ensure we don't exceed countLimit
+
+            return {
+              imagesPreview: newImagesPreview,
+            };
+          }
+
+          if (from && countLimit && validFiles) {
+            if (
+              newImagesPreview[from] &&
+              newImagesPreview[from].length >= countLimit
+            ) {
+              showToast(
+                "Action not Allowed!",
+                `You crossed file uploading limit`,
+                "Close",
+                () => {}
+              );
+
+              return {
+                imagesPreview: newImagesPreview,
+              };
+            }
+
+            if (action === "add") {
+              const updatedFiles = [...newImagesPreview[from], ...validFiles];
+              newImagesPreview[from] = updatedFiles.slice(0, countLimit); // Ensure we don't exceed countLimit
+              return {
+                imagesPreview: newImagesPreview,
+              };
+            }
+          }
+
+          // If update with appwrite creadencial
+          if (
+            action === "update" &&
+            index !== undefined &&
+            uploadingStatus !== undefined &&
+            uploadedFileId !== undefined &&
+            uploadedFileUrl !== undefined
+          ) {
+            const updatedFile = {
+              ...newImagesPreview[from][index],
+              status: uploadingStatus,
+              fileData: {
+                ...newImagesPreview[from][index].fileData,
+                uploadedFileUrl,
+                uploadedFileId,
+              },
+            };
+
+            newImagesPreview[from][index] = updatedFile;
+
+            return {
+              imagesPreview: newImagesPreview,
+            };
+          }
+
+          // If update with not appwrite creadencial
+          if (
+            action === "update" &&
+            index !== undefined &&
+            uploadingStatus !== undefined
+          ) {
+            const updatedFile = {
+              ...newImagesPreview[from][index],
+              status: uploadingStatus,
+            };
+
+            newImagesPreview[from][index] = updatedFile;
+
+            return {
+              imagesPreview: newImagesPreview,
+            };
+          }
+
+          if (
+            action === "delete" &&
+            index !== undefined &&
+            uploadingStatus !== undefined
+          ) {
+            const updatedFile = {
+              ...newImagesPreview[from][index],
+              status: uploadingStatus,
+            };
+
+            newImagesPreview[from][index] = updatedFile;
+
+            return {
+              imagesPreview: newImagesPreview,
+            };
+          }
+
+          return {
+            imagesPreview: newImagesPreview,
+          };
+        });
+      },
+    }),
+    {
+      name: "file-handler-storage",
       storage: createJSONStorage(() => urlHashStorage),
     }
   )

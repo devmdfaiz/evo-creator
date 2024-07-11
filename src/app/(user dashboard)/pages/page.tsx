@@ -2,8 +2,11 @@
 import PageCardWrapper from "@/components/dashboard-layout/PageCardWrapper";
 import PagesTableData from "@/components/dashboard-layout/PagesTableData";
 import { DatePickerWithRange } from "@/components/global/calendar/DatePicker";
+import PageSpinner from "@/components/global/spinner/PageSpinner";
 import TypographyH1 from "@/components/typography/TypographyH1";
 import { DateContext } from "@/context/DateProvider";
+import { clientError } from "@/lib/utils/error/errorExtractor";
+import { showToast } from "@/lib/zod/index.zodSchema";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import axios from "axios";
 import { format } from "date-fns";
@@ -21,39 +24,53 @@ function getPageData({
   date: any;
   setPages: any;
 }) {
-  axios.post("/api/page", { fromDate, toDate }).then((res) => {
-    const { data, status } = res;
-    if (status === 200) {
-      if (date?.type === "template") {
-        if (date?.templateData?.day === "today") {
-          const filtered = data.pages.filter(
-            (data: any) =>
-              format(data?.createdAt, "dd/MM/yyyy") ===
-              date?.templateData?.todayDate
-          );
+  axios
+    .post("/api/page", { fromDate, toDate })
+    .then((res) => {
+      const { data, status } = res;
+      if (status === 200) {
+        if (date?.type === "template") {
+          if (date?.templateData?.day === "today") {
+            const filtered = data.pages.filter(
+              (data: any) =>
+                format(data?.createdAt, "dd/MM/yyyy") ===
+                date?.templateData?.todayDate
+            );
 
-          setPages(filtered);
+            if (filtered) {
+              setPages(filtered);
+            }
+            return;
+          }
+
+          if (date?.templateData?.day === "yesterday") {
+            const filtered = data?.pages?.filter(
+              (data: any) =>
+                format(data?.createdAt, "dd/MM/yyyy") ===
+                date?.templateData?.yesterdayDate
+            );
+
+            if (filtered) {
+              setPages(filtered);
+            }
+            return;
+          }
+
+          if (data.pages) {
+            setPages(data?.pages);
+          }
           return;
         }
 
-        if (date?.templateData?.day === "yesterday") {
-          const filtered = data?.pages?.filter(
-            (data: any) =>
-              format(data?.createdAt, "dd/MM/yyyy") ===
-              date?.templateData?.yesterdayDate
-          );
-
-          setPages(filtered);
-          return;
+        if (data.pages) {
+          setPages(data?.pages);
         }
-
-        setPages(data?.pages);
-        return;
       }
-
-      setPages(data?.pages);
-    }
-  });
+    })
+    .then((error) => {
+      const errorMessage = clientError(error);
+      showToast(errorMessage, null, "Close", () => {});
+    });
 }
 
 const Pages = () => {
@@ -68,6 +85,10 @@ const Pages = () => {
       setPages,
     });
   }, [date]);
+
+  if (pages.length === 0) {
+    return <PageSpinner className="mt-[50vh]" />;
+  }
 
   return (
     <section className="mb-7">

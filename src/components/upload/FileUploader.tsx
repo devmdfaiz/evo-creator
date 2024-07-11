@@ -21,25 +21,34 @@ import {
 } from "@radix-ui/react-icons";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { TImagesPreview, TValidFiles } from "@/lib/types/index.type";
+import {
+  Item,
+  TNImagesPreview,
+  TTabsFrom,
+  TValidFiles,
+} from "@/lib/types/index.type";
 import { showToast } from "@/lib/zod/index.zodSchema";
 import axios from "axios";
 import { Progress } from "../ui/progress";
-import { Loader, LoaderCircle, Trash } from "lucide-react";
+import { LoaderCircle, Trash } from "lucide-react";
 import { luciedConf } from "@/lib/constants/index.constant";
-import ButtonSpinner from "../global/spinner/ButtonSpinner";
 import { clientError } from "@/lib/utils/error/errorExtractor";
 import { storageClient } from "@/lib/utils/appwrite/appwriteClient";
 import { evar } from "@/lib/envConstant";
+import { useFileHandler, usePageFormInputs } from "@/context/zustand/store";
 
-function optimizeFilesForPreview(file: FileList, sizeLimit: number) {
+function optimizeFilesForPreview(
+  file: FileList,
+  countLimit: number,
+  from: TTabsFrom
+) {
   const filesArray: File[] = Array.from(file);
-  let preview: TImagesPreview[] = [];
+  let preview: Item[] = [];
 
-  if (filesArray.length > sizeLimit) {
+  if (filesArray.length > countLimit) {
     showToast(
       "Action not Allowed!",
-      `Select only ${sizeLimit} file(s)`,
+      `Select only ${countLimit} file(s)`,
       "Close",
       () => {}
     );
@@ -49,8 +58,12 @@ function optimizeFilesForPreview(file: FileList, sizeLimit: number) {
 
   filesArray.map((file) => {
     preview.push({
-      url: URL.createObjectURL(file),
-      file,
+      status: "un-uploaded",
+      fileData: {
+        fileName: file.name,
+        localUrl: URL.createObjectURL(file),
+        selectedFile: file,
+      },
     });
   });
 
@@ -58,20 +71,33 @@ function optimizeFilesForPreview(file: FileList, sizeLimit: number) {
 }
 
 function validateFile(
-  formates: TValidFiles,
-  files: TImagesPreview[]
-): { validFiles: TImagesPreview[]; nonValidFiles: TImagesPreview[] } {
-  let validFiles: TImagesPreview[] = [];
-  let nonValidFiles: TImagesPreview[] = [];
+  formatesToValidate: TValidFiles,
+  files: Item[],
+  from: TTabsFrom
+) {
+  let validFiles: Item[] = [];
+  let nonValidFiles: Item[] = [];
 
   files.map((file) => {
-    const size = parseInt((file.file.size / (1024 * 1024)).toFixed(0));
+    const {
+      fileData: {
+        selectedFile: { size, type },
+      },
+    } = file;
 
-    if (size <= formates.size && formates.formates.includes(file.file.type)) {
+    const sizeToValidate = parseInt((size / (1024 * 1024)).toFixed(0));
+
+    if (
+      sizeToValidate <= formatesToValidate.size &&
+      formatesToValidate.formates.includes(type)
+    ) {
       validFiles.push(file);
     }
 
-    if (size > formates.size && !formates.formates.includes(file.file.type)) {
+    if (
+      sizeToValidate > formatesToValidate.size &&
+      !formatesToValidate.formates.includes(type)
+    ) {
       nonValidFiles.push(file);
     }
   });
@@ -79,51 +105,71 @@ function validateFile(
   return { validFiles, nonValidFiles };
 }
 
+//React components starts here
 const FileUploader = ({
   fileType,
-  sizeLimit,
+  countLimit,
   from,
 }: {
   fileType: TValidFiles;
-  sizeLimit: number;
-  from: "product" | "details" | "customise";
+  countLimit: number;
+  from: TTabsFrom;
 }) => {
   const [isDragStatusActive, setIsDragStatusActive] = useState<boolean>(false);
-  const [imagesPreview, setImagesPreview] = useState<TImagesPreview[]>([]);
+  const { imagesPreview, setImagesPreview } = useFileHandler();
   const [isPending, startTransition] = useTransition();
+
+  useMemo(() => {
+    const filtered = imagesPreview[from].filter(
+      (file) => file.status === "success"
+    );
+
+    setImagesPreview({
+      action: "re-push",
+      from,
+      filesToRePush: filtered,
+    });
+  }, []);
 
   function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (files) {
-      const filesToValidate = optimizeFilesForPreview(files, sizeLimit);
+      const filesToValidate = optimizeFilesForPreview(files, countLimit, from);
 
-      const preview = validateFile(fileType, filesToValidate);
+      const preview = validateFile(fileType, filesToValidate, from);
 
       if (preview.nonValidFiles.length > 0) {
         preview.nonValidFiles.map((nonValidFile) => {
           showToast(
             "Invalid file",
-            `${nonValidFile.file.name}`,
+            `${nonValidFile.fileData.selectedFile.name}`,
             "Close",
             () => {}
           );
         });
       }
 
-      startTransition(() => {
-        setImagesPreview((prev) => {
-          if (prev.length >= sizeLimit) {
-            showToast(
-              "Action not Allowed!",
-              `You crossed file uploading limit`,
-              "Close",
-              () => {}
-            );
+      // startTransition(() => {
+      //   setImagesPreview((prev) => {
+      //     if (prev.length >= countLimit) {
+      //       showToast(
+      //         "Action not Allowed!",
+      //         `You crossed file uploading limit`,
+      //         "Close",
+      //         () => {}
+      //       );
 
-            return [...prev];
-          }
-          return [...prev, ...preview.validFiles];
-        });
+      //       return [...prev];
+      //     }
+      //     return [...prev, ...preview.validFiles];
+      //   });
+      // });
+
+      setImagesPreview({
+        validFiles: preview.validFiles,
+        countLimit,
+        from,
+        action: "add",
       });
     }
   }
@@ -136,35 +182,42 @@ const FileUploader = ({
     const files = e.dataTransfer.files;
 
     if (files) {
-      const filesToValidate = optimizeFilesForPreview(files, sizeLimit);
+      const filesToValidate = optimizeFilesForPreview(files, countLimit, from);
 
-      const preview = validateFile(fileType, filesToValidate);
+      const preview = validateFile(fileType, filesToValidate, from);
 
       if (preview.nonValidFiles.length > 0) {
         preview.nonValidFiles.map((nonValidFile) => {
           showToast(
             "Invalid file",
-            `${nonValidFile.file.name}`,
+            `${nonValidFile.fileData.selectedFile.name}`,
             "Close",
             () => {}
           );
         });
       }
 
-      startTransition(() => {
-        setImagesPreview((prev) => {
-          if (prev.length >= sizeLimit) {
-            showToast(
-              "Action not Allowed!",
-              `You crossed file uploading limit`,
-              "Close",
-              () => {}
-            );
+      // startTransition(() => {
+      //   setImagesPreview((prev) => {
+      //     if (prev.length >= countLimit) {
+      //       showToast(
+      //         "Action not Allowed!",
+      //         `You crossed file uploading limit`,
+      //         "Close",
+      //         () => {}
+      //       );
 
-            return [...prev];
-          }
-          return [...prev, ...preview.validFiles];
-        });
+      //       return [...prev];
+      //     }
+      //     return [...prev, ...preview.validFiles];
+      //   });
+      // });
+
+      setImagesPreview({
+        validFiles: preview.validFiles,
+        countLimit,
+        from,
+        action: "add",
       });
     }
 
@@ -181,20 +234,6 @@ const FileUploader = ({
       setIsDragStatusActive(false);
     }
   }
-
-  /**
-   * 
-   * {
-   * {
-   * from: "product",
-   * status: "uploaded"
-   * fileData: {
-   * uploadedFileId: "234567uiuv5c43x3crntmyi",
-   * uploadedFileUrl: "h"
-   * }
-   * }
-   * }
-   */
 
   return (
     <>
@@ -228,7 +267,7 @@ const FileUploader = ({
               <span className="font-bold">click here</span> to upload
             </TypographyP>
             <TypographyMuted className="text-xs opacity-50">
-              up to {sizeLimit} {from === "product" ? "file" : "images"},{" "}
+              up to {countLimit} {from === "product" ? "file" : "images"},{" "}
               {fileType.size}MB per {from === "product" ? "file" : "images"}
             </TypographyMuted>
             <TypographyMuted className="text-xs opacity-50">
@@ -239,41 +278,44 @@ const FileUploader = ({
         </div>
       </Label>
 
-      {imagesPreview.length > 0 &&
-        imagesPreview.map((data, i) => (
-          <ImagePreview
-            imagesPreview={data}
-            index={i}
-            setImagesPreview={setImagesPreview}
-            from={from}
-          />
-        ))}
+      {imagesPreview[from].length > 0 &&
+        imagesPreview[from].map((filesData, i) => {
+          return (
+            <ImagePreview index={i} from={from} imagesPreview={filesData} />
+          );
+        })}
     </>
   );
 };
 
 const ImagePreview = ({
-  imagesPreview,
   index,
-  setImagesPreview,
   from,
+  imagesPreview,
 }: {
-  imagesPreview: TImagesPreview;
   index: number;
-  setImagesPreview: Dispatch<SetStateAction<TImagesPreview[]>>;
-  from: "product" | "details" | "customise";
+  from: TTabsFrom;
+  imagesPreview: Item;
 }) => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isPending, startTransition] = useTransition();
-  const [uploadingStatus, setUploadingStatus] = useState<
-    "starting" | "uploading" | "failed" | "success"
-  >("starting");
+  const { setImagesPreview } = useFileHandler();
+
+  console.log("preview imagesPreview", imagesPreview);
 
   function handleFileUpload() {
-    setUploadingStatus("uploading");
-    const { file } = imagesPreview;
+    setImagesPreview({
+      action: "update",
+      uploadingStatus: "uploading",
+      index,
+      from,
+    });
+
+    const {
+      fileData: { selectedFile },
+    } = imagesPreview;
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", selectedFile);
 
     axios
       .post("/api/appwrite/upload", formData, {
@@ -291,40 +333,102 @@ const ImagePreview = ({
       .then((res) => {
         const { data, status } = res;
 
+        const appwriteFileId = data?.fileResponse?.$id;
+
         if (status === 201) {
           setUploadProgress(100);
-          setUploadingStatus("success");
 
-          const view = storageClient.getFileView(evar.appwriteBucketId, data?.fileResponse?.$id
-          )
+          const view = storageClient.getFileView(
+            evar.appwriteBucketId,
+            appwriteFileId
+          );
 
-          console.log("view", view)
-          console.log("data", data)
+          const appwriteFileUrl = view?.href;
+
+          console.log("view", view);
+          setImagesPreview({
+            action: "update",
+            uploadingStatus: "success",
+            index,
+            from,
+            uploadedFileId: appwriteFileId,
+            uploadedFileUrl: appwriteFileUrl,
+          });
         }
       })
       .catch((error) => {
         const errorMessage = clientError(error);
-        setUploadingStatus("failed");
+        setImagesPreview({
+          action: "update",
+          uploadingStatus: "failed",
+          from,
+          index,
+        });
         showToast("Something went wrong!", errorMessage, "Close", () => {});
       });
   }
 
   function handleFileActions(index: number) {
-    if (uploadingStatus === "success") {
-      setImagesPreview((prev) => {
-        const filtered = prev.filter((_, i) => i !== index);
-
-        return filtered;
+    if (imagesPreview.status === "success") {
+      setImagesPreview({
+        action: "delete",
+        uploadingStatus: "deleting",
+        from,
+        index,
       });
+
+      const del = storageClient
+        .deleteFile(
+          evar.appwriteBucketId,
+          imagesPreview.fileData.uploadedFileId!
+        )
+        .then((res) => {
+          setImagesPreview({
+            action: "delete",
+            uploadingStatus: "deleted",
+            from,
+            index,
+          });
+        })
+        .catch((error) => {
+          setImagesPreview({
+            action: "delete",
+            uploadingStatus: "success",
+            from,
+            index,
+          });
+        });
     }
 
-    if (uploadingStatus === "failed") {
+    if (
+      imagesPreview.status === "failed" ||
+      imagesPreview.status === "deleted"
+    ) {
+      setImagesPreview({
+        action: "update",
+        uploadingStatus: "uploading",
+        index,
+        from,
+      });
       handleFileUpload();
     }
   }
 
   useMemo(() => {
-    handleFileUpload();
+    if (imagesPreview.status === "un-uploaded") {
+      handleFileUpload();
+    } else if (imagesPreview.status === "success") {
+      setUploadProgress(100);
+    } else {
+      if (index === 0) {
+        showToast(
+          "Reload Detected",
+          "A reload has been detected. As a result, any unsaved files have been lost. Please re-select the files.",
+          "Close",
+          () => {}
+        );
+      }
+    }
   }, []);
 
   return (
@@ -334,9 +438,17 @@ const ImagePreview = ({
           <div>
             {from === "product" ? (
               <FileIcon className="w-5 h-5" />
+            ) : imagesPreview.status === "success" ? (
+              <Image
+                src={imagesPreview.fileData.uploadedFileUrl!}
+                alt="preview"
+                width={40}
+                height={40}
+                className="object-fill"
+              />
             ) : (
               <Image
-                src={imagesPreview.url}
+                src={imagesPreview?.fileData?.localUrl}
                 alt="preview"
                 width={40}
                 height={40}
@@ -346,14 +458,22 @@ const ImagePreview = ({
           </div>
           <div className="grow">
             <TypographyP>
-              {imagesPreview.file.name.slice(0, 30)}
-              {imagesPreview.file.name.length > 30 && "..."}
+              {imagesPreview?.fileData?.fileName?.slice(0, 30)}
+              {imagesPreview?.fileData?.fileName?.length > 30 && "..."}
             </TypographyP>
           </div>
         </div>
         <div className="flex gap-3 items-center justify-center">
-          <Progress value={uploadProgress} className="" />
-          <span>{uploadProgress}%</span>
+          {imagesPreview.status !== "deleted" ? (
+            <>
+              <Progress value={uploadProgress} className="" />
+              <span>{uploadProgress}%</span>
+            </>
+          ) : (
+            <TypographyP className="text-red-700 bg-red-700/20 px-3 py-1 rounded text-xs my-1">
+              The file has been deleted. To re-upload, click 'Reload'.
+            </TypographyP>
+          )}
         </div>
       </div>
       <div>
@@ -363,10 +483,12 @@ const ImagePreview = ({
           size="icon"
           onClick={() => handleFileActions(index)}
         >
-          {uploadingStatus === "uploading" ? (
+          {imagesPreview.status === "uploading" ? (
             <LoaderCircle className="animate-spin" {...luciedConf} />
-          ) : uploadingStatus === "success" ? (
+          ) : imagesPreview.status === "success" ? (
             <Trash {...luciedConf} />
+          ) : imagesPreview.status === "deleting" ? (
+            <LoaderCircle className="animate-spin" {...luciedConf} />
           ) : (
             <ReloadIcon />
           )}

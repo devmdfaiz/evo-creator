@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request, res: Response) {
   connectToDb();
 
-  const { values, testimonialsFields, faqs, policies, fieldDetails, pageId } =
+  const { values, testimonialsFields, faqs, policies, fieldDetails, pageId, imageAndProducts } =
     await req.json();
 
     
@@ -13,7 +13,7 @@ export async function POST(req: Request, res: Response) {
   const pageContent = {
     contEmail: values.contEmail,
     contPhone: values.contPhone,
-    coverImg: values.coverImg,
+    coverImg: imageAndProducts,
     pageDesc: values.pageDesc,
     title: values.title,
     testimonialsFields,

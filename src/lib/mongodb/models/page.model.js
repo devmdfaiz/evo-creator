@@ -114,6 +114,11 @@ const pageSchema = new Schema(
         ref: "Coupon",
       },
     ],
+    pageId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     policies: policiesSchema,
     settings: settingsSchema,
     theme: themeSchema,

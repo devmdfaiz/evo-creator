@@ -57,7 +57,7 @@ const handleOrderFilledInfo: any = async (info: any) => {
       key: evar.razorpayKey,
       amount: order.amount * 100,
       currency: "INR",
-      name: "The Dream Project",
+      name: evar.projectName,
       description: "Product/Service Purchase",
       image: "/next.svg",
       order_id: order.rzrPayOrderId,
@@ -394,8 +394,8 @@ export const PriceBreakdownAuction = ({
             htmlFor="actionPrice"
           >{`Minimum allowed ₹${priceDetails?.baseAuctionPrice}`}</Label>
           {!action || action !== "Checkout" ? (
-            <Input
-              className={`focus-visible:ring-1 focus-visible:ring-[${color}] border ${pageInputTheme}`}
+            <input
+              className={`bg-gray-200/60 py-5 px-6 rounded-3xl focus:outline-primary w-full text-sm focus:border-none active:outline-primary active:border-none`}
               {...register("auctionPrice", {
                 required: true,
               })}

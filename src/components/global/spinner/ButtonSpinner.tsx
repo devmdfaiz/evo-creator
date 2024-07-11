@@ -1,8 +1,14 @@
+import { cn } from "@/lib/utils/utils";
 
-
-const ButtonSpinner = ({ className = "w-8 h-8" }: { className?: string }) => {
+const ButtonSpinner = ({
+  className = "w-8 h-8",
+  PClassName,
+}: {
+  className?: string;
+  PClassName?: string;
+}) => {
   return (
-    <div role="status">
+    <div role="status" className={cn(PClassName)}>
       <svg
         aria-hidden="true"
         className={`${className} text-gray-200 animate-spin dark:text-gray-600 fill-primary`}

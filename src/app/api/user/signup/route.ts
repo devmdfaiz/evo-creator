@@ -80,9 +80,9 @@ export async function POST(req: Request) {
       const { data, error } = await resend.emails.send({
         from: "onboarding@resend.dev", // Sender's email address
         to: email, // Recipient's email address
-        subject: "Your One-Time Password (OTP) from The Dream Project", // Email subject
+        subject: `Your One-Time Password (OTP) from ${evar.projectName}`, // Email subject
         react: SendOtp({
-          projectName: "The Dream Project",
+          projectName: evar.projectName,
           recipientName: fullname,
           action: "Sign up",
           otp,

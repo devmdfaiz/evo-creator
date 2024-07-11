@@ -2,9 +2,15 @@
 import CustomersDataTable from "@/components/dashboard-layout/CustomersDataTable";
 import CustomersOrdersWrapper from "@/components/dashboard-layout/CustomersWrapper";
 import { DatePickerWithRange } from "@/components/global/calendar/DatePicker";
+import PageSpinner from "@/components/global/spinner/PageSpinner";
+import NothingInfo from "@/components/info/NothingInfo";
 import TypographyH1 from "@/components/typography/TypographyH1";
+import TypographyMuted from "@/components/typography/TypographyMuted";
+import { Button } from "@/components/ui/button";
 import { DateContext } from "@/context/DateProvider";
 import { getOrderData } from "@/lib/fetch/orderData";
+import { PlusCircle } from "lucide-react";
+import Link from "next/link";
 import React, { useContext, useEffect, useState } from "react";
 
 const Customers = () => {
@@ -22,6 +28,17 @@ const Customers = () => {
       setComparisonPeriodOrders,
     });
   }, [date]);
+
+  console.log(
+    "currentPeriodOrders",
+    currentPeriodOrders,
+    "comparisonPeriodOrders",
+    comparisonPeriodOrders
+  );
+
+  if(currentPeriodOrders.length === 0 || comparisonPeriodOrders.length === 0){
+    return <PageSpinner className="mt-[50vh]" />
+  }
 
   return (
     <section className="mb-7">

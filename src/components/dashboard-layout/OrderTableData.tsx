@@ -19,7 +19,7 @@ import DataTable from "../global/tables/DataTable";
 import { format } from "date-fns";
 import Link from "next/link";
 import IconWhatsapp from "../icons/WhatsappIcon";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import QRCode from "qrcode";
 import {
   Dialog,
@@ -29,21 +29,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import { downloadImage } from "./PagesTableData";
 
-export const PhoneCell = ({ row }: {row: any}) => {
+export const generateQR = (
+  text: string,
+  setQrCodeUrl: Dispatch<SetStateAction<string>>
+) => {
+  QRCode.toDataURL(text, { version: 7 })
+    .then((url: string) => {
+      setQrCodeUrl(url);
+    })
+    .catch((err: any) => {
+      console.error(err);
+    });
+};
+
+export const PhoneCell = ({ row }: { row: any }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState("#");
 
   const url = `https://wa.me/+91${row.original.customerInfo["Phone Number"]}`;
-
-  const generateQR = (text: string) => {
-    QRCode.toDataURL(text, { version: 7 })
-      .then((url: string) => {
-        setQrCodeUrl(url);
-      })
-      .catch((err: any) => {
-        console.error(err);
-      });
-  };
 
   return (
     <div className="ml-4 lowercase flex gap-2 items-center justify-start">
@@ -55,7 +59,7 @@ export const PhoneCell = ({ row }: {row: any}) => {
             variant="ghost"
             size="icon"
             onClick={() => {
-              generateQR(url);
+              generateQR(url, setQrCodeUrl);
             }}
           >
             <IconWhatsapp className="w-4 h-4" />
@@ -83,8 +87,20 @@ export const PhoneCell = ({ row }: {row: any}) => {
               Open on Whatsapp now <ExternalLinkIcon />
             </Link>
             <br />
-            <span>or scan me</span>
-            <img src={qrCodeUrl} alt="whatsapp qrcode" />
+            <span>
+              or scan me ( or{" "}
+              <Button
+                variant="link"
+                onClick={() => {
+                  downloadImage(qrCodeUrl, "customer-whatsapp-link-qr-code");
+                }}
+                className="p-0"
+              >
+                download
+              </Button>{" "}
+              )
+            </span>
+            <img src={qrCodeUrl} alt="whatsapp qr-code" />
           </div>
         </DialogContent>
       </Dialog>
@@ -261,6 +277,10 @@ export const columns: ColumnDef<any>[] = [
   },
 ];
 
-export default function OrderDataTable({ currentPeriod }: { currentPeriod: any[] }) {
+export default function OrderDataTable({
+  currentPeriod,
+}: {
+  currentPeriod: any[];
+}) {
   return <DataTable data={currentPeriod} columns={columns} />;
 }

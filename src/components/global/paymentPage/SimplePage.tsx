@@ -22,10 +22,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import useEmblaCarousel from "embla-carousel-react";
+
 import { cn } from "@/lib/utils/utils";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Item, TNImagesPreview, TTestimonials } from "@/lib/types/index.type";
+import AutoScroll from "embla-carousel-auto-scroll";
+import { useCallback } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 //??: ProductPageTitle
 export const ProductPageTitle = ({
@@ -68,20 +74,48 @@ export const ProductPageProfile = ({
 
 //??: ProductPageCover
 export const ProductPageCover = ({
-  cover = "/cover.png",
+  mode,
+  cover,
 }: {
-  cover: String;
+  mode: "preview" | "production";
+  cover: Item[];
 }) => {
+  const [emblaRef, emblaApi] = useEmblaCarousel({}, [AutoScroll()]);
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
   return (
-    <div className="my-6 rounded-md overflow-hidden h-[400px] sm:h-[530] w-full relative">
-      <Image
-        src={`${cover}`}
-        alt="cover"
-        fill
-        objectFit="contain"
-        className=""
-      />
-    </div>
+    <>
+      <div className="embla">
+        <div className="embla__viewport" ref={emblaRef}>
+          <div className="embla__container py-3 gap-4 relative h-[500px] w-[500px] select-none">
+            {cover.length > 0 &&
+              cover.map((file, i) => (
+                <>
+                  <Image
+                    className="embla__slide overflow-hidden rounded-md"
+                    key={i}
+                    height={500}
+                    width={500}
+                    src={
+                      file.status !== "success"
+                        ? file.fileData.localUrl!
+                        : file.fileData.uploadedFileUrl!
+                    }
+                    alt="image"
+                  />
+                </>
+              ))}
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 
@@ -139,39 +173,52 @@ export const ProductPageContact = ({
 
 //??: ProductPageTestimonial
 export const ProductPageTestimonial = ({
-  name = "Md Faizan",
-  text = "this is my review",
+  testimonials,
   theme,
-  key,
   TClassName,
   DClassName,
 }: {
-  name: string;
-  text: string;
+  testimonials: TTestimonials[];
   theme: string;
-  key: number;
   TClassName?: string;
   DClassName?: string;
 }) => {
+  const [emblaRef, emblaApi] = useEmblaCarousel({loop: true});
+
   return (
-    <div className="my-6" key={key}>
-      <div
-        className={`border-primary/50 border-2 ${
-          theme === "dark" ? "border-white/30" : "border-black/30"
-        } p-6 rounded-3xl shadow-lg shadow-primary/20 w-80`}
-      >
-        <QuoteIcon className="h-14 w-14 text-primary/70" />
-        <p
-          className={cn("text-base font-medium", TClassName)}
-        >{text}</p>
+    <>
+      <div className="embla">
+        <div className="embla__viewport" ref={emblaRef}>
+          <div className="embla__container py-3 gap-4 relative h-[500px] w-[500px] select-none">
+            {testimonials.map((testimonial, i) => (
+              <div className="my-6" key={i}>
+                <div
+                  className={`border-primary/50 border-2 ${
+                    theme === "dark" ? "border-white/30" : "border-black/30"
+                  } p-6 rounded-3xl shadow-lg shadow-primary/20 w-80`}
+                >
+                  <QuoteIcon className="h-14 w-14 text-primary/70" />
+                  <p className={cn("text-base font-medium", TClassName)}>
+                    {testimonial.testiMsg}
+                  </p>
 
-        <Separator className="bg-black/70 mt-2 w-3 h-[2px]" />
+                  <Separator className="bg-black/70 mt-2 w-3 h-[2px]" />
 
-        <p className={cn("mt-2 font-normal text-start text-sm", DClassName)}>
-          {name}
-        </p>
+                  <p
+                    className={cn(
+                      "mt-2 font-normal text-start text-sm",
+                      DClassName
+                    )}
+                  >
+                    {testimonial.testiName}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

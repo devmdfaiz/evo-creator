@@ -1,8 +1,9 @@
+import { cn } from "@/lib/utils/utils";
 import React from "react";
 
-const PageSpinner = () => {
+const PageSpinner = ({ className }: { className?: string }) => {
   return (
-    <div className="flex items-center justify-center w-screen h-screen">
+    <div className={cn("flex items-center justify-center", className)}>
       <div role="status" className="w-16 h-16">
         <svg
           aria-hidden="true"

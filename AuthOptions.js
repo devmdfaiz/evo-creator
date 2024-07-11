@@ -27,25 +27,35 @@ export const authOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
+      // console.log("JWT callback - user:", user);
       if (user) {
         // editing jwt payload
         token.sub = user.userId;
         token.name = user.fullname;
         token.phone = user.phone;
+        token.email = user.email;
         token.emailVerificationStatus = user.emailVerificationStatus;
-        //TODO: isPhoneVerified letter
-        // token.isPhoneVerified = user.isPhoneVerified
+        token.phoneVerificationStatus = user.phoneVerificationStatus;
         token.userRole = user.userRole;
-        token.picture = user.avatar;
+        token.avatarUrl = user.avatarUrl;
+        token.avatarId = user.avatarId;
+        // console.log("JWT callback - token:", token);
       }
       return token;
     },
     async session({ session, token, user }) {
+      // console.log("Session callback - token:", token);
       if (token) {
-        session.user.sub = token?.sub;
-        session.user.emailVerificationStatus = token?.emailVerificationStatus;
-        //TODO: isPhoneVerified letter
-        // session.user.isPhoneVerified = token?.isPhoneVerified
+        session.user.sub = token.sub;
+        session.user.emailVerificationStatus = token.emailVerificationStatus;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.phoneVerificationStatus = token.phoneVerificationStatus;
+        session.user.phone = token.phone;
+        session.user.userRole = token.userRole;
+        session.user.avatarUrl = token.avatarUrl;
+        session.user.avatarId = token.avatarId;
+        // console.log("Session callback - session:", session);
       }
       return session;
     },

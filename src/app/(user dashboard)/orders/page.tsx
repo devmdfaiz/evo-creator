@@ -2,6 +2,7 @@
 import OrderDataTable from "@/components/dashboard-layout/OrderTableData";
 import OrdersCardWrapper from "@/components/dashboard-layout/OrdersCardWrapper";
 import { DatePickerWithRange } from "@/components/global/calendar/DatePicker";
+import PageSpinner from "@/components/global/spinner/PageSpinner";
 import TypographyH1 from "@/components/typography/TypographyH1";
 import { DateContext } from "@/context/DateProvider";
 import { getOrderData } from "@/lib/fetch/orderData";
@@ -22,6 +23,11 @@ const OrderPage = () => {
       setComparisonPeriodOrders,
     });
   }, [date]);
+  
+
+  if(currentPeriodOrders.length === 0 || comparisonPeriodOrders.length === 0){
+    return <PageSpinner className="mt-[50vh]" />
+  }
 
   return (
     <section className="mb-7">

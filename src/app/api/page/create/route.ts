@@ -1,6 +1,7 @@
 import connectToDb from "@/lib/mongodb/connection/db";
 import { Page } from "@/lib/mongodb/models/page.model";
 import { NextResponse } from "next/server";
+import uniqid from "uniqid";
 
 export async function POST(req: Request, res: Response) {
   connectToDb();
@@ -10,11 +11,14 @@ export async function POST(req: Request, res: Response) {
 
   const { sub } = user;
 
+  const pageId = uniqid("page-")
+
   try {
     const res = await Page.create({
       metaData: { metaTitle, metaDesc, keywords },
       subdomain,
       creator: sub,
+      pageId,
     });
 
     const pageData = { id: res._id, pageType: res.pageType };

@@ -215,7 +215,7 @@ const OtpVerificationCom = ({
 
           console.log("payload", payload);
 
-          signIn("credentials", { redirect: false, ...payload })
+          signIn("credentials", { redirect: false, ...payload, ...payload.avatar })
             .then(() => {
               toast.success("Redirecting to dashboard");
               setEmailVerificationStatus("redirecting");

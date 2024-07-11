@@ -74,7 +74,7 @@ import { usePathname, useRouter } from "next/navigation";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import axios from "axios";
 import { useZustandSelector } from "@/context/zustand/slectors";
-import { usePageFormInputs } from "@/context/zustand/store";
+import { useFileHandler, usePageFormInputs } from "@/context/zustand/store";
 import FileUploader from "@/components/upload/FileUploader";
 import {
   COMPRESSED_FILE,
@@ -90,14 +90,41 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
   const path = usePathname();
   const rout = useRouter();
 
-  const pageInputsState = useZustandSelector(usePageFormInputs);
-
   const inputs = usePageFormInputs();
+  const files = useFileHandler();
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof pageFormSchema>>({
     resolver: zodResolver(pageFormSchema),
+    defaultValues: {
+      extProductLinks: inputs.extProductLinks,
+      category: inputs.category,
+      price: inputs.price,
+      priceType: inputs.priceType,
+      baseAuctionPrice: inputs.baseAuctionPrice,
+      discountedPrice: inputs.discountedPrice,
+      offerDiscountedPrice: inputs.offerDiscountedPrice,
+      title: inputs.title,
+      coverImg: inputs.coverImg,
+      pageDesc: inputs.pageDesc,
+      contPhone: inputs.contPhone,
+      contEmail: inputs.contEmail,
+      pageField: inputs.pageOrderInputsInitial,
+      thankYouNote: inputs.thankYouNote,
+      redirectionUrl: inputs.redirectionUrl,
+      metaPixel: inputs.metaPixel,
+      googleAnalytics: inputs.googleAnalytics,
+      whatsappSupport: inputs.whatsappSupport,
+      pageExpiry: inputs.pageExpiry,
+      pageExpiryDate: inputs.pageExpiryDate,
+      deactivateSales: inputs.deactivateSales,
+      pageOwner: inputs.pageOwner,
+      template: inputs.template,
+      color: inputs.color,
+    },
   });
+
+  console.log("cover images", form.watch("coverImg"));
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof pageFormSchema>) {
@@ -107,7 +134,11 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
       faqs: inputs.faqs,
       policies: inputs.policies,
       pageId,
+      fieldDetails: inputs.pageOrderInputs,
+      imageAndProducts: files.imagesPreview,
     };
+
+    console.log("fieldsInput", fieldsInput);
 
     axios.post("/api/page/update", fieldsInput).then((res) => {
       const { data } = res;
@@ -207,7 +238,7 @@ export function ProductFields({ form }: { form: any }) {
         <TypographyH4>Upload your digital files</TypographyH4>
         <FileUploader
           fileType={COMPRESSED_FILE}
-          sizeLimit={1}
+          countLimit={1}
           from="product"
         />
 
@@ -261,7 +292,7 @@ export function ProductFields({ form }: { form: any }) {
               <FormItem>
                 <FormControl>
                   <RadioGroup
-                    onValueChange={(e) => {
+                    onValueChange={(e: any) => {
                       inputs.setPriceType(e);
                       field.onChange(e);
                     }}
@@ -511,7 +542,7 @@ export function DetailsFields({ form }: TDetailsFields) {
         <FormLabel>Product Images</FormLabel>
         <FileUploader
           fileType={SUPPORTED_IMAGE_FORMATES}
-          sizeLimit={7}
+          countLimit={7}
           from="details"
         />
 
@@ -1218,7 +1249,7 @@ export function CustomiseFields({ form }: { form: any }) {
         <FileUploader
           fileType={SUPPORTED_IMAGE_FORMATES}
           from="customise"
-          sizeLimit={1}
+          countLimit={1}
         />
 
         {/* page owner field */}
@@ -1257,7 +1288,7 @@ export function CustomiseFields({ form }: { form: any }) {
               <FormItem className="space-y-3">
                 <FormControl>
                   <RadioGroup
-                    onValueChange={(e) => {
+                    onValueChange={(e: any) => {
                       inputs.setTemplate(e);
                       field.onChange(e);
                     }}

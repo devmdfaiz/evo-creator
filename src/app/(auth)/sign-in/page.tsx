@@ -70,7 +70,7 @@ const SignInPage = () => {
         if (status === 200) {
           const payload = user;
 
-          signIn("credentials", { redirect: false, ...payload })
+          signIn("credentials", { redirect: false, ...payload, ...payload.avatar })
             .then(() => {
               toast.success("Redirecting to verification page");
               setSigninStatus("redirecting");

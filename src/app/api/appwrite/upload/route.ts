@@ -39,6 +39,7 @@ export async function POST(req: Request) {
       { status: 201 } // 201 Created: The file has been successfully uploaded and created
     );
   } catch (error) {
+    console.error("Error during uploading to appwrite: ", error);
     const errorMessage = serverError(error);
 
     return NextResponse.json(

@@ -284,3 +284,37 @@ export const formSchemaForgotPassword = z.object({
       message: "Phone number must be contain 10 digit",
     }),
 });
+
+export const bankFormSchema = z.object({
+  businessName: z
+    .string({ required_error: "Business Name is required" })
+    .min(4, {
+      message: "Business Name must be at least 4 characters.",
+    })
+    .max(200, {
+      message: "Maximum length of business name is 200 characters.",
+    })
+    .trim(),
+  businessType: z
+    .string({ required_error: "Business Type is required" })
+    .trim(),
+  businessCategory: z
+    .string({ required_error: "Business Category is required" })
+    .trim(),
+  subBusinessCategory: z
+    .string({ required_error: "Sub-Business Category is required" })
+    .trim(),
+  accountNumber: z
+    .string({ required_error: "Bank account number is required" })
+    .trim(),
+  ifscCode: z.string({ required_error: "IFSC code is required" }).trim(),
+  beneficiaryName: z
+    .string({ required_error: "Beneficiary Name is required" })
+    .trim(),
+  pan: z.string({ required_error: "Pan number is required" }).trim(),
+  addressLine: z.string({ required_error: "Address line is required" }).trim(),
+  city: z.string({ required_error: "City is required" }).trim(),
+  state: z.string({ required_error: "State is required" }).trim(),
+  pinCode: z.string({ required_error: "Pin code is required" }).trim(),
+  country: z.string({ required_error: "Country is required" }).trim(),
+});

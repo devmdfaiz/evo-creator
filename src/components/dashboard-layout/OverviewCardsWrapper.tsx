@@ -1,55 +1,101 @@
 "use client";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import SmallCard from "./Card";
+import { growthCalculation } from "./OrdersCardWrapper";
+import { DateContext } from "@/context/DateProvider";
 
-const OverviewCardsWrapper = () => {
-  const [data, setData] = useState([
-    { name: "some thing", value: 234 },
-    { name: "some thing", value: 124 },
-    { name: "some thing", value: 24 },
-    { name: "some thing", value: 625 },
-    { name: "some thing", value: 234 },
-    { name: "some thing", value: 334 },
-    { name: "some thing", value: 634 },
-    { name: "some thing", value: 734 },
-    { name: "some thing", value: 254 },
-  ]);
+const getUniquePageIds = (
+  currentPeriodOrder: any[],
+  comparisonPeriodOrder: any[]
+): any[] => {
+  const currentPeriodOrderMap = currentPeriodOrder.map((order) => order.pageId);
+  const currentPeriodOrderPageId = Array.from(new Set(currentPeriodOrderMap));
+
+  const comparisonPeriodOrderMap = comparisonPeriodOrder.map(
+    (order) => order.pageId
+  );
+  const comparisonPeriodOrderPageId = Array.from(
+    new Set(comparisonPeriodOrderMap)
+  );
+
+  return [comparisonPeriodOrderPageId, currentPeriodOrderPageId];
+};
+
+const OverviewCardsWrapper = ({
+  currentPeriod,
+  comparisonPeriod,
+}: {
+  currentPeriod: any[];
+  comparisonPeriod: any[];
+}) => {
+
+  const { fromDate, toDate, dayGap, date } = useContext(DateContext);
+
+  const [comparisonPeriodOrderPageId, currentPeriodOrderPageId] =
+    getUniquePageIds(currentPeriod, comparisonPeriod);
+
+  const pageOrderGrowth =
+    ((currentPeriodOrderPageId.length - comparisonPeriodOrderPageId.length) /
+      comparisonPeriodOrderPageId.length) *
+    100;
+
+  const {
+    currentFilteredOrders,
+    currentTotalRevenue,
+    faildOrderGrowth,
+    orderGrowth,
+    revenueGrowth,
+    succOrderGrowth,
+  } = growthCalculation({
+    currentPeriod,
+    comparisonPeriod,
+  });
 
   return (
     <div className="flex flex-wrap justify-center gap-5">
       <SmallCard
         title="Total Sales"
-        goal="50"
-        desc="+20.1% from last month"
-        data={data}
+        goal={currentPeriod?.length}
+        desc={`${parseInt(JSON.stringify(orderGrowth))}% from last ${
+          Number.isNaN(dayGap) ? 0 : dayGap
+        } days`}
+        data={currentPeriod}
         key="value"
       />
       <SmallCard
         title="Total Revenue"
-        goal="₹15,000.00"
-        desc="+10.1% from last month"
-        data={data}
+        goal={`₹${currentTotalRevenue}`}
+        desc={`${parseInt(JSON.stringify(revenueGrowth))}% from last ${
+          Number.isNaN(dayGap) ? 0 : dayGap
+        } days`}
+        data={currentPeriod}
         key="value"
       />
       <SmallCard
         title="Sales Growth"
-        goal="50%"
-        desc="+50.1% from last month"
-        data={data}
+        goal={`${parseInt(JSON.stringify(revenueGrowth))}%`}
+        desc={`${parseInt(JSON.stringify(revenueGrowth))}% from last ${
+          Number.isNaN(dayGap) ? 0 : dayGap
+        } days`}
+        data={currentPeriod}
         key="value"
       />
       <SmallCard
         title="Page Sold"
-        goal="100"
-        desc="+15.4% from last month"
-        data={data}
+        goal={currentPeriodOrderPageId.length}
+        desc={`${parseInt(JSON.stringify(pageOrderGrowth))}% from last ${
+          Number.isNaN(dayGap) ? 0 : dayGap
+        } days`}
+        data={currentPeriod}
         key="value"
       />
       <SmallCard
         title="Total Customers"
-        goal="150"
-        desc="+55.4% from last month"
-        data={data}
+        goal={currentFilteredOrders?.length}
+        desc={`${parseInt(JSON.stringify(succOrderGrowth))}% from last ${
+          Number.isNaN(dayGap) ? 0 : dayGap
+        } days`}
+        data={currentPeriod}
         key="value"
       />
     </div>

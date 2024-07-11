@@ -4,6 +4,8 @@ import {
 } from "@/components/dashboard-layout/PaymentPageView/PageViewComponents";
 import { PageInputsWithFormForMobileFormSolution } from "@/components/global/paymentPage/PageForm";
 import { getPageData } from "@/lib/fetch/pageData";
+import { authOptions } from "../../../../AuthOptions";
+import { getServerSession } from "next-auth";
 
 /**
  * Payment page main component
@@ -20,6 +22,7 @@ const PaymentPage = async ({
   const fieldValue = await getPageData(id);
   const color = fieldValue?.theme?.color;
   const theme = fieldValue?.theme?.template;
+  
 
   if (checkout === "yes") {
     return (
@@ -35,9 +38,9 @@ const PaymentPage = async ({
 
   return (
     <>
-      <PageWrapper fieldValue={fieldValue} color={color} theme={theme}>
+      {/* <PageWrapper fieldValue={fieldValue} color={color} theme={theme}>
         <PageComponents fieldValue={fieldValue} theme={theme} />
-      </PageWrapper>
+      </PageWrapper> */}
     </>
   );
 };

@@ -9,7 +9,6 @@ import {
 } from "@/components/global/paymentPage/PageForm";
 import PaymentsPagePatterns from "@/components/global/patterns/PaymentsPagePatterns";
 import { useContext, useEffect, useState } from "react";
-import { PageContext } from "@/context/PageFieldsProvider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LaptopIcon, MobileIcon } from "@radix-ui/react-icons";
@@ -20,11 +19,11 @@ import PageSpinner from "@/components/global/spinner/PageSpinner";
 import {
   PreviewBoxDesktop,
   PreviewBoxMobile,
-  PreviewCont,
 } from "@/components/dashboard-layout/pageCreation/PageEditorComponents";
 import { PageWrapper } from "@/components/dashboard-layout/PaymentPageView/PageViewComponents";
 import { useZustandSelector } from "@/context/zustand/slectors";
 import { usePageFormInputs } from "@/context/zustand/store";
+import TypographyMuted from "@/components/typography/TypographyMuted";
 
 /**
  * Page creator and editor main component
@@ -32,8 +31,8 @@ import { usePageFormInputs } from "@/context/zustand/store";
  * @returns
  */
 const PageEditor = ({ params }: { params: { ["page-type"]: string } }) => {
-  const searchParams = useSearchParams();
-  const mode = searchParams.get("mode");
+  // const searchParams = useSearchParams();
+  // const mode = searchParams.get("mode");
 
   const pageInputsState = useZustandSelector(usePageFormInputs);
   const inputs = usePageFormInputs();
@@ -47,23 +46,7 @@ const PageEditor = ({ params }: { params: { ["page-type"]: string } }) => {
     discountedPrice: inputs?.discountedPrice,
     priceType: inputs?.priceType,
     baseAuctionPrice: inputs?.baseAuctionPrice,
-  };
-
-  if (mode === "preview") {
-    return (
-      <>
-        <PageWrapper
-          color={color}
-          fieldValue={inputs}
-          theme={theme}
-          mode={mode}
-          pagePrice={pagePrice}
-        >
-          <PreviewCont fieldValue={inputs} mode={mode} />
-        </PageWrapper>
-      </>
-    );
-  }
+  };  
 
   return (
     <div className="lg:flex items-start justify-center bg-background min-h-screen">
@@ -85,10 +68,13 @@ const PageEditor = ({ params }: { params: { ["page-type"]: string } }) => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="desktop">
-            {/* <PreviewBoxDesktop /> */}
+            <PreviewBoxDesktop />
           </TabsContent>
           <TabsContent value="mobile">
             {/* <PreviewBoxMobile /> */}
+            <TypographyMuted>
+              This section is still in under development
+            </TypographyMuted>
           </TabsContent>
         </Tabs>
       </div>

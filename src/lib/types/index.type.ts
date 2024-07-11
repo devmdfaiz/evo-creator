@@ -46,10 +46,10 @@ export interface TFieldAddEditDialog {
 
 export interface TPagePrice {
   offerDiscountedPrice: boolean;
-  price: number;
-  discountedPrice: number;
-  priceType: string;
-  baseAuctionPrice: string;
+  price: number | null;
+  discountedPrice: number | null;
+  priceType: string | undefined;
+  baseAuctionPrice: number | null;
 }
 
 export interface TProductPageForm {
@@ -73,14 +73,14 @@ export interface TProductPageFormMobile {
   color: string;
   theme: string;
   className?: string;
-  action?: string
+  action?: string;
 }
 
 export interface TPriceBreakdownAuction {
   priceDetails: TPagePrice;
   theme: string;
   color: string;
-  action?: string
+  action?: string;
 }
 
 export interface TPriceBreakdownFixed {
@@ -90,10 +90,40 @@ export interface TPriceBreakdownFixed {
 
 export interface TImagesPreview {
   url: string;
-  file: File
+  file: File;
+}
+
+interface FileData {
+  localUrl: string;
+  fileName: string;
+  uploadedFileId?: string;
+  uploadedFileUrl?: string;
+  selectedFile: File;
+}
+
+export type TStatus =
+  | "uploaded"
+  | "un-uploaded"
+  | "uploading"
+  | "failed"
+  | "success"
+  | "deleting"
+  | "deleted";
+
+export interface Item {
+  status: TStatus;
+  fileData: FileData;
+}
+
+export interface TNImagesPreview {
+  product: Item[];
+  details: Item[];
+  customise: Item[];
 }
 
 export interface TValidFiles {
   formates: string[];
   size: number;
-} 
+}
+
+export type TTabsFrom = "product" | "details" | "customise";

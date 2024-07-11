@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { formatInTimeZone } from "date-fns-tz";
 import { format } from "date-fns";
-import { string } from "zod";
 
 const userSchema = new Schema(
   {
@@ -25,9 +24,16 @@ const userSchema = new Schema(
       unique: true,
     },
     avatar: {
-      type: String,
-      required: true,
-      default: "/3d-avatar.jpg",
+      avatarId: {
+        type: String,
+        required: true,
+        default: "default",
+      },
+      avatarUrl: {
+        type: String,
+        required: true,
+        default: "/3d-avatar.jpg",
+      },
     },
     password: {
       type: String,
@@ -57,9 +63,7 @@ const userSchema = new Schema(
       default: "USER",
       required: true,
     },
-    formattedCreatedAt: String,
-    formattedUpdatedAt: String,
-    CreatedAtDate: String,
+    rzpAccountId: String,
   },
   { timestamps: true }
 );

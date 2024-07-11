@@ -27,6 +27,7 @@ import { ChevronDownIcon } from "@radix-ui/react-icons"
 import { cn } from "@/lib/utils/utils"
 import { Input } from "@/components/ui/input"
 import React from "react"
+import NothingInfo from "@/components/info/NothingInfo"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -69,9 +70,9 @@ export default function DataTable<TData, TValue>({
         <div className="flex items-center py-4">
           <Input
             placeholder="Filter by name..."
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            value={(table.getColumn("Page")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
+              table.getColumn("Page")?.setFilterValue(event.target.value)
             }
             className={cn("max-w-sm bg-card")}
           />
@@ -145,7 +146,7 @@ export default function DataTable<TData, TValue>({
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    <NothingInfo />
                   </TableCell>
                 </TableRow>
               )}

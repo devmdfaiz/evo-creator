@@ -1,8 +1,12 @@
 import {
+  Item,
   TImagesPreview,
+  TNImagesPreview,
   TPageFaqs,
   TPageOrderInputs,
   TPagePolicies,
+  TStatus,
+  TTabsFrom,
   TTestimonials,
 } from "@/lib/types/index.type";
 import { ChangeEvent } from "react";
@@ -29,7 +33,7 @@ export interface TPageFormInputs {
   categoriesValues: string[];
   category: string;
   price: number | null;
-  priceType: string;
+  priceType: "fixedPrice" | "auctionPrice" | undefined;
   baseAuctionPrice: number | null;
   discountedPrice: number | null;
   offerDiscountedPrice: boolean;
@@ -55,13 +59,13 @@ export interface TPageFormInputs {
   deactivateSales: boolean;
   // Customise page section
   pageOwner: string;
-  template: string;
+  template: "light" | "dark" | undefined;
   color: { hex: string };
   // Methods to set the state
   setExtProductLinks: (value: string) => void;
   setCategory: (value: string) => void;
   setPrice: (value: number | null) => void;
-  setPriceType: (value: string) => void;
+  setPriceType: (value: "fixedPrice" | "auctionPrice" | undefined) => void;
   setBaseAuctionPrice: (value: number | null) => void;
   setDiscountedPrice: (value: number | null) => void;
   setOfferDiscountedPrice: (value: boolean) => void;
@@ -98,6 +102,31 @@ export interface TPageFormInputs {
   setPageExpiryDate: (value: Date | undefined) => void;
   setDeactivateSales: (value: boolean) => void;
   setPageOwner: (value: string) => void;
-  setTemplate: (value: string) => void;
+  setTemplate: (value: "light" | "dark" | undefined) => void;
   setColor: (value: string) => void;
+}
+
+export interface TFileHandler {
+  imagesPreview: TNImagesPreview;
+  setImagesPreview: ({
+    validFiles,
+    countLimit,
+    from,
+    action,
+    index,
+    uploadingStatus,
+    uploadedFileId,
+    uploadedFileUrl,
+    filesToRePush,
+  }: {
+    validFiles?: Item[];
+    filesToRePush?: Item[];
+    countLimit?: number;
+    from: TTabsFrom;
+    action: "add" | "update" | "delete" | "re-push" | "re-pushViaIndex";
+    index?: number;
+    uploadingStatus?: TStatus;
+    uploadedFileId?: string;
+    uploadedFileUrl?: string;
+  }) => void;
 }
