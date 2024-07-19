@@ -1,6 +1,5 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import TypographyH4 from "@/components/typography/TypographyH4";
 import TypographyMuted from "@/components/typography/TypographyMuted";
 import TypographyP from "@/components/typography/TypographyP";
@@ -33,6 +32,8 @@ import { getLsItem, setLsItem } from "@/lib/utils/storage/localstorage";
 import { useErrorHandler } from "@/context/zustand/store";
 import RazorpayIcon from "@/components/icons/RazorpayIcon";
 import { useZustandSelector } from "@/context/zustand/slectors";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
+import { Input } from "@/components/ui/input";
 
 export const randomTimeGenerator = (delayValueArr: number[]) => {
   const delays = delayValueArr; // Array of delay values in milliseconds
@@ -48,39 +49,76 @@ export const randomTimeGenerator = (delayValueArr: number[]) => {
  * @param info
  */
 const handleOrderFilledInfo: any = async (info: any) => {
-  const {
-    data: { order, msg, status },
-  } = await axios.post("/api/order", info);
+  try {
+    const {
+      data: { order, message, status },
+    } = await axios.post("/api/order", info);
 
-  if (status === 200) {
-    const options = {
-      key: evar.razorpayKey,
-      amount: order.amount * 100,
-      currency: "INR",
-      name: evar.projectName,
-      description: "Product/Service Purchase",
-      image: "/next.svg",
-      order_id: order.rzrPayOrderId,
-      handler: async (response: any) => {
-        console.log("response ", response);
+    if (status === 201) {
+      const options = {
+        key: evar.razorpayKey,
+        amount: order.amount * 100,
+        currency: "INR",
+        name: evar.projectName,
+        description: "Product/Service Purchase",
+        image: "/next.svg",
+        order_id: order.rzrPayOrderId,
+        handler: async (response: any) => {
+          const { data } = await axios.post(
+            "/api/razorpay/payment/verify",
+            response
+          );
 
-        const { data } = await axios.post(
-          "/api/razorpay/payment/verify",
-          response
-        );
+          if (data.isSignatureVerified) {
+            window.location.href = `/thank-you?order-id=${order.orderId}`;
+          } else {
+            console.error("Payment verification failed:", data.msg);
+          }
+        },
+      };
 
-        if (data.isSignatureVerified) {
-          window.location.href = `/thank-you?order-id=${order.rzrPayOrderId}`;
-        } else {
-          console.error("Payment verification failed:", data.msg);
-        }
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    }
+  } catch (error) {
+    console.log("payment page opening error is: ", error);
   }
 };
+
+function repeatToast() {
+  const name: string = indianNameAndCityGenerator().indianName;
+  const city: string = indianNameAndCityGenerator().indianCity;
+
+  const randomDelay = randomTimeGenerator([10, 15, 20, 5]);
+
+  const Msg = () => (
+    <>
+      <div>
+        <span>
+          <b>🧔 {name}</b> just bought this product
+        </span>{" "}
+        <span>
+          from <b>{city} 📍</b>
+        </span>
+      </div>
+      <span>{randomDelay}sec ago</span>
+    </>
+  );
+
+  // setTimeout(() => {
+  //   toast(<Msg />, {
+  //     position: "bottom-left",
+  //     autoClose: 5000,
+  //     hideProgressBar: false,
+  //     closeOnClick: true,
+  //     pauseOnHover: true,
+  //     draggable: true,
+  //     progress: undefined,
+  //     theme: "light",
+  //   });
+  //   repeatToast(); // Call itself again
+  // }, randomDelay * 1000);
+}
 
 /**
  * This function is contains input fields for page.
@@ -94,9 +132,9 @@ export const ProductPageForm = ({
   color,
   theme,
   className,
+  buttonText,
 }: TProductPageForm) => {
   const path = usePathname();
-
   const pageId = path.split("/")[2];
 
   const {
@@ -106,58 +144,22 @@ export const ProductPageForm = ({
     formState: { errors },
   } = useContext(ReactHookFormContext);
 
-  const priceType: string = priceDetails?.priceType;
-
-  const pageInputBackgroundTheme = pageInputBackgroundThemeProvider(theme);
-
-  function repeatToast() {
-    const name: string = indianNameAndCityGenerator().indianName;
-    const city: string = indianNameAndCityGenerator().indianCity;
-
-    const randomDelay = randomTimeGenerator([10, 15, 20, 5]);
-
-    const Msg = () => (
-      <>
-        <div>
-          <span>
-            <b>🧔 {name}</b> just bought this product
-          </span>{" "}
-          <span>
-            from <b>{city} 📍</b>
-          </span>
-        </div>
-        <span>{randomDelay}sec ago</span>
-      </>
-    );
-
-    // setTimeout(() => {
-    //   toast(<Msg />, {
-    //     position: "bottom-left",
-    //     autoClose: 5000,
-    //     hideProgressBar: false,
-    //     closeOnClick: true,
-    //     pauseOnHover: true,
-    //     draggable: true,
-    //     progress: undefined,
-    //     theme: "light",
-    //   });
-    //   repeatToast(); // Call itself again
-    // }, randomDelay * 1000);
-  }
+  const priceType = priceDetails?.priceType;
 
   repeatToast(); // Start the repetition
 
   return (
     <div
       className={cn(
-        `${pageInputBackgroundTheme} mt-11 p-4 hidden lg:block space-y-4 rounded-s-[22px] border-s-2 border-primary/70`,
+        `mt-11 p-4 hidden lg:block space-y-4 rounded-s-[22px] border-s-2`,
         className
       )}
+      style={{ borderColor: color }}
     >
       <TypographyH4 className="mb-3">Payment Details</TypographyH4>
       <form
         onSubmit={handleSubmit((data: any) =>
-          handleOrderFilledInfo({ data, pageId, device: "desktop", priceType })
+          handleOrderFilledInfo({ data, pageId, priceType })
         )}
         className="space-y-4"
       >
@@ -184,7 +186,7 @@ export const ProductPageForm = ({
           style={{ backgroundColor: color }}
           className="w-full py-8 text-base tracking-wider rounded-3xl"
         >
-          Place order
+          {buttonText}
         </Button>
       </form>
 
@@ -223,7 +225,7 @@ export const PageInputs = ({ fieldsData, color, theme }: TPageInputs) => {
             {" "}
             <input
               id={fieldD?.type}
-              className={`bg-gray-200/60 py-5 px-6 rounded-3xl focus:outline-primary w-full text-sm focus:border-none active:outline-primary active:border-none`}
+              className={`${pageInputTheme} py-5 px-6 rounded-3xl w-full text-sm `}
               {...register(fieldD?.placeholder, {
                 required: fieldD?.required,
               })}
@@ -268,6 +270,7 @@ export const ProductPageFormMobile = ({
   function handleClick() {
     if (action === "Checkout") {
       rout.push(`/pg/${pageId}?checkout=yes`);
+      return;
     }
   }
 
@@ -345,11 +348,11 @@ export const PriceBreakdownFixed = ({
             {`₹${priceDetails?.price}`}
           </span>
         )}{" "}
-        {priceDetails?.offerDiscountedPrice && (
+        {priceDetails.offerDiscountedPrice && (
           <span className="text-sm text-green-700">
             {calculateDiscountPercentage(
-              priceDetails?.price,
-              priceDetails?.discountedPrice
+              priceDetails.price!,
+              priceDetails.discountedPrice!
             )}
           </span>
         )}
@@ -395,15 +398,15 @@ export const PriceBreakdownAuction = ({
           >{`Minimum allowed ₹${priceDetails?.baseAuctionPrice}`}</Label>
           {!action || action !== "Checkout" ? (
             <input
-              className={`bg-gray-200/60 py-5 px-6 rounded-3xl focus:outline-primary w-full text-sm focus:border-none active:outline-primary active:border-none`}
+              className={`bg-gray-200/60 py-5 px-6 rounded-3xl w-full text-sm`}
               {...register("auctionPrice", {
                 required: true,
               })}
               type="number"
               id="auctionPrice"
-              placeholder={`eg: ${
-                parseInt(priceDetails?.baseAuctionPrice) + 200
-              }`}
+              placeholder={`eg: ${JSON.stringify(
+                priceDetails?.baseAuctionPrice + 200
+              )}`}
             />
           ) : (
             ""
@@ -451,7 +454,7 @@ export const PageInputsWithFormForMobileFormSolution = ({
   const path = usePathname();
   const pageId = path.split("/")[2];
 
-  const priceType: string = priceDetails?.priceType;
+  const priceType = priceDetails.priceType;
 
   const {
     register,
@@ -465,17 +468,19 @@ export const PageInputsWithFormForMobileFormSolution = ({
       <TypographyH4 className="mb-3">Payment Details</TypographyH4>
       <form
         onSubmit={handleSubmit((data: any) =>
-          handleOrderFilledInfo(data, pageId, "tablet/mobile", priceType)
+          handleOrderFilledInfo({ data, pageId, priceType })
         )}
         className="space-y-3"
       >
-        <PageInputs
-          color={color}
-          errors={errors}
-          fieldsData={fieldsData}
-          register={register}
-          theme={theme}
-        />
+        <ScrollArea className="w-full h-[calc(100vh-700px)]">
+          <PageInputs
+            color={color}
+            errors={errors}
+            fieldsData={fieldsData}
+            register={register}
+            theme={theme}
+          />
+        </ScrollArea>
         <ProductPageFormMobile
           priceDetails={priceDetails}
           color={color}

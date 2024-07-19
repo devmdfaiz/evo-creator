@@ -34,6 +34,6 @@
     "src/lib/mongodb/models/user.model.js",
     "src/components/global/patterns/PaymentsPagePatterns.tsx",
     "src/context/PageFieldsProvider.jsx"
-, "src/context/PreviewReloadProvider.jsx", "src/lib/utils/razorpay/razorpay.js", "src/context/DateProvider.jsx", "src/app/api/user/signin/forgot-password/verify-token/route.js", "src/app/api/page/public-page-data/route.js", "src/app/api/page/public-page-data/route.js", "src/components/upload/FileUploder.jsx"  ],
+, "src/context/PreviewReloadProvider.jsx", "src/lib/utils/razorpay/razorpay.js", "src/context/DateProvider.jsx", "src/app/api/user/signin/forgot-password/verify-token/route.js", "src/app/api/page/public-page-data/route.ts", "src/app/api/page/public-page-data/route.ts", "src/components/upload/FileUploder.jsx"  ],
   "exclude": ["node_modules"]
 }

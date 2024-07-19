@@ -4,30 +4,30 @@ import { authOptions } from "../../../../../../AuthOptions";
 import { User } from "@/lib/mongodb/models/user.model";
 import connectToDb from "@/lib/mongodb/connection/db";
 import { verifyOTP } from "@/lib/otplib/otplib";
+import { serverError } from "@/lib/utils/error/errorExtractor";
 
 export async function POST(req: Request) {
-  connectToDb();
-
-  // Extract the OTP from the incoming request
-  const { otp } = await req.json();
-
-  const {
-    user: { sub },
-  } = await getServerSession(authOptions);
-
   try {
+    connectToDb();
+
+    // Extract the OTP from the incoming request
+    const { otp } = await req.json();
+
+    const {
+      user: { sub },
+    } = await getServerSession(authOptions);
+
     // Verify the provided OTP using the custom verification function
     const isOtpValid = verifyOTP(otp);
 
-
     const user = await User.aggregate([
       {
-        $match: { userId: sub } // Replace "YOUR_USER_ID" with the actual userId value
+        $match: { userId: sub }, // Replace "YOUR_USER_ID" with the actual userId value
       },
       {
-        $set: { emailVerificationStatus: "verified" }
-      }
-    ])
+        $set: { emailVerificationStatus: "verified" },
+      },
+    ]);
 
     if (!user) {
       return NextResponse.json(
@@ -65,19 +65,7 @@ export async function POST(req: Request) {
       { status: 400 } // HTTP 400 Bad Request for invalid input
     );
   } catch (error) {
-    let errorMessage =
-      "An error occurred while creating your account. Please try again or contact support.";
-
-    if (error instanceof Error) {
-      // If it's a standard Error object, get the message
-      errorMessage = error.message;
-    } else if (typeof error === "string") {
-      // If it's a string, use it directly
-      errorMessage = error;
-    } else if (error && typeof error === "object" && "message" in error) {
-      // If it's an object with a message property, use it
-      errorMessage = (error as { message: string }).message;
-    }
+    const errorMessage = serverError(error);
 
     // Log the error for debugging and tracing issues
     console.error("Error in verifying OTP:", error);

@@ -70,7 +70,11 @@ const SignInPage = () => {
         if (status === 200) {
           const payload = user;
 
-          signIn("credentials", { redirect: false, ...payload, ...payload.avatar })
+          signIn("credentials", {
+            redirect: false,
+            ...payload,
+            ...payload.avatar,
+          })
             .then(() => {
               toast.success("Redirecting to verification page");
               setSigninStatus("redirecting");
@@ -91,6 +95,9 @@ const SignInPage = () => {
         const errorMessage = clientError(error);
 
         setIsError(errorMessage); // Set the extracted message as the error state
+      })
+      .finally(() => {
+        setSigninStatus("started");
       });
   }
 

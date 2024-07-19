@@ -9,6 +9,8 @@ interface Evar {
   appwriteProjectId: string;
   appwriteApiKey: string;
   appwriteBucketId: string;
+  supportEmail: string;
+  supportPhone: string;
 }
 
 export const evar: Evar = {
@@ -21,5 +23,7 @@ export const evar: Evar = {
   otpSec: process.env.OTP_KEY!,
   appwriteApiKey: process.env.NEXT_PUBLIC_APPWRITE_API_KEY!,
   appwriteProjectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!,
-  appwriteBucketId: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!
+  appwriteBucketId: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
+  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL!,
+  supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE!,
 };

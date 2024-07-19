@@ -35,8 +35,7 @@ export const pageFormSchema = z
       .string({
         required_error: "External link is required",
       })
-      .trim()
-      .optional(),
+      .trim(),
     category: z.string().toLowerCase(),
     price: z.coerce
       .number({
@@ -56,7 +55,7 @@ export const pageFormSchema = z
     offerDiscountedPrice: z.boolean(), // Checkbox value (true or false)
     //!! details page fields
     title: z.string({ required_error: "Title is required" }).trim(),
-    coverImg: z
+    files: z
       .string({ required_error: "Cover image is required" })
       .trim()
       .optional(),
@@ -71,14 +70,14 @@ export const pageFormSchema = z
     //!! setting page fields
     pageField: pageFieldSchema,
     thankYouNote: z.string().trim().optional(),
-    redirectionUrl: z.string().trim().optional(),
+    buttonText: z.string().trim().optional(),
     metaPixel: z.string().trim().optional(),
     googleAnalytics: z.string().trim().optional(),
-    whatsappSupport: z.coerce
-      .number({
-        required_error: "Whatsapp contact phone is required",
-      })
-      .nullable(),
+    // whatsappSupport: z.coerce
+    //   .number({
+    //     required_error: "Whatsapp contact phone is required",
+    //   })
+    //   .nullable(),
     pageExpiry: z.boolean(),
     pageExpiryDate: z.coerce.date().nullable().optional(),
     deactivateSales: z.boolean(),
@@ -95,44 +94,41 @@ export const pageFormSchema = z
     // Custom validation logic
     if (data.offerDiscountedPrice && !data.discountedPrice) {
       showToast(
-        "Discounted price is required when offering a discount",
-        "Go to product section and enter discounted price",
+        "Discounted Price Required",
+        "Please enter the discounted price in the product section.",
         "Close",
         () => {}
       );
     }
     if (data.pageExpiry && !data.pageExpiryDate) {
       showToast(
-        "Expiry date is required when enabling page expiry",
-        "Go to setting section and enter page expiry date",
+        "Expiry Date Required",
+        "Please enter the page expiry date in the settings section.",
         "Close",
         () => {}
       );
     }
     if (data.priceType === "fixedPrice" && !data.price) {
       showToast(
-        "Price is required",
-        "Go to product section and enter page price",
+        "Price Required",
+        "Please enter the page price in the product section.",
         "Close",
         () => {}
       );
     }
     if (data.priceType === "auctionPrice" && !data.baseAuctionPrice) {
       showToast(
-        "Base price is required",
-        "Go to product section and enter page base price",
+        "Base Auction Price Required",
+        "Please enter the base auction price in the product section.",
         "Close",
         () => {}
       );
     }
     if (data.price && data.discountedPrice) {
-      if (
-        data.price < data.discountedPrice ||
-        data.price === data.discountedPrice
-      ) {
+      if (data.price <= data.discountedPrice) {
         showToast(
-          "Discounted price must be less then regular price",
-          "Go to product section and correct your price",
+          "Invalid Discounted Price",
+          "Discounted price must be less than the regular price. Please correct this in the product section.",
           "Close",
           () => {}
         );
@@ -140,62 +136,71 @@ export const pageFormSchema = z
     }
     if (!data.title) {
       showToast(
-        "Title is required",
-        "Go to details section and enter page title",
+        "Title Required",
+        "Please enter the page title in the details section.",
         "Close",
         () => {}
       );
     }
     if (!data.pageDesc) {
       showToast(
-        "Description is required",
-        "Go to details section and enter page description",
+        "Description Required",
+        "Please enter the page description in the details section.",
         "Close",
         () => {}
       );
     }
     if (!data.contPhone) {
       showToast(
-        "Phone number is required",
-        "Go to details section and enter page phone number",
+        "Phone Number Required",
+        "Please enter the contact phone number in the details section.",
         "Close",
         () => {}
       );
     }
     if (!data.contEmail) {
       showToast(
-        "Email is required",
-        "Go to details section and enter page email",
+        "Email Required",
+        "Please enter the contact email in the details section.",
         "Close",
         () => {}
       );
     }
-    if (!data.whatsappSupport) {
+    if (!data.extProductLinks) {
       showToast(
-        "Whatsapp support number is required",
-        "Go to settings section and enter whatsapp support number",
+        "File Link Required",
+        "Please enter the file link in the product section.",
+        "Close",
+        () => {}
+      );
+    }
+    if (!data.buttonText) {
+      showToast(
+        "Button Text Required",
+        "Please enter the button text in the settings section.",
         "Close",
         () => {}
       );
     }
     if (!data.pageOwner) {
       showToast(
-        "Page owner is required",
-        "Go to customise section and enter Page owner",
+        "Page Owner Required",
+        "Please enter the page owner in the customize section.",
         "Close",
         () => {}
       );
     }
     if (!data.category) {
       showToast(
-        "Please select category",
-        "Go to price section and select category",
+        "Category Required",
+        "Please select a category in the price section.",
         "Close",
         () => {}
       );
     }
     return true; // Validation passed
   });
+  
 
 /**
  * This Zod schema for sign up form

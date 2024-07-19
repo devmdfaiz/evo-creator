@@ -48,19 +48,6 @@ export const actionOrderFilledInfo = async (
   }
 };
 
-export const checkOrderPaidOrNot = async (orderId: string) => {
-  connectToDb();
-  try {
-    const { rzrPayStatus, isPaid } = await Order.findOne({
-      rzrPayOrderId: orderId,
-    });
-
-    return { rzrPayStatus, isPaid, status: true };
-  } catch (error) {
-    return { rzrPayStatus: null, isPaid: false, status: false };
-  }
-};
-
 export async function genDummyFile(jsonData: {
   orderJson: any;
   pageJson: any;

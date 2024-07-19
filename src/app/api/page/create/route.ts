@@ -1,41 +1,91 @@
 import connectToDb from "@/lib/mongodb/connection/db";
 import { Page } from "@/lib/mongodb/models/page.model";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import uniqid from "uniqid";
+import { authOptions } from "../../../../../AuthOptions";
+import { serverError } from "@/lib/utils/error/errorExtractor";
 
-export async function POST(req: Request, res: Response) {
-  connectToDb();
-
-  const { metaTitle, metaDesc, keywords, pageType, subdomain, user } =
-    await req.json();
-
-  const { sub } = user;
-
-  const pageId = uniqid("page-")
-
+export async function POST(req: Request) {
   try {
-    const res = await Page.create({
-      metaData: { metaTitle, metaDesc, keywords },
-      subdomain,
-      creator: sub,
+    // Establish a database connection
+    await connectToDb();
+
+    // Parse the request body
+    const {
+      metaTitle,
+      metaDesc,
+      keywords,
+      fullHash,
+      actionType,
+      pageId: pageIdForUpdate,
+    } = await req.json();
+
+    if (actionType === "update") {
+      const pageEditedSeoResponse = await Page.findOneAndUpdate(
+        { pageId: pageIdForUpdate },
+        {
+          metaData: { metaTitle, metaDesc, keywords, seoHashUrl: fullHash },
+        }
+      );
+
+      return NextResponse.json(
+        {
+          message: "Page seo updated successfully",
+          error: null,
+          pageEditedSeoResponse,
+        },
+        { status: 200 }
+      );
+    }
+
+    // Get the user session
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        {
+          message: "User is not authenticated. Please log in.",
+          error: "User session not found",
+          pageData: null,
+        },
+        { status: 401 }
+      );
+    }
+
+    // Generate a unique page ID
+    const pageId = uniqid("page-");
+
+    // Create a new page document in the database
+    const newPage = await Page.create({
+      metaData: { metaTitle, metaDesc, keywords, seoHashUrl: fullHash },
+      creator: session.user.sub,
       pageId,
     });
 
-    const pageData = { id: res._id, pageType: res.pageType };
+    // Prepare the response data
+    const pageData = { id: newPage.pageId };
 
-    return NextResponse.json({
-      massage: "Page created",
-      status: true,
-      error: null,
-      pageData,
-    });
+    // Return a success response
+    return NextResponse.json(
+      {
+        message: "Page created successfully",
+        error: null,
+        pageData,
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    console.log("There is problem in creating page =>", error);
-    return NextResponse.json({
-      massage: "There is problem in creating page. Please try again",
-      status: false,
-      error,
-      pageData: null,
-    });
+    console.error("Error creating page:", error);
+    const errorMessage = serverError(error);
+
+    // Return an error response
+    return NextResponse.json(
+      {
+        message: errorMessage,
+        error: error,
+        pageData: null,
+      },
+      { status: 500 }
+    );
   }
 }

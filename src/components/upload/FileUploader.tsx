@@ -240,7 +240,7 @@ const FileUploader = ({
       <Label
         htmlFor="file-taker"
         className={cn(
-          "w-full h-fit border border-foreground/40 border-dashed rounded py-8 cursor-pointer",
+          "w-full h-fit border border-foreground/40 border-dashed rounded py-8 cursor-pointer px-4",
           {
             "bg-foreground/20": isDragStatusActive,
           }

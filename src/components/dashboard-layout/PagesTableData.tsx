@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils/utils";
+import { cn, downloadImage, generateQR } from "@/lib/utils/utils";
 import DataTable from "../global/tables/DataTable";
 import Image from "next/image";
 import { addDays, format } from "date-fns";
@@ -66,21 +66,18 @@ import TypographyP from "../typography/TypographyP";
 import TypographyMuted from "../typography/TypographyMuted";
 import { evar } from "@/lib/envConstant";
 import { Check, Copy, Plus } from "lucide-react";
-import { generateQR } from "./OrderTableData";
 
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import TypographyH4 from "../typography/TypographyH4";
 import { useSession } from "next-auth/react";
 import { ScrollArea } from "../ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -93,12 +90,20 @@ export const columns: ColumnDef<any>[] = [
         className={cn(
           "ml-5 capitalize max-w-16 text-center rounded-md py-1 px-1",
           `${
-            row?.original?.isPublished
+            row?.original?.publishStatus === "public"
               ? "text-green-700 bg-green-700/20 "
-              : "text-red-700 bg-red-700/20"
+              : row?.original?.publishStatus === "private"
+              ? "text-red-700 bg-red-700/20"
+              : "text-gray-700 bg-gray-700/20"
           }`
         )}
-      >{`${row?.original?.isPublished ? "Public" : "Private"}`}</div>
+      >{`${
+        row?.original?.publishStatus === "public"
+          ? "Public"
+          : row?.original?.publishStatus === "private"
+          ? "Private"
+          : "Draft"
+      }`}</div>
     ),
   },
   {
@@ -107,16 +112,21 @@ export const columns: ColumnDef<any>[] = [
       return <div>Image</div>;
     },
     cell: ({ row }) => {
-      console.log("image page table", row?.original?.coverImg);
+      console.log(
+        "image page table",
+        row?.original?.files?.details[0]?.fileData?.uploadedFileUrl
+      );
 
       return (
-        <Image
-          src={row?.original?.coverImg?.details[0]?.fileData?.uploadedFileUrl}
-          alt="img"
-          width={30}
-          height={30}
-          objectFit="cover"
-        />
+        <Avatar className="rounded-none">
+          <AvatarImage
+            src={row?.original?.files?.details[0]?.fileData?.uploadedFileUrl}
+            alt="image"
+          />
+          <AvatarFallback className="rounded-none">
+            {(row?.original?.metaTitle).slice(0, 1)}
+          </AvatarFallback>
+        </Avatar>
       );
     },
   },
@@ -232,8 +242,6 @@ export const columns: ColumnDef<any>[] = [
       const [isCouponSheetOpen, setIsCouponSheetOpen] = React.useState(false);
       const [isCopyDialogOpen, setIsCopyDialogOpen] = React.useState(false);
 
-      const pageUrlHash = "ui76rfunioi";
-
       return (
         <>
           <DropdownMenu>
@@ -261,9 +269,19 @@ export const columns: ColumnDef<any>[] = [
               <DropdownMenuItem>
                 <Link
                   className="w-full h-full"
-                  href={`/payment-page/create/${pageData?.pageId}#${pageUrlHash}`}
+                  target="_blank"
+                  href={`/payment-page/update/${pageData?.pageId}${row.original.pageHashUrl}`}
                 >
                   Edit
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link
+                  className="w-full h-full"
+                  target="_blank"
+                  href={`/payment-page/update?pageId=${pageData?.pageId}${row.original.seoHashUrl}`}
+                >
+                  Edit seo
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
@@ -301,15 +319,6 @@ export const columns: ColumnDef<any>[] = [
     },
   },
 ];
-
-export const downloadImage = (dataUrl: string, filename: string) => {
-  const link = document.createElement("a");
-  link.href = dataUrl;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
 
 const formSchema = z.object({
   code: z
@@ -352,8 +361,6 @@ export const CouponCreator = ({
 
           if (axiosStatus === 200) {
             setCoupons(data.coupons);
-
-            showToast(data.message, null, "Close", () => {});
           }
         })
         .catch((error) => {
@@ -447,24 +454,16 @@ export const CouponCreator = ({
             </SheetDescription>
           </SheetHeader>
           {/* Coupon List here */}
-          <>
-            {coupons[0] === "nothing" && (
-              <div className="w-full h-[calc(100vh-120px)] flex items-center justify-center relative">
-                <TypographyP>No coupons found for the this page.</TypographyP>
-                <Button
-                  className="absolute right-5 bottom-5 rounded-full p-5 w-fit h-fit"
-                  onClick={() => {
-                    setIsCouponDialogOpen(true);
-                  }}
-                >
-                  {" "}
-                  <Plus />{" "}
-                </Button>
-              </div>
-            )}
-          </>
 
-          <ScrollArea className="w-full h-[calc(100vh-120px)] relative">
+          <ScrollArea className="w-full h-[calc(100vh-180px)]">
+            <>
+              {coupons[0] === "nothing" && (
+                <div className="w-full h-[calc(100vh-120px)] flex items-center justify-center relative">
+                  <TypographyP>No coupons found for the this page.</TypographyP>
+                </div>
+              )}
+            </>
+
             {!isCouponLoading ? (
               <>
                 {coupons.length > 0 &&
@@ -479,13 +478,14 @@ export const CouponCreator = ({
                           {coupon.code}
                         </TypographyH4>
                         <TypographyMuted className="text-xs">
-                          Discount: {coupon.discount}%
+                          <b>Discount:</b> {coupon.discount}%
                         </TypographyMuted>
                         <TypographyMuted className="text-xs">
-                          Created At: {format(coupon.createdAt, "dd/MM/yyyy")}
+                          <b>Created At:</b>{" "}
+                          {format(coupon.createdAt, "dd/MM/yyyy")}
                         </TypographyMuted>
                         <TypographyMuted className="text-xs">
-                          Expiry: {format(coupon.expiry, "dd/MM/yyyy")}
+                          <b>Expiry:</b> {format(coupon.expiry, "dd/MM/yyyy")}
                         </TypographyMuted>
                       </div>
                       <Button
@@ -513,9 +513,10 @@ export const CouponCreator = ({
             ) : (
               <ButtonSpinner PClassName="mt-3 w-full flex items-center justify-center" />
             )}
-
+          </ScrollArea>
+          <div className="flex items-center justify-center h-fit w-full mt-4">
             <Button
-              className="absolute right-5 bottom-5 rounded-full p-5 w-fit h-fit"
+              className="rounded-full p-3 w-fit h-fit"
               onClick={() => {
                 setIsCouponDialogOpen(true);
               }}
@@ -523,7 +524,7 @@ export const CouponCreator = ({
               {" "}
               <Plus />{" "}
             </Button>
-          </ScrollArea>
+          </div>
         </SheetContent>
       </Sheet>
 

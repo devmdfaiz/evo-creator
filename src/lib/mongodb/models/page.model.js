@@ -5,11 +5,17 @@ import mongoose, { Schema } from "mongoose";
 const metaDataSchema = new Schema({
   metaTitle: {
     type: String,
+    required: true,
   },
   metaDesc: {
     type: String,
+    required: true,
   },
   keywords: {
+    type: String,
+    required: true,
+  },
+  seoHashUrl: {
     type: String,
     required: true,
   },
@@ -27,22 +33,26 @@ const analyticIdsSchema = new Schema({
 
 //?? form inputs
 const formInputs = new Schema({
-  placeholder: String,
+  placeholder: {
+    type: String,
+  },
   required: {
     type: Boolean,
-    default: false,
   },
-  type: String,
+  type: {
+    type: String,
+  },
 });
 
 //?? Settings schema starts here
 const settingsSchema = new Schema({
   formInputs: [formInputs],
-  redirectUrl: String,
+  buttonText: {
+    type: String,
+  },
   analyticIds: analyticIdsSchema,
-  downloadableFile: String,
   thankYouNote: String,
-  whatsappSupport: Number,
+  // whatsappSupport: Number,
   pageExpiry: Boolean,
   pageExpiryDate: Date,
   deactivateSales: Boolean,
@@ -50,14 +60,14 @@ const settingsSchema = new Schema({
 
 //?? Theme schema starts here
 const themeSchema = new Schema({
-  avatar: String,
-  name: String,
   template: {
     type: String,
     required: true,
     default: "light",
   },
-  color: String,
+  color: {
+    type: String,
+  },
 });
 
 //?? Policies schema starts here
@@ -70,15 +80,15 @@ const pageSchema = new Schema(
     metaData: {
       type: metaDataSchema,
     },
-    //!!: not in use
-    // subdomain: {
-    //   type: String,
-    //   unique: true,
-    // },
     pageContent: {
       type: Schema.Types.Mixed,
     },
-
+    files: {
+      type: Schema.Types.Mixed,
+    },
+    pageHashUrl: {
+      type: String,
+    },
     pagePrice: {
       type: Schema.Types.Mixed,
     },
@@ -87,14 +97,9 @@ const pageSchema = new Schema(
       required: true,
       default: 0,
     },
-    //!!: not in use
-    // pageType: {
-    //   type: String,
-    //   enum: ["simple-page", "with-page-builder"],
-    // },
     pageOrders: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         ref: "Order",
       },
     ],
@@ -103,17 +108,15 @@ const pageSchema = new Schema(
       ref: "User",
       required: true,
     },
-    isPublished: {
-        type: Boolean,
-        default: false,
-        required: true,
+    downloadableFile: {
+      type: String,
     },
-    coupons: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Coupon",
-      },
-    ],
+    publishStatus: {
+      type: String,
+      enum: ["private", "public", "draft"],
+      default: "draft",
+      required: true,
+    },
     pageId: {
       type: String,
       required: true,
@@ -125,18 +128,5 @@ const pageSchema = new Schema(
   },
   { timestamps: true }
 );
-
-pageSchema.pre("save", function (next) {
-  const indiaTimezone = "Asia/Kolkata";
-  const formatString = "EEE MMM dd yyyy HH:mm:ss (zzzz)";
-
-  if (this.isNew) {
-    this.formattedCreatedAt = formatInTimeZone(this.createdAt, indiaTimezone, formatString);
-  }
-
-  this.formattedUpdatedAt = formatInTimeZone(this.updatedAt, indiaTimezone, formatString);
-
-  next();
-});
 
 export const Page = mongoose.models.Page || mongoose.model("Page", pageSchema);

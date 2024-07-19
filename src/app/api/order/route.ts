@@ -6,65 +6,109 @@ import { NextResponse } from "next/server";
 import uniqid from "uniqid";
 import { authOptions } from "../../../../AuthOptions";
 import { getServerSession } from "next-auth";
+import { serverError } from "@/lib/utils/error/errorExtractor";
 
-export async function POST(req: Request, res: Response) {
-  connectToDb();
-
-  const {
-    user: { sub },
-  } = await getServerSession(authOptions);
-
-  const { data, pageId, device, priceType } = await req.json();
-
+export async function POST(req: Request) {
   try {
-    const pageDetail = await Page.findById(pageId);
+    await connectToDb();
+
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { message: "User is not authenticated. Please log in.", order: null },
+        { status: 401 }
+      );
+    }
+
+    const { sub } = session.user;
+    const { data, pageId, priceType } = await req.json();
+
+    if (!pageId) {
+      return NextResponse.json(
+        {
+          message: "Page ID is required.",
+          order: null,
+          error: "Missing page ID in the request body.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const pageDetail = await Page.findOne({ pageId });
 
     if (!pageDetail) {
-      return NextResponse.json({ msg: "Page not found!", order: null }, { status: 404 });
+      return NextResponse.json(
+        {
+          message: "Page not found.",
+          order: null,
+          error: "No page found with the provided ID.",
+        },
+        { status: 404 }
+      );
     }
 
-    const amount = pageDetail?.pagePrice?.price;
-    let createdOrder;
-
-    const auctionPrice = data?.auctionPrice;
+    const amount =
+      priceType === "auctionPrice"
+        ? data?.auctionPrice
+        : pageDetail?.pagePrice?.price;
+    if (!amount) {
+      return NextResponse.json(
+        {
+          message: "Amount is required.",
+          order: null,
+          error: "Page price or auction price is missing.",
+        },
+        { status: 400 }
+      );
+    }
 
     const receipt = `receipt#${uniqid()}`;
+    const orderId = uniqid("order-");
 
     const rzrOrder = await razorpay.orders.create({
-      amount: priceType === "auctionPrice" ? auctionPrice : amount * 100,
+      amount: amount * 100, // Amount in paise
       currency: "INR",
       receipt: receipt,
-      notes: {
-        pageId,
-      },
+      notes: { pageId },
     });
 
-    if (pageDetail) {
-      createdOrder = await Order.create({
-        customerInfo: data,
-        ofPage: [pageId],
-        amount: priceType === "auctionPrice" ? auctionPrice : amount,
-        device,
-        rzrPayOrderId: rzrOrder.id,
-        rzrPayEntity: rzrOrder.entity,
-        rzrPayStatus: rzrOrder.status,
-        owner: sub,
-        receipt,
-      });
-    }
+    const createdOrder = await Order.create({
+      customerInfo: data,
+      ofPage: [pageId],
+      amount,
+      rzrPayOrderId: rzrOrder.id,
+      rzrPayEntity: rzrOrder.entity,
+      rzrPayStatus: rzrOrder.status,
+      owner: sub,
+      receipt,
+      orderId,
+    });
 
     if (createdOrder) {
-      pageDetail.pageOrders.push(createdOrder._id);
+      pageDetail.pageOrders.push(createdOrder.orderId);
       await pageDetail.save();
     }
 
-    return NextResponse.json({
-      msg: "Order created",
-      order: createdOrder,
-      status: 200,
-    });
+    return NextResponse.json(
+      {
+        message: "Order created successfully.",
+        order: createdOrder,
+        error: null,
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    console.log("error in creating order =>", error);
-    return NextResponse.json({ msg: error, order: null }, { status: 500 });
+    console.error("Error in creating order:", error);
+    const errorMessage = serverError(error);
+
+    return NextResponse.json(
+      {
+        message:
+          "An error occurred while creating the order. Please try again.",
+        order: null,
+        error: errorMessage,
+      },
+      { status: 500 }
+    );
   }
 }

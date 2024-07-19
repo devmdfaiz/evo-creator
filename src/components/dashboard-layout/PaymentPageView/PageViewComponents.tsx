@@ -1,23 +1,25 @@
-"use client";
 import {
   ProductPageForm,
   ProductPageFormMobile,
 } from "@/components/global/paymentPage/PageForm";
+import { cn } from "@/lib/utils/utils";
+import { ReactNode } from "react";
+
 import {
   ProductPageContact,
-  ProductPageCover,
   ProductPageDesc,
   ProductPageFaq,
   ProductPageFooter,
   ProductPageProfile,
-  ProductPageTestimonial,
   ProductPageTitle,
-  WhatsappSupprotBar,
-} from "@/components/global/paymentPage/SimplePage";
-import { useFileHandler, usePageFormInputs } from "@/context/zustand/store";
-import { TPagePrice } from "@/lib/types/index.type";
-import { cn } from "@/lib/utils/utils";
-import { ReactNode } from "react";
+  WhatsappSupportBar,
+} from "@/components/global/paymentPage/pageComponents/ServerPageComponent";
+import {
+  ProductPageCover,
+  ProductPageTestimonial,
+} from "@/components/global/paymentPage/pageComponents/ClientsPageComponenta";
+import { Session } from "next-auth";
+import { pageThemeProvider } from "@/lib/constants/index.constant";
 
 /**
  * This function is for structure page components according to dispay sizes, theme and color
@@ -29,87 +31,43 @@ export const PageWrapper = ({
   fieldValue,
   color,
   theme,
-  mode,
-  display,
-  pagePrice,
   children,
   className,
 }: {
   fieldValue: any;
   color: string;
   theme: string;
-  mode: "preview" | "production";
-  display: "mobile" | "desktop";
-  pagePrice?: TPagePrice;
   children: ReactNode;
   className?: string;
 }) => {
-  const inputs = usePageFormInputs();
+  const pageTheme = pageThemeProvider(theme);
 
   return (
-    <main className={cn(`bg-white min-h-screen`, className)}>
+    <main className={cn(`${pageTheme} min-h-screen`, className)}>
+      <div className="h-2 w-full" />
+      <ProductPageFormMobile
+        className="lg:hidden z-50"
+        priceDetails={fieldValue?.pagePrice!}
+        color={color}
+        theme={theme}
+        action="Checkout"
+      />
+
       <div className="container mx-auto flex gap-10">
-        <div className="pb-36 lg:pb-0" style={{ flex: "1" }}>
+        <div
+          className="pb-36 lg:pb-0 mt-11 flex flex-col justify-start items-start gap-7 overflow-hidden"
+          style={{ flex: "1" }}
+        >
           {children}
         </div>
-        <div className="" style={{ flex: ".5" }}>
-          {mode === "preview" ? (
-            <>
-              {display === "desktop" ? (
-                <ProductPageForm
-                  className="block"
-                  fieldsData={
-                    mode === "preview"
-                      ? inputs.pageOrderInputs
-                      : fieldValue?.settings?.formInputs
-                  }
-                  priceDetails={
-                    mode === "preview" ? pagePrice : fieldValue?.pagePrice!
-                  }
-                  color={color}
-                  theme={theme}
-                />
-              ) : (
-                <ProductPageFormMobile
-                  className="lg:block"
-                  priceDetails={
-                    mode === "preview" ? pagePrice : fieldValue?.pagePrice!
-                  }
-                  color={color}
-                  theme={theme}
-                  action="Checkout"
-                />
-              )}
-            </>
-          ) : (
-            <>
-              <ProductPageForm
-                fieldsData={fieldValue?.settings?.formInputs}
-                priceDetails={fieldValue?.pagePrice!}
-                color={color}
-                theme={theme}
-              />
-
-              <ProductPageFormMobile
-                priceDetails={fieldValue?.pagePrice!}
-                color={color}
-                theme={theme}
-                action="Checkout"
-              />
-            </>
-          )}
-
-          {(mode === "preview"
-            ? inputs.whatsappSupport
-            : fieldValue?.settings?.whatsappSupport) && (
-            <WhatsappSupprotBar
-              WNumber={
-                mode === "preview"
-                  ? inputs.whatsappSupport
-                  : fieldValue?.settings?.whatsappSupport
-              }
-            />
-          )}
+        <div className="hidden lg:block" style={{ flex: ".5" }}>
+          <ProductPageForm
+            fieldsData={fieldValue?.settings?.formInputs}
+            priceDetails={fieldValue?.pagePrice!}
+            color={color}
+            theme={theme}
+            buttonText={fieldValue?.settings?.buttonText}
+          />
         </div>
       </div>
     </main>
@@ -127,144 +85,94 @@ export const PageWrapper = ({
 export const PageComponents = ({
   fieldValue,
   theme,
-  mode,
-  display,
-  type,
+  session,
+  color,
 }: {
   fieldValue: any;
   theme: string;
-  mode: "preview" | "production";
-  display: "mobile" | "desktop";
-  type?: string;
+  session: Session | null;
+  color: string;
 }) => {
-  const inputs = usePageFormInputs();
-  const files = useFileHandler();
-
-  const color = inputs?.color?.hex;
-  // const theme = inputs?.template;
-
+  const profileImg =
+    fieldValue?.pageContent?.coverImg?.customise?.fileData?.uploadedFileUrl;
 
   return (
     <>
       {/* Title */}
-      {(inputs.title || fieldValue?.pageContent?.title) && (
-        <ProductPageTitle
-          title={
-            mode === "preview" ? inputs.title : fieldValue?.pageContent?.title
-          }
-        />
+      {fieldValue?.pageContent?.title && (
+        <ProductPageTitle title={fieldValue?.pageContent?.title} />
       )}
 
       {/* Profile section */}
       {fieldValue?.theme?.name && (
         <ProductPageProfile
           name={fieldValue?.theme?.name}
-          profile={"/facebook.png"}
+          profile={profileImg ? profileImg : session?.user?.avatarUrl}
         />
       )}
 
       {/* Cover */}
-      {(mode === "preview"
-        ? files.imagesPreview.details
-        : fieldValue?.pageContent?.coverImg
-      ).length > 0 && (
-        <ProductPageCover
-          mode={mode}
-          cover={
-            mode === "preview"
-              ? files.imagesPreview.details
-              : fieldValue?.pageContent?.coverImg
-          }
-        />
+      {fieldValue?.files?.details?.length > 0 && (
+        <ProductPageCover cover={fieldValue?.files?.details} theme={theme} />
       )}
 
       {/* desc */}
-      {(inputs.pageDesc || fieldValue?.pageContent?.pageDesc) && (
-        <ProductPageDesc
-          desc={
-            mode === "preview"
-              ? inputs.pageDesc
-              : fieldValue?.pageContent?.pageDesc
-          }
-        />
+      {fieldValue?.pageContent?.pageDesc && (
+        <ProductPageDesc desc={fieldValue?.pageContent?.pageDesc} />
       )}
 
       {/* contact */}
-      {inputs.pageOwner ||
-      fieldValue?.theme?.name ||
-      inputs.contEmail ||
+      {fieldValue?.theme?.name ||
       fieldValue?.pageContent?.contEmail ||
-      inputs.contPhone ||
       fieldValue?.pageContent?.contPhone ? (
         <ProductPageContact
-          name={mode === "preview" ? inputs.pageOwner : fieldValue?.theme?.name}
-          email={
-            mode === "preview"
-              ? inputs.contEmail
-              : fieldValue?.pageContent?.contEmail
-          }
-          phone={
-            mode === "preview"
-              ? inputs.contPhone
-              : fieldValue?.pageContent?.contPhone
-          }
+          name={fieldValue?.theme?.name}
+          email={fieldValue?.pageContent?.contEmail}
+          phone={fieldValue?.pageContent?.contPhone}
         />
       ) : (
         ""
       )}
 
       {/* testimonial */}
-      <h4 className="text-lg font-semibold my-2">Testimonials</h4>
-      {(mode === "preview"
-        ? inputs.testimonials
-        : fieldValue?.pageContent?.testimonialsFields
-      ).length > 0 && (
-        <>
+      {fieldValue?.pageContent?.testimonialsFields?.length > 0 && (
+        <div className="testimonial-main-container w-full h-fit">
+          <h4 className="text-lg font-semibold">Testimonials</h4>
           <ProductPageTestimonial
-            testimonials={
-              mode === "preview"
-                ? inputs.testimonials
-                : fieldValue?.pageContent?.testimonialsFields
-            }
+            testimonials={fieldValue?.pageContent?.testimonialsFields}
+            color={color}
             theme={theme}
           />
-        </>
+        </div>
       )}
 
       {/* faq */}
-      <h4 className="text-lg font-semibold my-2">
-        Frequently Asked Question(s)
-      </h4>
-      {(mode === "preview" ? inputs.faqs : fieldValue?.pageContent?.faqs)
-        .length > 0 &&
-        (mode === "preview" ? inputs.faqs : fieldValue?.pageContent?.faqs).map(
-          (faq: any, i: number) => (
+      {fieldValue?.pageContent?.faqs?.length > 0 &&
+        (fieldValue?.pageContent?.faqs).map((faq: any, i: number) => (
+          <div>
+            <h4 className="text-lg font-semibold">
+              Frequently Asked Question(s)
+            </h4>
             <ProductPageFaq
               key={i}
               trigger={faq?.question}
               content={faq?.answer}
             />
-          )
-        )}
+          </div>
+        ))}
 
       {/* footer */}
-      <div className="my-6 flex justify-center items-center flex-wrap">
-        {(mode === "preview"
-          ? inputs.policies
-          : fieldValue?.pageContent?.policies
-        ).length > 0 &&
-          (mode === "preview"
-            ? inputs.policies
-            : fieldValue?.pageContent?.policies
-          ).map((policy: any, i: number) => (
+      {fieldValue?.pageContent?.policies?.length > 0 &&
+        (fieldValue?.pageContent?.policies).map((policy: any, i: number) => (
+          <div className="flex justify-center items-center flex-wrap">
             <ProductPageFooter
               key={i}
               containt={policy?.content}
               title={policy?.title}
               theme={theme}
             />
-          ))}
-      </div>
+          </div>
+        ))}
     </>
   );
 };

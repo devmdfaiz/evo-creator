@@ -1,5 +1,5 @@
 "use client";
-import SmallCard from "./Card";
+import SmallCard from "./DashboardCard";
 
 const PageCardWrapper = ({ pages }: { pages: any[] }) => {
   let totalRevenue = 0;

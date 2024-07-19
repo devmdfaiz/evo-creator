@@ -5,7 +5,7 @@ import TypographyH3 from "../typography/TypographyH3";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NavBar from "./NavBar";
 import { HamburgerMenuIcon } from "@radix-ui/react-icons";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Skeleton } from "../ui/skeleton";
 
@@ -17,21 +17,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "../ui/button";
-import { Landmark, LogOut, Pencil, User } from "lucide-react";
+import { Button, buttonVariants } from "../ui/button";
+import {
+  Landmark,
+  LogOut,
+  Pencil,
+  ShoppingBasket,
+  SquareArrowOutUpRight,
+  User,
+} from "lucide-react";
 
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
 
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -68,17 +72,20 @@ import {
 } from "@/lib/constants/index.constant";
 import { bankFormSchema, showToast } from "@/lib/zod/index.zodSchema";
 import { Session } from "next-auth";
-import Image from "next/image";
 import { storageClient } from "@/lib/utils/appwrite/appwriteClient";
+import TypographyH4 from "../typography/TypographyH4";
+import TypographyMuted from "../typography/TypographyMuted";
+import TypographyP from "../typography/TypographyP";
+import { format } from "date-fns";
+import Link from "next/link";
 
 const DashBoardHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const { data, status } = useSession();
 
-  console.log("header user", data);
-
   const [isBankSheet, setIsBankSheet] = useState(false);
   const [isProfileSheet, setIsProfileSheet] = useState(false);
+  const [isPurchaseSheet, setIsPurchaseSheet] = useState(false);
 
   return (
     <header className="py-3 px-5 md:px-10 border-b border-border flex justify-between items-center bg-card shadow">
@@ -123,6 +130,19 @@ const DashBoardHeader = () => {
                     <span>Profile</span>
                   </Button>
                 </DropdownMenuItem>
+
+                <DropdownMenuItem className="p-0">
+                  <Button
+                    className="p-2 w-full h-full justify-start"
+                    variant={"ghost"}
+                    onClick={() => {
+                      setIsPurchaseSheet(true);
+                    }}
+                  >
+                    <ShoppingBasket className="mr-2 h-4 w-4" />
+                    <span>Your purchase</span>
+                  </Button>
+                </DropdownMenuItem>
                 <DropdownMenuItem className="p-0">
                   <Button
                     className="w-full h-full justify-start p-2"
@@ -148,7 +168,7 @@ const DashBoardHeader = () => {
             </DropdownMenu>
           </>
         ) : status === "loading" ? (
-          <Skeleton className="h-8 w-8 rounded-full" />
+          <Skeleton className="h-9 w-9 rounded-full" />
         ) : null}
       </div>
 
@@ -160,6 +180,14 @@ const DashBoardHeader = () => {
         <ProfileDetails
           isProfileSheet={isProfileSheet}
           setIsProfileSheet={setIsProfileSheet}
+          userData={data}
+        />
+      )}
+
+      {status === "authenticated" && (
+        <PurchaseDetails
+          isPurchaseSheet={isPurchaseSheet}
+          setIsPurchaseSheet={setIsPurchaseSheet}
           userData={data}
         />
       )}
@@ -226,6 +254,110 @@ async function handleProfileUpload(
     setIsProfileUploading(false);
   }
 }
+
+export const PurchaseDetails = ({
+  isPurchaseSheet,
+  setIsPurchaseSheet,
+  userData,
+}: {
+  isPurchaseSheet: boolean;
+  userData: Session | null;
+  setIsPurchaseSheet: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const [purchase, setPurchase] = useState<any[]>([]);
+  const [isPurchaseLoading, setIsPurchaseLoading] = useState(false);
+  const { data, status } = useSession();
+
+  useMemo(() => {
+    setIsPurchaseLoading(true);
+    if (status === "authenticated" && isPurchaseSheet) {
+      axios
+        .post("/api/order/purchase-orders", { phone: data.user.phone })
+        .then((res) => {
+          const { data, status: axiosStatus } = res;
+
+          if (axiosStatus === 200) {
+            setPurchase(data.ordersData);
+          }
+        })
+        .catch((error) => {
+          const errorMessage = clientError(error);
+          setPurchase(["nothing"]);
+          showToast(errorMessage, null, "Close", () => {});
+        })
+        .finally(() => {
+          setIsPurchaseLoading(false);
+        });
+    }
+  }, [status, isPurchaseSheet]);
+
+  return (
+    <>
+      {/* Purchase display sheet */}
+      <Sheet open={isPurchaseSheet} onOpenChange={setIsPurchaseSheet}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Purchase Details</SheetTitle>
+            <SheetDescription>
+              View the details of your recent purchases below.
+            </SheetDescription>
+          </SheetHeader>
+          {/* Purchase List here */}
+          <ScrollArea className="w-full h-[calc(100vh-80px)]">
+            <>
+              {purchase[0] === "nothing" && (
+                <div className="w-full h-[calc(100vh-80px)] flex items-center justify-center relative">
+                  <TypographyP>
+                    No purchase found for the this phone number:{" "}
+                    {data?.user.phone}.
+                  </TypographyP>
+                </div>
+              )}
+            </>
+
+            {!isPurchaseLoading ? (
+              <>
+                {purchase.length > 0 &&
+                  purchase[0] !== "nothing" &&
+                  purchase.map((purchaseItem, i) => (
+                    <div
+                      key={i}
+                      className="flex gap-3 items-center justify-center border w-full h-fit rounded-md px-4 py-2 mt-3"
+                    >
+                      <div className="grow">
+                        <TypographyH4 className="text-base">
+                          {purchaseItem.pageTitle}
+                        </TypographyH4>
+                        <TypographyMuted className="text-xs">
+                          <b>Description:</b> {purchaseItem.pageDesc}
+                        </TypographyMuted>
+                        <TypographyMuted className="text-xs">
+                          <b>Purchase At:</b>{" "}
+                          {format(purchaseItem.createdAt, "dd-MMM-yyyy")}
+                        </TypographyMuted>
+                      </div>
+                      <Link
+                        target="_blank"
+                        className={buttonVariants({
+                          variant: "outline",
+                          size: "icon",
+                        })}
+                        href={`/thank-you?order-id=${purchaseItem.orderId}`}
+                      >
+                        <SquareArrowOutUpRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  ))}
+              </>
+            ) : (
+              <ButtonSpinner PClassName="mt-3 w-full flex items-center justify-center" />
+            )}
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+};
 
 export const ProfileDetails = ({
   isProfileSheet,

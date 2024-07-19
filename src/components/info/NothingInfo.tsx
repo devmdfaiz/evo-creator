@@ -1,6 +1,7 @@
 import TypographyMuted from '../typography/TypographyMuted'
 import Link from 'next/link'
 import { PlusCircle } from 'lucide-react'
+import { buttonVariants } from '../ui/button'
 
 const NothingInfo = () => {
   return (
@@ -11,9 +12,11 @@ const NothingInfo = () => {
       </TypographyMuted>
       <Link
         href="/payment-page/create"
-        className="text-primary flex items-center justify-center py-2 px-4 gap-1 hover:bg-primary/10 rounded-md"
+        className={buttonVariants({
+          variant: "outline",
+        })}
       >
-        <PlusCircle className="w-5 h-5" />
+        <PlusCircle className="mr-2 w-5 h-5" />
         Create Page
       </Link>
     </div>

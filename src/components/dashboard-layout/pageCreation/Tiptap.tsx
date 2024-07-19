@@ -24,11 +24,13 @@ import { useCallback } from "react";
 import { useZustandSelector } from "@/context/zustand/slectors";
 import { usePageFormInputs } from "@/context/zustand/store";
 import { ControllerRenderProps, FieldValues } from "react-hook-form";
+import { z } from "zod";
+import { pageFormSchema } from "@/lib/zod/index.zodSchema";
 
 const Tiptap = ({
   field,
 }: {
-  field: ControllerRenderProps<FieldValues, "pageDesc">;
+  field: ControllerRenderProps<z.infer<typeof pageFormSchema>>;
 }) => {
   const pageInputsState = useZustandSelector(usePageFormInputs);
   const inputs = {

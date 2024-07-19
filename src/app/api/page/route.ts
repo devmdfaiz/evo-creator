@@ -41,7 +41,6 @@ export async function POST(req: Request) {
     const pages = await Page.aggregate([
       {
         $match: {
-          pageOrders: { $exists: true, $ne: [] },
           creator: session.user.sub,
           createdAt: {
             $gte: new Date(fromDate),
@@ -49,36 +48,46 @@ export async function POST(req: Request) {
           },
         },
       },
-      { $unwind: "$pageOrders" },
       {
         $lookup: {
           from: "orders",
           localField: "pageOrders",
-          foreignField: "_id",
-          as: "order",
+          foreignField: "orderId",
+          as: "orders",
         },
       },
-      { $unwind: "$order" },
+      {
+        $unwind: {
+          path: "$orders",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $match: {
-          "order.isPaid": true,
+          $or: [
+            { "orders.isPaid": true },
+            { "orders": { $exists: false } },
+          ],
         },
       },
       {
         $group: {
           _id: "$_id",
-          totalRevenue: { $sum: "$order.amount" },
-          paidOrdersCount: { $sum: 1 },
+          totalRevenue: { $sum: { $cond: [{ $ifNull: ["$orders.isPaid", false] }, "$orders.amount", 0] } },
+          paidOrdersCount: { $sum: { $cond: [{ $ifNull: ["$orders.isPaid", false] }, 1, 0] } },
           metaTitle: { $first: "$metaData.metaTitle" },
-          coverImg: { $first: "$pageContent.coverImg" },
+          seoHashUrl: { $first: "$metaData.seoHashUrl" },
+          pageHashUrl: { $first: "$pageHashUrl" },
+          files: { $first: "$files" },
           pageId: { $first: "$pageId" },
           pagePrice: { $first: "$pagePrice" },
           pageView: { $first: "$pageView" },
-          isPublished: { $first: "$isPublished" },
+          publishStatus: { $first: "$publishStatus" },
           createdAt: { $first: "$createdAt" },
         },
       },
     ]);
+    
 
     // Return a successful response with the aggregated pages data
     return NextResponse.json(

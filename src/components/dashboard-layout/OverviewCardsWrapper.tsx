@@ -1,25 +1,8 @@
 "use client";
-import React, { useContext, useState } from "react";
-import SmallCard from "./Card";
-import { growthCalculation } from "./OrdersCardWrapper";
+import React, { useContext } from "react";
+import SmallCard from "./DashboardCard";
 import { DateContext } from "@/context/DateProvider";
-
-const getUniquePageIds = (
-  currentPeriodOrder: any[],
-  comparisonPeriodOrder: any[]
-): any[] => {
-  const currentPeriodOrderMap = currentPeriodOrder.map((order) => order.pageId);
-  const currentPeriodOrderPageId = Array.from(new Set(currentPeriodOrderMap));
-
-  const comparisonPeriodOrderMap = comparisonPeriodOrder.map(
-    (order) => order.pageId
-  );
-  const comparisonPeriodOrderPageId = Array.from(
-    new Set(comparisonPeriodOrderMap)
-  );
-
-  return [comparisonPeriodOrderPageId, currentPeriodOrderPageId];
-};
+import { dashboardGrowthCalculation, getUniquePageIds } from "@/lib/utils/utils";
 
 const OverviewCardsWrapper = ({
   currentPeriod,
@@ -29,7 +12,7 @@ const OverviewCardsWrapper = ({
   comparisonPeriod: any[];
 }) => {
 
-  const { fromDate, toDate, dayGap, date } = useContext(DateContext);
+  const { dayGap } = useContext(DateContext);
 
   const [comparisonPeriodOrderPageId, currentPeriodOrderPageId] =
     getUniquePageIds(currentPeriod, comparisonPeriod);
@@ -42,11 +25,10 @@ const OverviewCardsWrapper = ({
   const {
     currentFilteredOrders,
     currentTotalRevenue,
-    faildOrderGrowth,
     orderGrowth,
     revenueGrowth,
     succOrderGrowth,
-  } = growthCalculation({
+  } = dashboardGrowthCalculation({
     currentPeriod,
     comparisonPeriod,
   });
@@ -59,8 +41,6 @@ const OverviewCardsWrapper = ({
         desc={`${parseInt(JSON.stringify(orderGrowth))}% from last ${
           Number.isNaN(dayGap) ? 0 : dayGap
         } days`}
-        data={currentPeriod}
-        key="value"
       />
       <SmallCard
         title="Total Revenue"
@@ -68,8 +48,6 @@ const OverviewCardsWrapper = ({
         desc={`${parseInt(JSON.stringify(revenueGrowth))}% from last ${
           Number.isNaN(dayGap) ? 0 : dayGap
         } days`}
-        data={currentPeriod}
-        key="value"
       />
       <SmallCard
         title="Sales Growth"
@@ -77,8 +55,6 @@ const OverviewCardsWrapper = ({
         desc={`${parseInt(JSON.stringify(revenueGrowth))}% from last ${
           Number.isNaN(dayGap) ? 0 : dayGap
         } days`}
-        data={currentPeriod}
-        key="value"
       />
       <SmallCard
         title="Page Sold"
@@ -86,8 +62,6 @@ const OverviewCardsWrapper = ({
         desc={`${parseInt(JSON.stringify(pageOrderGrowth))}% from last ${
           Number.isNaN(dayGap) ? 0 : dayGap
         } days`}
-        data={currentPeriod}
-        key="value"
       />
       <SmallCard
         title="Total Customers"
@@ -95,8 +69,6 @@ const OverviewCardsWrapper = ({
         desc={`${parseInt(JSON.stringify(succOrderGrowth))}% from last ${
           Number.isNaN(dayGap) ? 0 : dayGap
         } days`}
-        data={currentPeriod}
-        key="value"
       />
     </div>
   );

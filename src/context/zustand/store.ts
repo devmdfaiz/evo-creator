@@ -5,6 +5,7 @@ import {
   TErrorHandler,
   TFileHandler,
   TPageFormInputs,
+  TPageSeo,
   TPaymentPageFieldData,
 } from "./store.types";
 import { CATEGORIES_DATA } from "@/lib/constants/index.constant";
@@ -42,13 +43,13 @@ export const usePageFormInputs = create(
       discountedPrice: null,
       offerDiscountedPrice: false,
       title: "",
-      coverImg: "",
+      // files: "",
       pageDesc: "",
       contPhone: null,
       contEmail: "",
-      testimonials: [{ testiName: "", testiMsg: "" }],
-      faqs: [{ question: "", answer: "" }],
-      policies: [{ title: "", content: "" }],
+      testimonials: [],
+      faqs: [],
+      policies: [],
       pageOrderInputsInitial: pageOrderInputsInitialValue,
       pageOrderInputs: [
         { type: "text-text", placeholder: "Full Name", required: true },
@@ -56,10 +57,10 @@ export const usePageFormInputs = create(
         { type: "email-email", placeholder: "Email", required: true },
       ],
       thankYouNote: "",
-      redirectionUrl: "",
+      buttonText: "Buy Now",
       metaPixel: "",
       googleAnalytics: "",
-      whatsappSupport: null,
+      // whatsappSupport: null,
       pageExpiry: false,
       pageExpiryDate: undefined,
       deactivateSales: false,
@@ -77,7 +78,7 @@ export const usePageFormInputs = create(
       setOfferDiscountedPrice: (offerDiscountedPrice) =>
         set(() => ({ offerDiscountedPrice })),
       setTitle: (title) => set(() => ({ title })),
-      setCoverImg: (coverImg) => set(() => ({ coverImg })),
+      // setFiles: (files) => set(() => ({ files })),
       setPageDesc: (pageDesc) => set(() => ({ pageDesc })),
       setContPhone: (contPhone) => set(() => ({ contPhone })),
       setContEmail: (contEmail) => set(() => ({ contEmail })),
@@ -217,10 +218,10 @@ export const usePageFormInputs = create(
         });
       },
       setThankYouNote: (thankYouNote) => set(() => ({ thankYouNote })),
-      setRedirectionUrl: (redirectionUrl) => set(() => ({ redirectionUrl })),
+      setButtonText: (buttonText) => set(() => ({ buttonText })),
       setMetaPixel: (metaPixel) => set(() => ({ metaPixel })),
       setGoogleAnalytics: (googleAnalytics) => set(() => ({ googleAnalytics })),
-      setWhatsappSupport: (whatsappSupport) => set(() => ({ whatsappSupport })),
+      // setWhatsappSupport: (whatsappSupport) => set(() => ({ whatsappSupport })),
       setPageExpiry: (pageExpiry) => set(() => ({ pageExpiry })),
       setPageExpiryDate: (pageExpiryDate) => set(() => ({ pageExpiryDate })),
       setDeactivateSales: (deactivateSales) => set(() => ({ deactivateSales })),
@@ -373,6 +374,24 @@ export const useFileHandler = create(
     }),
     {
       name: "file-handler-storage",
+      storage: createJSONStorage(() => urlHashStorage),
+    }
+  )
+);
+
+
+export const usePageSeo = create(
+  persist<TPageSeo>(
+    (set) => ({
+      metaTitle: "",
+      keywords: "",
+      metaDesc: "",
+      setMetaTitle: (metaTitle) => set(() => ({ metaTitle })),
+      setKeywords: (keywords) => set(() => ({ keywords })),
+      setMetaDesc: (metaDesc) => set(() => ({ metaDesc })),
+    }),
+    {
+      name: "page-seo-handler-storage",
       storage: createJSONStorage(() => urlHashStorage),
     }
   )

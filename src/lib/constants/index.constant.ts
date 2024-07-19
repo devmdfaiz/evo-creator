@@ -4,7 +4,18 @@ export const pageThemeProvider = (theme: string) =>
   `${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`;
 
 export const pageInputThemeProvider = (theme: string) =>
-  `${theme === "light" ? "border-black/50" : "border-white/50"}`;
+  `${
+    theme === "light"
+      ? "bg-gray-200/60 text-white"
+      : "bg-white-200/60 text-black"
+  }`;
+
+export const pageCarouselThemeProvider = (theme: string) =>
+  `${
+    theme === "light"
+      ? "bg-white-200/60 hover:bg-black-200/60 hover:text-black text-white border-black text-black"
+      : "bg-black-200/60 hover:bg-white-200/60 hover:text-white text-black border-white text-white"
+  }`;
 
 export const pageInputBackgroundThemeProvider = (theme: string) =>
   `${

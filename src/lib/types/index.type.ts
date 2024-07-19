@@ -1,5 +1,8 @@
+import { TPageFormInputs } from "@/context/zustand/store.types";
 import { ReactNode } from "react";
-import { FieldErrors, UseFormRegister } from "react-hook-form";
+import { FieldErrors, UseFormRegister, UseFormReturn } from "react-hook-form";
+import { pageFormSchema } from "../zod/index.zodSchema";
+import { z } from "zod";
 
 export interface TPageOrderInputs {
   placeholder: string;
@@ -29,7 +32,8 @@ export interface TPagePolicies {
 }
 
 export interface TDetailsFields {
-  form: any;
+  form: UseFormReturn<z.infer<typeof pageFormSchema>>;
+  inputs: TPageFormInputs;
 }
 
 export interface TSettingFields {
@@ -37,7 +41,7 @@ export interface TSettingFields {
 }
 
 export interface TFieldAddEditDialog {
-  form: any;
+  form: UseFormReturn<z.infer<typeof pageFormSchema>>;
   action: string;
   children: ReactNode;
   actionType: "create" | "edit";
@@ -57,6 +61,7 @@ export interface TProductPageForm {
   priceDetails: TPagePrice;
   color: string;
   theme: string;
+  buttonText: string;
   className?: string;
 }
 

@@ -39,7 +39,7 @@ export interface TPageFormInputs {
   offerDiscountedPrice: boolean;
   // Details page fields
   title: string;
-  coverImg: string;
+  // files: string;
   pageDesc: string;
   contPhone: number | null;
   contEmail: string;
@@ -50,10 +50,10 @@ export interface TPageFormInputs {
   pageOrderInputsInitial: PageField;
   pageOrderInputs: TPageOrderInputs[];
   thankYouNote: string;
-  redirectionUrl: string;
+  buttonText: string;
   metaPixel: string;
   googleAnalytics: string;
-  whatsappSupport: number | null;
+  // whatsappSupport: number | null;
   pageExpiry: boolean;
   pageExpiryDate: Date | undefined;
   deactivateSales: boolean;
@@ -70,7 +70,7 @@ export interface TPageFormInputs {
   setDiscountedPrice: (value: number | null) => void;
   setOfferDiscountedPrice: (value: boolean) => void;
   setTitle: (value: string) => void;
-  setCoverImg: (value: string) => void;
+  // setFiles: (value: string) => void;
   setPageDesc: (value: string) => void;
   setContPhone: (value: number | null) => void;
   setContEmail: (value: string) => void;
@@ -94,10 +94,10 @@ export interface TPageFormInputs {
   resetPageOrderInputs: () => void;
   refillPageOrderInputs: (index: number) => void;
   setThankYouNote: (value: string) => void;
-  setRedirectionUrl: (value: string) => void;
+  setButtonText: (value: string) => void;
   setMetaPixel: (value: string) => void;
   setGoogleAnalytics: (value: string) => void;
-  setWhatsappSupport: (value: number | null) => void;
+  // setWhatsappSupport: (value: number | null) => void;
   setPageExpiry: (value: boolean) => void;
   setPageExpiryDate: (value: Date | undefined) => void;
   setDeactivateSales: (value: boolean) => void;
@@ -129,4 +129,13 @@ export interface TFileHandler {
     uploadedFileId?: string;
     uploadedFileUrl?: string;
   }) => void;
+}
+
+export interface TPageSeo {
+  metaTitle: string;
+  metaDesc: string;
+  keywords: string;
+  setMetaTitle: (value: string) => void;
+  setMetaDesc: (value: string) => void;
+  setKeywords: (value: string) => void;
 }

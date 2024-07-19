@@ -1,8 +1,8 @@
 "use client";
 import { useContext } from "react";
-import SmallCard from "./Card";
-import { growthCalculation } from "./OrdersCardWrapper";
 import { DateContext } from "@/context/DateProvider";
+import { dashboardGrowthCalculation } from "@/lib/utils/utils";
+import DashboardCard from "./DashboardCard";
 
 const CustomersOrdersWrapper = ({
   currentPeriod,
@@ -18,21 +18,21 @@ const CustomersOrdersWrapper = ({
     currentTotalRevenue,
     revenueGrowth,
     succOrderGrowth,
-  } = growthCalculation({
+  } = dashboardGrowthCalculation({
     currentPeriod,
     comparisonPeriod,
   });
 
   return (
     <div className="flex flex-wrap justify-center gap-5">
-      <SmallCard
+      <DashboardCard
         title="Total Customers"
         goal={currentFilteredOrders?.length}
         desc={`${parseInt(JSON.stringify(succOrderGrowth))}% from last ${
           Number.isNaN(dayGap) ? 0 : dayGap
         } days`}
       />
-      <SmallCard
+      <DashboardCard
         title="Total Revenue"
         goal={`₹${currentTotalRevenue}`}
         desc={`${parseInt(JSON.stringify(revenueGrowth))}% from last ${

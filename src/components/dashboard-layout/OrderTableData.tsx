@@ -14,13 +14,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils/utils";
+import { cn, downloadImage, generateQR } from "@/lib/utils/utils";
 import DataTable from "../global/tables/DataTable";
 import { format } from "date-fns";
 import Link from "next/link";
 import IconWhatsapp from "../icons/WhatsappIcon";
-import { Dispatch, SetStateAction, useState } from "react";
-import QRCode from "qrcode";
+import { useState } from "react";
+
 import {
   Dialog,
   DialogContent,
@@ -29,20 +29,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { downloadImage } from "./PagesTableData";
-
-export const generateQR = (
-  text: string,
-  setQrCodeUrl: Dispatch<SetStateAction<string>>
-) => {
-  QRCode.toDataURL(text, { version: 7 })
-    .then((url: string) => {
-      setQrCodeUrl(url);
-    })
-    .catch((err: any) => {
-      console.error(err);
-    });
-};
 
 export const PhoneCell = ({ row }: { row: any }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState("#");

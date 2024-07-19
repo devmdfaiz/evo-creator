@@ -127,8 +127,18 @@ a {
 .embla__container {
   display: flex;
 }
+.embla__slide__cover {
+  flex: 0 0 400px;
+  min-width: 0;
+}
+
+.embla__slide__testimonial {
+  flex: 0 0 300px;
+  min-width: 0;
+}
+
 .embla__slide {
-  flex: 0 0 100%;
+  flex: 0 0 300px;
   min-width: 0;
 }
 

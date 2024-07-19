@@ -1,15 +1,20 @@
 "use client";
 import TypographyH4 from "@/components/typography/TypographyH4";
 import TypographyMuted from "@/components/typography/TypographyMuted";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils/utils";
+import {
+  cn,
+  formatePageInputs,
+  hashUrlExtractor,
+  redirectToLink,
+} from "@/lib/utils/utils";
 import Tiptap from "./Tiptap";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, UseFormReturn } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -19,11 +24,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CalendarIcon,
   Cross1Icon,
   EyeOpenIcon,
+  FilePlusIcon,
   Pencil1Icon,
   TrashIcon,
 } from "@radix-ui/react-icons";
@@ -40,7 +46,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Image from "next/image";
 import { SliderPicker } from "react-color";
-import { pageFormSchema } from "@/lib/zod/index.zodSchema";
+import { pageFormSchema, showToast } from "@/lib/zod/index.zodSchema";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
@@ -52,6 +58,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -69,7 +85,6 @@ import {
   TSettingFields,
   TTestimonials,
 } from "@/lib/types/index.type";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import axios from "axios";
@@ -80,6 +95,8 @@ import {
   COMPRESSED_FILE,
   SUPPORTED_IMAGE_FORMATES,
 } from "@/lib/constants/index.constant";
+import { clientError } from "@/lib/utils/error/errorExtractor";
+import { evar } from "@/lib/envConstant";
 
 /**
  * This function contains all the forms and inputs for page editor and creator. This use shadcn's tab components, zod validation, react-hook-form and shadcn's sonner.
@@ -87,11 +104,22 @@ import {
  * @returns
  */
 const PageTabs = ({ pageId }: { pageId: string }) => {
+  const [publishingStatus, setPublishingStatus] = useState<
+    "started" | "updating" | "success" | "error"
+  >("started");
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [isWarningAlertDialogOpen, setIsWarningAlertDialogOpen] =
+    useState(false);
+
   const path = usePathname();
   const rout = useRouter();
 
   const inputs = usePageFormInputs();
   const files = useFileHandler();
+
+  useEffect(() => {
+    setIsFormSubmitted(false);
+  }, [inputs, files]);
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof pageFormSchema>>({
@@ -105,16 +133,16 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
       discountedPrice: inputs.discountedPrice,
       offerDiscountedPrice: inputs.offerDiscountedPrice,
       title: inputs.title,
-      coverImg: inputs.coverImg,
+      // files: inputs.files,
       pageDesc: inputs.pageDesc,
       contPhone: inputs.contPhone,
       contEmail: inputs.contEmail,
       pageField: inputs.pageOrderInputsInitial,
       thankYouNote: inputs.thankYouNote,
-      redirectionUrl: inputs.redirectionUrl,
+      buttonText: inputs.buttonText,
       metaPixel: inputs.metaPixel,
       googleAnalytics: inputs.googleAnalytics,
-      whatsappSupport: inputs.whatsappSupport,
+      // whatsappSupport: inputs.whatsappSupport,
       pageExpiry: inputs.pageExpiry,
       pageExpiryDate: inputs.pageExpiryDate,
       deactivateSales: inputs.deactivateSales,
@@ -124,99 +152,146 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
     },
   });
 
-  console.log("cover images", form.watch("coverImg"));
-
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof pageFormSchema>) {
-    const fieldsInput = {
-      values,
-      testimonialsFields: inputs.testimonials,
-      faqs: inputs.faqs,
-      policies: inputs.policies,
-      pageId,
-      fieldDetails: inputs.pageOrderInputs,
-      imageAndProducts: files.imagesPreview,
-    };
+    setPublishingStatus("updating");
+    const fieldsInput = formatePageInputs(inputs, files);
 
-    console.log("fieldsInput", fieldsInput);
+    axios
+      .post("/api/page/update", { fieldsInput, pageId })
+      .then((res) => {
+        const { data, status } = res;
+        if (status === 200) {
+          setIsFormSubmitted(true);
+          showToast(
+            "Page details updated successfully",
+            null,
+            "Close",
+            () => {}
+          );
 
-    axios.post("/api/page/update", fieldsInput).then((res) => {
-      const { data } = res;
-      alert(data.massage);
-    });
+          setPublishingStatus("success");
+        }
+      })
+      .catch((error) => {
+        setIsFormSubmitted(false);
+        setPublishingStatus("error");
+        console.error("Error updating page details:", error);
+        const errorMessage = clientError(error);
+        showToast(errorMessage, null, "Close", () => {});
+      })
+      .finally(() => {
+        setPublishingStatus("started");
+      });
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 relative"
-      >
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => {
-              rout.push("/pages");
-            }}
-            type="button"
-            variant="ghost"
-            size="icon"
-          >
-            <Cross1Icon />
-          </Button>
-          <div className="grow max-h-14 overflow-hidden">
-            <TypographyP>{`${inputs.title?.slice(0, 35)}${
-              inputs.title?.length > 35 ? "..." : ""
-            }`}</TypographyP>
+    <>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4 relative"
+        >
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                if (!isFormSubmitted) {
+                  setIsWarningAlertDialogOpen(true);
+                } else {
+                  redirectToLink("/pages", "_self");
+                }
+              }}
+            >
+              <Cross1Icon />
+            </Button>
+            <div className="grow max-h-14 overflow-hidden">
+              <TypographyP>{`${inputs.title?.slice(0, 35)}${
+                inputs.title?.length > 35 ? "..." : ""
+              }`}</TypographyP>
+            </div>
+            <Button
+              onClick={() => {
+                redirectToLink(`${path}?mode=preview`, "_blank");
+              }}
+              variant="outline"
+              className="lg:hidden"
+            >
+              <EyeOpenIcon className="mr-2" /> Preview
+            </Button>
           </div>
-          <Link
-            href={`${path}?mode=preview`}
-            target="_blank"
-            className="lg:hidden border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground text-accent-foreground flex gap-1 justify-center items-center py-1 px-2 rounded-sm"
-          >
-            <EyeOpenIcon className="mr-2" /> Preview
-          </Link>
-        </div>
 
-        <Tabs defaultValue="product" className="w-full h-full">
-          <TabsList>
-            <TabsTrigger value="product">Product</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-            <TabsTrigger value="customise">Customise</TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="product" className="w-full h-full">
+            <TabsList>
+              <TabsTrigger value="product">Product</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="customise">Customise</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="product">
-            <ScrollArea className="h-[90vh] w-full">
-              <ProductFields form={form} />
-            </ScrollArea>
-          </TabsContent>
-          <TabsContent value="details">
-            <ScrollArea className="h-[90vh] w-full">
-              <DetailsFields form={form} />
-            </ScrollArea>
-          </TabsContent>
-          <TabsContent value="settings">
-            <ScrollArea className="h-[90vh] w-full">
-              <SettingFields form={form} />
-            </ScrollArea>
-          </TabsContent>
-          <TabsContent value="customise">
-            <ScrollArea className="h-[90vh] w-full">
-              <CustomiseFields form={form} />
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
-        <div className="lg:fixed lg:-top-4 lg:right-4 z-50 hidden lg:block">
-          <Button className={cn("w-fit")}>
-            {form.formState.isSubmitting ? <ButtonSpinner /> : "Publish"}
-          </Button>
-        </div>
+            <TabsContent value="product">
+              <ScrollArea className="h-[calc(100vh-201px)] w-full">
+                <ProductFields form={form} inputs={inputs} />
+              </ScrollArea>
+            </TabsContent>
+            <TabsContent value="details">
+              <ScrollArea className="h-[calc(100vh-201px)] w-full">
+                <DetailsFields form={form} inputs={inputs} />
+              </ScrollArea>
+            </TabsContent>
+            <TabsContent value="settings">
+              <ScrollArea className="h-[calc(100vh-201px)] w-full">
+                <SettingFields form={form} inputs={inputs} />
+              </ScrollArea>
+            </TabsContent>
+            <TabsContent value="customise">
+              <ScrollArea className="h-[calc(100vh-201px)] w-full">
+                <CustomiseFields form={form} inputs={inputs} />
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
 
-        <div className="lg:hidden z-50 bg-card bottom-0 left-0 right-0 absolute flex justify-end items-center py-3">
-          <Button className={cn("w-fit")}>Publish</Button>
-        </div>
-      </form>
-    </Form>
+          <div className="flex justify-end items-center border-t pt-3">
+            {publishingStatus === "updating" ? (
+              <ButtonSpinner className="w-7 h-7" />
+            ) : (
+              <div className={buttonVariants({ variant: "default" })}>
+                <Button className={cn("w-fit rounded-none")}>
+                  Publish Changes
+                </Button>
+              </div>
+            )}
+          </div>
+        </form>
+      </Form>
+
+      <AlertDialog
+        open={isWarningAlertDialogOpen}
+        onOpenChange={setIsWarningAlertDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes. Are you sure you want to leave this
+              page? You will lose your data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Stay</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                redirectToLink("/pages", "_self");
+              }}
+            >
+              Leave
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
@@ -225,22 +300,63 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
  * @location components/dashboard-layout/pageCreation/tabs.tsx
  * @returns
  */
-export function ProductFields({ form }: { form: any }) {
-  const inputs = usePageFormInputs();
-
+export function ProductFields({ form, inputs }: TDetailsFields) {
   return (
-    <div className="py-4 w-[90%] ml-0 h-full">
+    <div className="py-4 pl-2 w-[90%] ml-0 h-full">
       <TypographyMuted className={cn("font-semibold py-3")}>
         Step 1 of 4
       </TypographyMuted>
       <div className="flex flex-col gap-4 h-full">
         {/* File uploading */}
         <TypographyH4>Upload your digital files</TypographyH4>
-        <FileUploader
+        {/* <FileUploader
           fileType={COMPRESSED_FILE}
           countLimit={1}
           from="product"
-        />
+        /> */}
+
+        {/* external file link */}
+        <div>
+          <FormField
+            control={form.control}
+            name="extProductLinks"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Add Link of your file</FormLabel>
+                <FormControl>
+                  <div className="w-full h-fit border border-foreground/40 border-dashed rounded py-8 cursor-pointer px-3 space-y-1">
+                    <FormDescription>
+                      Please enter the link to your digital file hosted on
+                      Drive, Dropbox, or another cloud service. This link will
+                      be displayed on the thank you page for users to download
+                      the file.
+                    </FormDescription>
+                    <div className="flex items-center justify-start gap-2 py-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="text-lg font-thin hover:bg-background cursor-default select-none"
+                        type="button"
+                      >
+                        <FilePlusIcon />
+                      </Button>
+                      <Input
+                        className="w-full"
+                        placeholder="e.g, https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view?usp=sharing"
+                        value={inputs.extProductLinks}
+                        onChange={(e) => {
+                          inputs.setExtProductLinks(e.target.value);
+                          field.onChange(e);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <Separator className="bg-foreground/20 h-2" />
 
@@ -502,11 +618,9 @@ export function ProductFields({ form }: { form: any }) {
  * @location components/dashboard-layout/pageCreation/tabs.tsx
  * @returns
  */
-export function DetailsFields({ form }: TDetailsFields) {
-  const inputs = usePageFormInputs();
-
+export function DetailsFields({ form, inputs }: TDetailsFields) {
   return (
-    <div className="py-4 w-[90%] ml-0 h-full">
+    <div className="py-4 pl-2 w-[90%] ml-0 h-full">
       <TypographyMuted className={cn("font-semibold py-3")}>
         Step 2 of 4
       </TypographyMuted>
@@ -586,7 +700,7 @@ export function DetailsFields({ form }: TDetailsFields) {
                       </Button>
                       <Input
                         type="number"
-                        placeholder="eg: 1234567890"
+                        placeholder="e.g., 1234567890"
                         value={JSON.stringify(inputs.contPhone)}
                         onChange={(e) => {
                           inputs.setContPhone(parseInt(e.target.value));
@@ -841,11 +955,9 @@ export function DetailsFields({ form }: TDetailsFields) {
  * @location components/dashboard-layout/pageCreation/tabs.tsx
  * @returns
  */
-export function SettingFields({ form }: TSettingFields) {
-  const inputs = usePageFormInputs();
-
+export function SettingFields({ form, inputs }: TDetailsFields) {
   return (
-    <div className="py-4 w-[90%] ml-0 h-full relative">
+    <div className="py-4 pl-2 w-[90%] ml-0 h-full relative">
       <TypographyMuted className={cn("font-semibold py-3")}>
         Step 3 of 4
       </TypographyMuted>
@@ -990,19 +1102,16 @@ export function SettingFields({ form }: TSettingFields) {
         <div>
           <FormField
             control={form.control}
-            name="redirectionUrl"
+            name="buttonText"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Redirect to URL</FormLabel>
-                <FormDescription>
-                  The URL you want the buyer to visit after completing a payment
-                </FormDescription>
+                <FormLabel>Button Text</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="eg: https://example.com"
-                    value={inputs.redirectionUrl}
+                    placeholder="eg: Buy Now"
+                    value={inputs.buttonText}
                     onChange={(e) => {
-                      inputs.setRedirectionUrl(e.target.value);
+                      inputs.setButtonText(e.target.value);
                       field.onChange(e);
                     }}
                   />
@@ -1031,7 +1140,7 @@ export function SettingFields({ form }: TSettingFields) {
                 </FormDescription>
                 <FormControl>
                   <Input
-                    placeholder="eg: 123456789012"
+                    placeholder="e.g., 123456789012"
                     value={inputs.metaPixel}
                     onChange={(e) => {
                       inputs.setMetaPixel(e.target.value);
@@ -1062,7 +1171,7 @@ export function SettingFields({ form }: TSettingFields) {
                 </FormDescription>
                 <FormControl>
                   <Input
-                    placeholder="eg: UA-123456789-1"
+                    placeholder="e.g., UA-123456789-1"
                     value={inputs.googleAnalytics}
                     onChange={(e) => {
                       inputs.setGoogleAnalytics(e.target.value);
@@ -1084,7 +1193,7 @@ export function SettingFields({ form }: TSettingFields) {
         <TypographyH4>Advanced Options</TypographyH4>
 
         {/* whatsapp support */}
-        <div>
+        {/* <div>
           <FormField
             control={form.control}
             name="whatsappSupport"
@@ -1119,7 +1228,7 @@ export function SettingFields({ form }: TSettingFields) {
               </FormItem>
             )}
           />
-        </div>
+        </div> */}
 
         {/* Page Expiry field */}
         <div className="rounded-lg border p-3 shadow-sm">
@@ -1236,11 +1345,9 @@ export function SettingFields({ form }: TSettingFields) {
  * @location components/dashboard-layout/pageCreation/tabs.tsx
  * @returns
  */
-export function CustomiseFields({ form }: { form: any }) {
-  const inputs = usePageFormInputs();
-
+export function CustomiseFields({ form, inputs }: TDetailsFields) {
   return (
-    <div className="py-4 w-[90%] ml-0 h-full relative">
+    <div className="py-4 pl-2 w-[90%] ml-0 h-full relative">
       <TypographyMuted className={cn("font-semibold py-3")}>
         Step 4 of 4
       </TypographyMuted>
@@ -1262,7 +1369,7 @@ export function CustomiseFields({ form }: { form: any }) {
                 <FormLabel>Page Owner</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="eg: layaro.shop"
+                    placeholder={`e.g., ${evar.projectName}`}
                     value={inputs.pageOwner}
                     onChange={(e) => {
                       inputs.setPageOwner(e.target.value);
@@ -1376,7 +1483,7 @@ export function CustomiseFields({ form }: { form: any }) {
                       color={inputs.color.hex}
                       onChange={(e) => {
                         inputs.setColor(e.hex);
-                        field.onChange(e.hex);
+                        field.onChange(e);
                       }}
                     />
                   </>

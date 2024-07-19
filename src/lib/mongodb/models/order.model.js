@@ -8,7 +8,7 @@ const orderSchema = new Schema(
     },
     ofPage: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         ref: "Page",
       },
     ],
@@ -32,7 +32,7 @@ const orderSchema = new Schema(
     rzrPayStatus: {
       type: String,
     },
-    device: {
+    orderId: {
       type: String,
       required: true,
     },
@@ -50,19 +50,6 @@ const orderSchema = new Schema(
   },
   { timestamps: true }
 );
-
-orderSchema.pre("save", function (next) {
-  const indiaTimezone = "Asia/Kolkata";
-  const formatString = "EEE MMM dd yyyy HH:mm:ss (zzzz)";
-
-  if (this.isNew) {
-    this.formattedCreatedAt = formatInTimeZone(this.createdAt, indiaTimezone, formatString);
-  }
-
-  this.formattedUpdatedAt = formatInTimeZone(this.updatedAt, indiaTimezone, formatString);
-
-  next();
-});
 
 export const Order =
   mongoose.models.Order || mongoose.model("Order", orderSchema);

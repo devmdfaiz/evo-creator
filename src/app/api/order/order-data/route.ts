@@ -61,7 +61,7 @@ export async function POST(req: Request) {
               $lookup: {
                 from: "pages",
                 localField: "ofPage",
-                foreignField: "_id",
+                foreignField: "pageId",
                 as: "pageData",
               },
             },
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
               $lookup: {
                 from: "pages",
                 localField: "ofPage",
-                foreignField: "_id",
+                foreignField: "pageId",
                 as: "pageData",
               },
             },

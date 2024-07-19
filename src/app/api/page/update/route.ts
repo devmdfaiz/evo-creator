@@ -1,103 +1,48 @@
 import connectToDb from "@/lib/mongodb/connection/db";
 import { Page } from "@/lib/mongodb/models/page.model";
+import { serverError } from "@/lib/utils/error/errorExtractor";
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request, res: Response) {
-  connectToDb();
-
-  const { values, testimonialsFields, faqs, policies, fieldDetails, pageId, imageAndProducts } =
-    await req.json();
-
-    
-
-  const pageContent = {
-    contEmail: values.contEmail,
-    contPhone: values.contPhone,
-    coverImg: imageAndProducts,
-    pageDesc: values.pageDesc,
-    title: values.title,
-    testimonialsFields,
-    faqs,
-    policies,
-  };
-
-  const priceDetail = {
-    offerDiscountedPrice: values.offerDiscountedPrice,
-    price: values.price,
-    discountedPrice: values.discountedPrice,
-    priceType: values.priceType,
-    baseAuctionPrice: values.baseAuctionPrice,
-    category: values.category,
-  };
-
-  const settings = {
-    formInputs: fieldDetails,
-    thankYouNote: values.thankYouNote,
-    redirectionUrl: values.redirectionUrl,
-    metaPixel: values.metaPixel,
-    googleAnalytics: values.googleAnalytics,
-    whatsappSupport: values.whatsappSupport,
-    pageExpiry: values.pageExpiry,
-    pageExpiryDate: values.pageExpiryDate,
-    deactivateSales: values.deactivateSales,
-  };
-
-  const theme = {
-    pageOwner: values.pageOwner,
-    template: values.template,
-    color: values.color.hex,
-  };
-
-  const productLink = values.extProductLinks;
-
+export async function POST(req: Request) {
   try {
+    await connectToDb();
+
+    const { fieldsInput, pageId } = await req.json();
+
+    if (!fieldsInput || !pageId) {
+      console.warn("Missing fieldsInput or pageId in the request body");
+      return NextResponse.json({
+        message: "Invalid request: missing fieldsInput or pageId",
+        error: null,
+      }, { status: 400 });
+    }
+
     const pageDetail = await Page.findOneAndUpdate(
-      { _id: pageId },
-      {
-        pageContent,
-
-        pagePrice: priceDetail,
-
-        settings: {
-          formInputs: settings.formInputs,
-          redirectUrl: settings.redirectionUrl,
-          analyticIds: {
-            metaPixel: settings.metaPixel,
-            googleAnalytics: settings.googleAnalytics,
-          },
-          downloadableFile: productLink,
-          thankYouNote: settings.thankYouNote,
-          whatsappSupport: settings.whatsappSupport,
-          pageExpiry: settings.pageExpiry,
-          pageExpiryDate: settings.pageExpiryDate,
-          deactivateSales: settings.deactivateSales,
-        },
-        theme: {
-          name: theme.pageOwner,
-          template: theme.template,
-          color: theme.color,
-        },
-      }
+      { pageId },
+      { ...fieldsInput },
+      { new: true }
     );
 
-    if (!pageDetail)
+    if (!pageDetail) {
+      console.warn(`Page with ID: ${pageId} not found`);
       return NextResponse.json({
-        massage: "Page not found!",
+        message: "Page not found",
         error: null,
-        status: false,
-      });
+      }, { status: 404 });
+    }
+
+    console.log(`Page with ID: ${pageId} updated successfully`);
+    return NextResponse.json({
+      message: "Page details updated successfully",
+      error: null,
+    }, { status: 200 });
+  } catch (error) {
+    console.error("Error updating page details:", error);
+    const errorMessage = serverError(error);
 
     return NextResponse.json({
-      massage: "Page details are updated",
-      error: null,
-      status: true,
-    });
-  } catch (error) {
-    console.log("page update error", error);
-    return NextResponse.json({
-      massage: "Something went wrong. Please try again.",
+      message: `Failed to update page details: ${errorMessage}`,
       error,
-      status: false,
-    });
+    }, { status: 500 });
   }
 }
