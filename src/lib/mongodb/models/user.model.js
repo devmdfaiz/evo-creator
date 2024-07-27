@@ -63,6 +63,12 @@ const userSchema = new Schema(
       default: "USER",
       required: true,
     },
+    accountStatus: {
+      type: String,
+      enum: ["ACTIVE", "BLOCKED"],
+      default: "ACTIVE",
+      required: true,
+    },
     rzpAccountId: String,
   },
   { timestamps: true }

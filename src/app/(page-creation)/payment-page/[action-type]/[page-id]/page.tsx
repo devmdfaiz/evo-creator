@@ -1,26 +1,20 @@
 "use client";
 import "@/components/styles/pageStyles.css";
-import PageTabs from "@/components/dashboard-layout/pageCreation/tabs";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LaptopIcon, MobileIcon } from "@radix-ui/react-icons";
 import { TPagePrice } from "@/lib/types/index.type";
-import {
-  PreviewBoxDesktop,
-  // PreviewBoxMobile,
-} from "@/components/dashboard-layout/pageCreation/PageEditorComponents";
 import { useZustandSelector } from "@/context/zustand/slectors";
 import { useFileHandler, usePageFormInputs } from "@/context/zustand/store";
 import TypographyMuted from "@/components/typography/TypographyMuted";
 import { useSearchParams } from "next/navigation";
-import {
-  PageComponents,
-  PageWrapper,
-} from "@/components/dashboard-layout/PaymentPageView/PageViewComponents";
 import { formatePageInputs } from "@/lib/utils/utils";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import PageSpinner from "@/components/global/spinner/PageSpinner";
+import { PageComponents, PageWrapper } from "@/components/global/PaymentPageView/PageViewComponents";
+import PageTabs from "@/components/dashboard-components/PageCreation/tabs";
+import { PreviewBoxDesktop } from "@/components/dashboard-components/PageCreation/PageEditorComponents";
 
 /**
  * Page creator and editor main component
@@ -60,7 +54,6 @@ const PageEditor = ({ params }: { params: { ["page-id"]: string } }) => {
         <PageComponents
           fieldValue={fieldValue}
           theme={theme}
-          session={session?.data}
           color={color}
         />
       </PageWrapper>

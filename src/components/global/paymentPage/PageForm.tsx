@@ -277,7 +277,8 @@ export const ProductPageFormMobile = ({
   return (
     <div
       className={cn(
-        `${themeClass} py-4 px-4 fixed bottom-0 left-0 right-0 lg:hidden w-full space-y-3 border-t`,
+        `${themeClass} py-4 px-4 fixed bottom-0 left-0 right-0 lg:hidden w-full space-y-3 border-t
+        `,
         className
       )}
     >
@@ -363,7 +364,7 @@ export const PriceBreakdownFixed = ({
 
 /**
  * This function is contains price details for auction of page.
- * @location components/paymentPage/PageForm.tsx
+ * @location components/PaymentPage/PageForm.tsx
  * @returns
  */
 export const PriceBreakdownAuction = ({
@@ -464,15 +465,16 @@ export const PageInputsWithFormForMobileFormSolution = ({
   } = useContext(ReactHookFormContext);
 
   return (
-    <div className="px-5 py-7">
+    <form
+      onSubmit={handleSubmit((data: any) =>
+        handleOrderFilledInfo({ data, pageId, priceType })
+      )}
+      className="px-5 py-7"
+    >
       <TypographyH4 className="mb-3">Payment Details</TypographyH4>
-      <form
-        onSubmit={handleSubmit((data: any) =>
-          handleOrderFilledInfo({ data, pageId, priceType })
-        )}
-        className="space-y-3"
-      >
-        <ScrollArea className="w-full h-[calc(100vh-700px)]">
+
+      <div>
+        <div className="pb-36">
           <PageInputs
             color={color}
             errors={errors}
@@ -480,14 +482,17 @@ export const PageInputsWithFormForMobileFormSolution = ({
             register={register}
             theme={theme}
           />
-        </ScrollArea>
-        <ProductPageFormMobile
-          priceDetails={priceDetails}
-          color={color}
-          theme={theme}
-          action={action}
-        />
-      </form>
-    </div>
+        </div>
+
+        <div>
+          <ProductPageFormMobile
+            priceDetails={priceDetails}
+            color={color}
+            theme={theme}
+            action={action}
+          />
+        </div>
+      </div>
+    </form>
   );
 };

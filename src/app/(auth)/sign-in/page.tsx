@@ -1,6 +1,4 @@
 "use client";
-import AuthWrapper from "@/components/global/auth/AuthWrapper";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -21,16 +19,15 @@ import TypographyMuted from "@/components/typography/TypographyMuted";
 import TypographySmall from "@/components/typography/TypographySmall";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import PolicyMsg from "@/components/auth-layout/PolicyMsg";
-import SeparatorAuth from "@/components/auth-layout/SeparatorAuth";
-import GoogleAuthButton from "@/components/auth-layout/GoogleAuthButton";
+import PolicyMsg from "@/components/auth-components/PolicyMsg";
+import SeparatorAuth from "@/components/auth-components/SeparatorAuth";
+import GoogleAuthButton from "@/components/auth-components/GoogleAuthButton";
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import ErrorAlert from "@/components/global/form/ErrorAlert";
 import axios from "axios";
 import { toast as reactToastify } from "react-toastify";
 import toast from "react-hot-toast";
-import OtpVerificationCom from "@/components/global/auth/OtpVerification";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import { ChevronLeftIcon } from "@radix-ui/react-icons";
 import {
@@ -38,6 +35,8 @@ import {
   formSchemaLogin,
 } from "@/lib/zod/index.zodSchema";
 import { clientError } from "@/lib/utils/error/errorExtractor";
+import AuthWrapper from "@/components/auth-components/AuthWrapper";
+import OtpVerificationCom from "@/components/global/auth/OtpVerification";
 
 // react components starts here
 const SignInPage = () => {
@@ -209,8 +208,8 @@ const SignInPage = () => {
           </div>
         </form>
       </Form>
-      <SeparatorAuth />
-      <GoogleAuthButton />
+      {/* <SeparatorAuth />
+      <GoogleAuthButton /> */}
     </AuthWrapper>
   );
 };
@@ -255,17 +254,7 @@ function ForgotPasswordInput() {
       })
       .catch((error) => {
         setForgotPassPhoneInputStatus("started");
-        let errorMessage = "An unexpected error occurred.";
-
-        if (
-          error &&
-          typeof error === "object" &&
-          "response" in error &&
-          (error as any).response?.data?.message
-        ) {
-          // Check if the error has a response with a data object containing the message
-          errorMessage = (error as any).response.data.message;
-        }
+        const errorMessage = clientError(error)
 
         setIsError(errorMessage); // Set the extracted message as the error state
       });

@@ -28,25 +28,27 @@ export default function RootLayout({
       <body className={`${inter.className} debug-screens`}>
         <ProgressBarProvider>
           <NextAuthSessionProvider>
-              <ReactHookFormProvider>
-                <DateProvider>
-                  <main className="min-h-screen">{children}</main>
-                  <ShadcnToast />
-                  <Toastify
-                    position="top-right"
-                    autoClose={5000}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                  />
-                  <HotToast position="top-center" reverseOrder={false} />
-                </DateProvider>
-              </ReactHookFormProvider>
+            <ReactHookFormProvider>
+              <DateProvider>
+                <main className="min-h-screen w-full">
+                  {children}
+                  </main>
+                <ShadcnToast />
+                <Toastify
+                  position="top-right"
+                  autoClose={5000}
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  rtl={false}
+                  pauseOnFocusLoss
+                  draggable
+                  pauseOnHover
+                  theme="light"
+                />
+                <HotToast position="top-center" reverseOrder={false} />
+              </DateProvider>
+            </ReactHookFormProvider>
           </NextAuthSessionProvider>
         </ProgressBarProvider>
 

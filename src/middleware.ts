@@ -1,5 +1,7 @@
 import { withAuth } from "next-auth/middleware";
 import {
+  adminApiRoute,
+  adminPrivateRoutes,
   nextAuthApiRoute,
   partialPrivateEmailRoute,
   privateRoutes,
@@ -17,6 +19,7 @@ export default withAuth(
     const tokenWithUserData = req.nextauth.token; //?? finding token data
     const tokenWithUserDataIsEmailVerificationStatus =
       req.nextauth?.token?.emailVerificationStatus; //?? finding token data
+    const accountStatus = req.nextauth?.token?.userRole; //?? getting account status "ADMIN" or "USER"
     const pathname = req.nextUrl.pathname; //?? finding pathname
 
     let hostname = req.headers; //?? finding header for host
@@ -27,8 +30,39 @@ export default withAuth(
       .filter(Boolean)[0]; //?? filtering subdomain from doamin name
     const finishedCustomDomain = customSubDomain?.split(".")[0]; //?? removing dot from custom domain
 
+    //** Admin routes management starts here */
+    if (adminPrivateRoutes.includes(pathname)) {
+      if (accountStatus === "ADMIN") {
+        if (tokenWithUserDataIsEmailVerificationStatus === "verified") {
+          return null;
+        }
+      }
 
-     //** Routes management starts here */
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    if (pathname.includes(adminApiRoute)) {
+      if (accountStatus === "ADMIN") {
+        if (tokenWithUserDataIsEmailVerificationStatus === "verified") {
+          return null;
+        }
+      }
+
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    if (pathname === "/admin") {
+      if (accountStatus === "ADMIN") {
+        if (tokenWithUserDataIsEmailVerificationStatus === "verified") {
+          return NextResponse.rewrite(new URL("/admin/overview", req.url));
+        }
+      }
+
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    //** Routes management starts here */
+
     if (pathname === "/") {
       if (tokenWithUserData && token) {
         if (tokenWithUserDataIsEmailVerificationStatus === "verified") {
@@ -44,7 +78,7 @@ export default withAuth(
         return NextResponse.redirect(new URL("/", req.url));
       }
 
-        return null
+      return null;
     }
 
     if (privateRoutes.includes(pathname)) {
@@ -52,7 +86,7 @@ export default withAuth(
         return null;
       }
 
-        return NextResponse.redirect(new URL("/sign-in", req.url));
+      return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
     // "/api/auth"
@@ -81,6 +115,10 @@ export default withAuth(
 
     // "/api/razorpay"
     if (pathname.startsWith(publicRazorpayRoute)) {
+      return null;
+    }
+
+    if (pathname.startsWith("/api/order/thank-you-order-data")) {
       return null;
     }
 

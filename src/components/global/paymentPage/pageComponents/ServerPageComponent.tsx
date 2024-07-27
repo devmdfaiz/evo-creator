@@ -19,10 +19,11 @@ import {
 } from "@/components/ui/dialog";
 
 import { cn } from "@/lib/utils/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { MessageCircleCode } from "lucide-react";
 import TypographyH1 from "@/components/typography/TypographyH1";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 //??: ProductPageTitle
 export const ProductPageTitle = ({
@@ -33,7 +34,12 @@ export const ProductPageTitle = ({
   className?: string;
 }) => {
   return (
-    <TypographyH1 className={cn("text-2xl sm:text-3xl lg:text-4xl tracking-wide", className)}>
+    <TypographyH1
+      className={cn(
+        "text-2xl sm:text-3xl lg:text-4xl tracking-wide",
+        className
+      )}
+    >
       {title}
     </TypographyH1>
   );
@@ -41,7 +47,7 @@ export const ProductPageTitle = ({
 
 //??: ProductPageProfile
 export const ProductPageProfile = ({
-  profile,
+  profile = "https://github.com/shadcn.png",
   name,
   className,
 }: {
@@ -50,18 +56,15 @@ export const ProductPageProfile = ({
   className?: string;
 }) => {
   return (
-    <div className="flex items-center justify-start gap-3">
-      {/* <div className="w-fit h-fit "> */}
-      <Image
-        src={profile}
-        alt="page-profile"
-        width={50}
-        height={50}
-        className="rounded-full object-cover"
-      />
-      {/* </div> */}
+    <div className="flex items-center justify-start gap-2">
+      <Avatar>
+        <AvatarImage src={profile} alt="page-profile" />
+        <AvatarFallback>
+          <Skeleton className="h-full w-full rounded-full" />
+        </AvatarFallback>
+      </Avatar>
       <div>
-        <p className={cn("text-lg", className)}>{name}</p>
+        <p className={cn("text-base", className)}>{name}</p>
       </div>
     </div>
   );
@@ -101,7 +104,7 @@ export const ProductPageContact = ({
   DClassName?: string;
 }) => {
   return (
-    <div className="">
+    <div className="pb-3">
       <h4 className={cn("text-lg font-semibold my-2", TClassName)}>
         Contact {name !== "" && `to ${name}`}
       </h4>

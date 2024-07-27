@@ -63,6 +63,10 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 a {
   text-decoration: none;
 }
@@ -186,3 +190,5 @@ a {
     opacity: 1;
   }
 }
+
+/*=================== Landing page css code =============== */

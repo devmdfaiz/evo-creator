@@ -13,6 +13,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           message: "Page ID is required.",
+          error: "Missing page ID in the request.",
           fieldValue: null,
         },
         { status: 400 }
@@ -24,8 +25,8 @@ export async function POST(req: Request) {
     if (!fieldValue) {
       return NextResponse.json(
         {
-          message: `No page found with ID: ${id}`,
-          error: `Field value not found for ID: ${id}`,
+          message: `No page found with ID: ${id}.`,
+          error: `Field value not found for ID: ${id}.`,
           fieldValue: null,
         },
         { status: 404 }
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        message: `Page data retrieved successfully for ID: ${id}`,
+        message: `Page data retrieved successfully for ID: ${id}.`,
         error: null,
         fieldValue,
       },
@@ -45,8 +46,8 @@ export async function POST(req: Request) {
     console.error("Error fetching page data:", error);
     return NextResponse.json(
       {
-        message: errorMessage,
-        error,
+        message: "An error occurred while fetching the page data.",
+        error: errorMessage,
         fieldValue: null,
       },
       { status: 500 }

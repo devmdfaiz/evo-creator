@@ -281,7 +281,12 @@ const FileUploader = ({
       {imagesPreview[from].length > 0 &&
         imagesPreview[from].map((filesData, i) => {
           return (
-            <ImagePreview index={i} from={from} imagesPreview={filesData} />
+            <ImagePreview
+              key={i}
+              index={i}
+              from={from}
+              imagesPreview={filesData}
+            />
           );
         })}
     </>
@@ -466,12 +471,12 @@ const ImagePreview = ({
         <div className="flex gap-3 items-center justify-center">
           {imagesPreview.status !== "deleted" ? (
             <>
-              <Progress value={uploadProgress} className="" />
+              <Progress value={uploadProgress} />
               <span>{uploadProgress}%</span>
             </>
           ) : (
             <TypographyP className="text-red-700 bg-red-700/20 px-3 py-1 rounded text-xs my-1">
-              The file has been deleted. To re-upload, click 'Reload'.
+              The file has been deleted. To re-upload, click {`${'Reload'}`}.
             </TypographyP>
           )}
         </div>

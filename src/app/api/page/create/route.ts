@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json(
         {
-          message: "Page seo updated successfully",
+          message: "Page SEO updated successfully.",
           error: null,
           pageEditedSeoResponse,
         },
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     // Return a success response
     return NextResponse.json(
       {
-        message: "Page created successfully",
+        message: "Page created successfully.",
         error: null,
         pageData,
       },
@@ -81,8 +81,8 @@ export async function POST(req: Request) {
     // Return an error response
     return NextResponse.json(
       {
-        message: errorMessage,
-        error: error,
+        message: "An error occurred while creating the page.",
+        error: errorMessage,
         pageData: null,
       },
       { status: 500 }

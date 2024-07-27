@@ -29,6 +29,7 @@ import { useRouter } from "next/navigation";
 import PageSpinner from "@/components/global/spinner/PageSpinner";
 import TypographyMuted from "@/components/typography/TypographyMuted";
 import TypographyH2 from "@/components/typography/TypographyH2";
+import { clientError } from "@/lib/utils/error/errorExtractor";
 
 const ResetPassword = ({
   params: { token },
@@ -88,17 +89,7 @@ const ResetPassword = ({
       })
       .catch((error) => {
         setPasswordResetStatus("started");
-        let errorMessage = "An unexpected error occurred.";
-
-        if (
-          error &&
-          typeof error === "object" &&
-          "response" in error &&
-          (error as any).response?.data?.message
-        ) {
-          // Check if the error has a response with a data object containing the message
-          errorMessage = (error as any).response.data.message;
-        }
+        const errorMessage = clientError(error)
 
         setIsError(errorMessage); // Set the extracted message as the error state
       });

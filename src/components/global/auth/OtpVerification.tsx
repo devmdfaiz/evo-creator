@@ -1,6 +1,4 @@
 "use client";
-import AuthWrapper from "@/components/global/auth/AuthWrapper";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -39,6 +37,7 @@ import {
   setLsItem,
 } from "@/lib/utils/storage/localstorage";
 import { clientError } from "@/lib/utils/error/errorExtractor";
+import AuthWrapper from "@/components/auth-components/AuthWrapper";
 
 const formSchema = z.object({
   otp: z
@@ -212,8 +211,6 @@ const OtpVerificationCom = ({
 
         if (status === 200 && isOtpValid) {
           const payload = user;
-
-          console.log("payload", payload);
 
           signIn("credentials", { redirect: false, ...payload, ...payload.avatar })
             .then(() => {

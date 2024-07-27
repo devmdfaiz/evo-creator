@@ -1,10 +1,7 @@
 // This Layout page is build for to provide auth pages a common structure whithout repating code
 
-import AuthHeader from "@/components/auth-layout/AuthHeader";
+import AuthHeader from "@/components/auth-components/AuthHeader";
 import ThemeProvider from "@/context/ThemeProvider";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../../AuthOptions";
-import { redirect } from "next/navigation";
 
 export default async function RootLayout({
   children,

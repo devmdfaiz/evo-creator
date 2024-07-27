@@ -9,11 +9,11 @@ import { generateOTP } from "@/lib/otplib/otplib";
 import { serverError } from "@/lib/utils/error/errorExtractor";
 
 export async function POST(req: Request, res: Response) {
-  connectToDb();
-
-  const { phone, password } = await req.json();
-
   try {
+    connectToDb();
+
+    const { phone, password } = await req.json();
+
     const user = await User.findOne({ phone });
 
     if (!user) {

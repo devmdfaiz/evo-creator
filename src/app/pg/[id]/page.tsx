@@ -1,14 +1,12 @@
 import { PageInputsWithFormForMobileFormSolution } from "@/components/global/paymentPage/PageForm";
 import { getPublicPageData } from "@/lib/fetch/fetch";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../../../AuthOptions";
-import {
-  PageComponents,
-  PageWrapper,
-} from "@/components/dashboard-layout/PaymentPageView/PageViewComponents";
 import TypographyP from "@/components/typography/TypographyP";
 import { pageThemeProvider } from "@/lib/constants/index.constant";
 import { cn } from "@/lib/utils/utils";
+import {
+  PageComponents,
+  PageWrapper,
+} from "@/components/global/PaymentPageView/PageViewComponents";
 
 /**
  * Payment page main component
@@ -23,7 +21,6 @@ const PaymentPage = async ({
   searchParams: { checkout?: string };
 }) => {
   const { fieldValue, error } = await getPublicPageData(id);
-  const session = await getServerSession(authOptions);
 
   if (error) {
     return (
@@ -87,7 +84,9 @@ const PaymentPage = async ({
     const pageTheme = pageThemeProvider(theme);
 
     return (
-      <main className={cn(`${pageTheme} min-h-screen`)}>
+      <main
+        className={cn(`${pageTheme} w-full`)}
+      >
         <PageInputsWithFormForMobileFormSolution
           fieldsData={fieldValue?.settings?.formInputs}
           color={color}
@@ -101,12 +100,7 @@ const PaymentPage = async ({
 
   return (
     <PageWrapper fieldValue={fieldValue} color={color} theme={theme}>
-      <PageComponents
-        fieldValue={fieldValue}
-        theme={theme}
-        session={session}
-        color={color}
-      />
+      <PageComponents fieldValue={fieldValue} theme={theme} color={color} />
     </PageWrapper>
   );
 };

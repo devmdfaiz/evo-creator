@@ -11,6 +11,12 @@ interface Evar {
   appwriteBucketId: string;
   supportEmail: string;
   supportPhone: string;
+  twilioAccountSid: string;
+  twilioAuthToken: string;
+  waContactLink: string;
+  registeredProjectName: string;
+  pgName: string;
+  address: string;
 }
 
 export const evar: Evar = {
@@ -26,4 +32,10 @@ export const evar: Evar = {
   appwriteBucketId: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL!,
   supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE!,
+  twilioAccountSid: process.env.TWILIO_ACC_SID!,
+  twilioAuthToken: process.env.TWILIO_AUTH_TOKEN!,
+  waContactLink: process.env.NEXT_PUBLIC_WA_SUPPORT_LINK!,
+  registeredProjectName: process.env.NEXT_PUBLIC_REGISTERED_PROJECT_NAME!,
+  pgName: process.env.NEXT_PUBLIC_PG_NAME!,
+  address: process.env.NEXT_PUBLIC_ADDRESS!,
 };

@@ -193,7 +193,7 @@ const ThankYouPage = () => {
             </h3>
             <p className="mt-1 text-sm text-gray-600">
               If you have any questions or need assistance, our support team is
-              here to help. Please don't hesitate to reach out to us.
+              here to help. Please {"don't"} hesitate to reach out to us.
             </p>
             <ul className="mt-4 space-y-2">
               <li className="text-sm text-gray-600">

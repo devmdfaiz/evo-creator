@@ -1,6 +1,4 @@
 "use client";
-import AuthWrapper from "@/components/global/auth/AuthWrapper";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -21,9 +19,9 @@ import TypographyMuted from "@/components/typography/TypographyMuted";
 import TypographySmall from "@/components/typography/TypographySmall";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import PolicyMsg from "@/components/auth-layout/PolicyMsg";
-import SeparatorAuth from "@/components/auth-layout/SeparatorAuth";
-import GoogleAuthButton from "@/components/auth-layout/GoogleAuthButton";
+import PolicyMsg from "@/components/auth-components/PolicyMsg";
+import SeparatorAuth from "@/components/auth-components/SeparatorAuth";
+import GoogleAuthButton from "@/components/auth-components/GoogleAuthButton";
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import ErrorAlert from "@/components/global/form/ErrorAlert";
@@ -32,8 +30,9 @@ import axios from "axios";
 import { toast as reactToastify } from "react-toastify";
 import toast from "react-hot-toast";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
-import OtpVerificationCom from "@/components/global/auth/OtpVerification";
 import { clientError } from "@/lib/utils/error/errorExtractor";
+import AuthWrapper from "@/components/auth-components/AuthWrapper";
+import OtpVerificationCom from "@/components/global/auth/OtpVerification";
 
 // React conponent startss here
 const SignUpPage = () => {
@@ -218,8 +217,8 @@ const SignUpPage = () => {
           </div>
         </form>
       </Form>
-      <SeparatorAuth />
-      <GoogleAuthButton />
+      {/* <SeparatorAuth />
+      <GoogleAuthButton /> */}
       <PolicyMsg />
     </AuthWrapper>
   );

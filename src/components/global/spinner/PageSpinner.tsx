@@ -3,7 +3,12 @@ import React from "react";
 
 const PageSpinner = ({ className }: { className?: string }) => {
   return (
-    <div className={cn("flex items-center justify-center", className)}>
+    <div
+      className={cn(
+        "flex items-center justify-center pt-[50vh]",
+        className
+      )}
+    >
       <div role="status" className="w-16 h-16">
         <svg
           aria-hidden="true"

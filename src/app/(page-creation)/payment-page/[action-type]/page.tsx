@@ -22,9 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import InfoTooltip from "@/components/dashboard-layout/InfoTooltip";
 import { cn, hashUrlExtractor } from "@/lib/utils/utils";
-import { useSession } from "next-auth/react";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import { useRouter, useSearchParams } from "next/navigation";
 import { pageShortFormSchema, showToast } from "@/lib/zod/index.zodSchema";
@@ -34,6 +32,7 @@ import { usePageSeo } from "@/context/zustand/store";
 import { useEffect, useMemo, useState } from "react";
 import { clientError } from "@/lib/utils/error/errorExtractor";
 import PageSpinner from "@/components/global/spinner/PageSpinner";
+import InfoTooltip from "@/components/dashboard-components/InfoTooltip";
 
 // React component starts here
 const PageAdd = ({

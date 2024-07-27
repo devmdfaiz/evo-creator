@@ -1,7 +1,8 @@
 "use client";
-import PageCardWrapper from "@/components/dashboard-layout/PageCardWrapper";
-import PagesTableData from "@/components/dashboard-layout/PagesTableData";
+import PageCardWrapper from "@/components/dashboard-components/PageCardWrapper";
+import PagesTableData from "@/components/dashboard-components/PagesTableData";
 import { DatePickerWithRange } from "@/components/global/calendar/DatePicker";
+import MainComponentsWrapper from "@/components/global/wrapper/MainComponentsWrapper";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import PageSpinner from "@/components/global/spinner/PageSpinner";
 import TypographyH1 from "@/components/typography/TypographyH1";
@@ -15,7 +16,7 @@ import { useContext, useMemo, useState } from "react";
 const Pages = () => {
   const [pages, setPages] = useState(["nothing"]);
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
-  const { fromDate, toDate, date } = useContext(DateContext);
+  const { fromDate, toDate, date, reloadPage } = useContext(DateContext);
 
   useMemo(() => {
     setIsOrdersLoading(true);
@@ -27,14 +28,14 @@ const Pages = () => {
     }).then(() => {
       setIsOrdersLoading(false);
     });
-  }, [date]);
+  }, [date, reloadPage]);
 
   if (pages[0] === "nothing") {
-    return <PageSpinner className="mt-[50vh]" />;
+    return <PageSpinner />;
   }
 
   return (
-    <section className="mb-7">
+    <MainComponentsWrapper>
       <div className="flex flex-wrap justify-between items-center">
         <TypographyH1 className="my-7">All Pages</TypographyH1>
         <div className="flex justify-start items-center flex-wrap gap-5 mb-5 sm:my-0">
@@ -54,7 +55,7 @@ const Pages = () => {
       </div>
       <PageCardWrapper pages={pages} />
       <PagesTableData pages={pages} />
-    </section>
+    </MainComponentsWrapper>
   );
 };
 

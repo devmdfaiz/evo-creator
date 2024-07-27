@@ -1,5 +1,4 @@
 "use client";
-import OverviewCardsWrapper from "@/components/dashboard-layout/OverviewCardsWrapper";
 import { DatePickerWithRange } from "@/components/global/calendar/DatePicker";
 import PageSpinner from "@/components/global/spinner/PageSpinner";
 import TypographyH1 from "@/components/typography/TypographyH1";
@@ -31,6 +30,8 @@ import { getDashboardOrderData } from "@/lib/fetch/fetch";
 import { aggregateAmountsByDate } from "@/lib/utils/utils";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import TypographyP from "@/components/typography/TypographyP";
+import OverviewCardsWrapper from "@/components/dashboard-components/OverviewCardsWrapper";
+import MainComponentsWrapper from "@/components/global/wrapper/MainComponentsWrapper";
 
 const chartConfig = {
   date: {
@@ -68,11 +69,11 @@ const OverviewPage = () => {
     currentPeriodOrders[0] === "nothing" ||
     comparisonPeriodOrders[0] === "nothing"
   ) {
-    return <PageSpinner className="pt-[50vh]" />;
+    return <PageSpinner />;
   }
 
   return (
-    <section className="mb-7">
+    <MainComponentsWrapper>
       <div className="flex flex-wrap justify-between items-center">
         <TypographyH1 className="my-7">Overview</TypographyH1>
         <div className="mb-5 sm:my-0">
@@ -204,7 +205,7 @@ const OverviewPage = () => {
           )}
         </Card>
       </div>
-    </section>
+    </MainComponentsWrapper>
   );
 };
 

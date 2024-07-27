@@ -1,13 +1,14 @@
 "use client";
-import CustomersDataTable from "@/components/dashboard-layout/CustomersDataTable";
-import CustomersOrdersWrapper from "@/components/dashboard-layout/CustomersWrapper";
+import CustomersDataTable from "@/components/dashboard-components/CustomersDataTable";
+import CustomersOrdersWrapper from "@/components/dashboard-components/CustomersWrapper";
 import { DatePickerWithRange } from "@/components/global/calendar/DatePicker";
+import MainComponentsWrapper from "@/components/global/wrapper/MainComponentsWrapper";
 import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import PageSpinner from "@/components/global/spinner/PageSpinner";
 import TypographyH1 from "@/components/typography/TypographyH1";
 import { DateContext } from "@/context/DateProvider";
 import { getDashboardOrderData } from "@/lib/fetch/fetch";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 
 const Customers = () => {
   const [currentPeriodOrders, setCurrentPeriodOrders] = useState(["nothing"]);
@@ -35,11 +36,11 @@ const Customers = () => {
     currentPeriodOrders[0] === "nothing" ||
     comparisonPeriodOrders[0] === "nothing"
   ) {
-    return <PageSpinner className="mt-[50vh]" />;
+    return <PageSpinner />;
   }
 
   return (
-    <section className="mb-7">
+    <MainComponentsWrapper>
       <div className="flex flex-wrap justify-between items-center">
         <TypographyH1 className="my-7">Customers</TypographyH1>
         <div className="mb-5 sm:my-0">
@@ -54,7 +55,7 @@ const Customers = () => {
         comparisonPeriod={comparisonPeriodOrders}
       />
       <CustomersDataTable currentPeriod={currentPeriodOrders} />
-    </section>
+    </MainComponentsWrapper>
   );
 };
 

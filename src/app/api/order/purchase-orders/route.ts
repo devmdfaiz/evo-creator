@@ -1,10 +1,25 @@
 import { Order } from "@/lib/mongodb/models/order.model";
 import { serverError } from "@/lib/utils/error/errorExtractor";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { authOptions } from "../../../../../AuthOptions";
 
 export async function POST(req: Request) {
   try {
     const { phone } = await req.json();
+
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        {
+          message: "User is not authenticated. Please log in.",
+          error: "User session not found",
+          orders: null,
+        },
+        { status: 401 }
+      );
+    }
 
     if (!phone) {
       return NextResponse.json(
@@ -18,40 +33,40 @@ export async function POST(req: Request) {
     }
 
     const ordersData = await Order.aggregate([
-        {
-          $match: {
-            "customerInfo.Phone Number": phone,
-          },
+      {
+        $match: {
+          "customerInfo.Phone Number": phone,
         },
-        {
-          $match: {
-            isPaid: true,
-          },
+      },
+      {
+        $match: {
+          isPaid: true,
         },
-        { $unwind: "$ofPage" },
-        {
-          $lookup: {
-            from: "pages",
-            localField: "ofPage",
-            foreignField: "pageId",
-            as: "pageData",
-          },
+      },
+      { $unwind: "$ofPage" },
+      {
+        $lookup: {
+          from: "pages",
+          localField: "ofPage",
+          foreignField: "pageId",
+          as: "pageData",
         },
-        { $unwind: "$pageData" },
-        {
-          $group: {
-            _id: "$_id",
-            customerInfo: { $first: "$customerInfo" },
-            isPaid: { $first: "$isPaid" },
-            orderId: { $first: "$orderId" },
-            amount: { $first: "$amount" },
-            createdAt: { $first: "$createdAt" },
-            pageTitle: { $first: "$pageData.metaData.metaTitle" },
-            pageDesc: { $first: "$pageData.metaData.metaDesc" },
-            pageId: { $first: "$pageData.pageId" },
-          },
+      },
+      { $unwind: "$pageData" },
+      {
+        $group: {
+          _id: "$_id",
+          customerInfo: { $first: "$customerInfo" },
+          isPaid: { $first: "$isPaid" },
+          orderId: { $first: "$orderId" },
+          amount: { $first: "$amount" },
+          createdAt: { $first: "$createdAt" },
+          pageTitle: { $first: "$pageData.metaData.metaTitle" },
+          pageDesc: { $first: "$pageData.metaData.metaDesc" },
+          pageId: { $first: "$pageData.pageId" },
         },
-      ]);
+      },
+    ]);
 
     if (!ordersData || ordersData.length === 0) {
       return NextResponse.json(

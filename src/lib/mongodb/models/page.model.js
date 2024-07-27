@@ -1,4 +1,3 @@
-import { formatInTimeZone } from "date-fns-tz";
 import mongoose, { Schema } from "mongoose";
 
 //?? Meta Data schema starts here
@@ -66,6 +65,9 @@ const themeSchema = new Schema({
     default: "light",
   },
   color: {
+    type: String,
+  },
+  ownerName: {
     type: String,
   },
 });

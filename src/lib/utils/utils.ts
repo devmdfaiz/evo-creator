@@ -216,7 +216,7 @@ export function formatePageInputs(
   };
 
   const theme = {
-    pageOwner: values.pageOwner,
+    ownerName: values.pageOwner,
     template: values.template,
     color: values.color.hex,
   };
