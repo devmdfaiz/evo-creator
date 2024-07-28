@@ -7,11 +7,11 @@ import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import PageSpinner from "@/components/global/spinner/PageSpinner";
 import TypographyH1 from "@/components/typography/TypographyH1";
 import { DateContext } from "@/context/DateProvider";
-import React, { useContext, useMemo, useState } from "react";
+import React, { Suspense, useContext, useMemo, useState } from "react";
 import { getAdminOrderData, getAdminOrderDataSearch } from "@/lib/fetch/adminFetch";
 import { useSearchParams } from "next/navigation";
 
-const OrderPage = () => {
+const Order = () => {
   const [currentPeriodOrders, setCurrentPeriodOrders] = useState(["nothing"]);
   const [comparisonPeriodOrders, setComparisonPeriodOrders] = useState([
     "nothing",
@@ -63,5 +63,13 @@ const OrderPage = () => {
     </AdminMainComponentsWrapper>
   );
 };
+
+const OrderPage = () => {
+  return (
+    <Suspense>
+      <Order />
+    </Suspense>
+  )
+}
 
 export default OrderPage;

@@ -23,7 +23,7 @@ import PolicyMsg from "@/components/auth-components/PolicyMsg";
 import SeparatorAuth from "@/components/auth-components/SeparatorAuth";
 import GoogleAuthButton from "@/components/auth-components/GoogleAuthButton";
 import { signIn } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import ErrorAlert from "@/components/global/form/ErrorAlert";
 import axios from "axios";
 import { toast as reactToastify } from "react-toastify";
@@ -39,7 +39,7 @@ import AuthWrapper from "@/components/auth-components/AuthWrapper";
 import OtpVerificationCom from "@/components/global/auth/OtpVerification";
 
 // react components starts here
-const SignInPage = () => {
+const SignIn = () => {
   const rout = useRouter();
   const [isError, setIsError] = useState<any>("");
   const [signinStatus, setSigninStatus] = useState<
@@ -254,7 +254,7 @@ function ForgotPasswordInput() {
       })
       .catch((error) => {
         setForgotPassPhoneInputStatus("started");
-        const errorMessage = clientError(error)
+        const errorMessage = clientError(error);
 
         setIsError(errorMessage); // Set the extracted message as the error state
       });
@@ -341,5 +341,13 @@ function ForgotPasswordInput() {
     </AuthWrapper>
   );
 }
+
+const SignInPage = () => {
+  return (
+    <Suspense>
+      <SignIn />
+    </Suspense>
+  );
+};
 
 export default SignInPage;

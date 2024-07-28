@@ -12,8 +12,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { DateContext } from "@/context/DateProvider";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
-import { useContext, useMemo, useState } from "react";
-import { getAdminPageData, getAdminPageDataSearch } from "@/lib/fetch/adminFetch";
+import { Suspense, useContext, useMemo, useState } from "react";
+import {
+  getAdminPageData,
+  getAdminPageDataSearch,
+} from "@/lib/fetch/adminFetch";
 import { useSearchParams } from "next/navigation";
 
 const Pages = () => {
@@ -31,7 +34,7 @@ const Pages = () => {
       toDate,
       date,
       setPages,
-      idForPage
+      idForPage,
     }).then(() => {
       setIsOrdersLoading(false);
     });
@@ -66,4 +69,12 @@ const Pages = () => {
   );
 };
 
-export default Pages;
+const AdminOrderPages = () => {
+  return (
+    <Suspense>
+      <Pages />
+    </Suspense>
+  );
+};
+
+export default AdminOrderPages;

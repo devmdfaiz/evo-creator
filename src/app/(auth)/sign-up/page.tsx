@@ -23,7 +23,7 @@ import PolicyMsg from "@/components/auth-components/PolicyMsg";
 import SeparatorAuth from "@/components/auth-components/SeparatorAuth";
 import GoogleAuthButton from "@/components/auth-components/GoogleAuthButton";
 import { signIn } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import ErrorAlert from "@/components/global/form/ErrorAlert";
 import { formSchemaSignUp } from "@/lib/zod/index.zodSchema";
 import axios from "axios";
@@ -35,7 +35,7 @@ import AuthWrapper from "@/components/auth-components/AuthWrapper";
 import OtpVerificationCom from "@/components/global/auth/OtpVerification";
 
 // React conponent startss here
-const SignUpPage = () => {
+const SignUp = () => {
   const rout = useRouter();
   const [isError, setIsError] = useState<string>("");
   const [signupStatus, setSignupStatus] = useState<
@@ -64,7 +64,11 @@ const SignUpPage = () => {
         if (status === 201) {
           const payload = user;
 
-          signIn("credentials", { redirect: false, ...payload, ...payload.avatar })
+          signIn("credentials", {
+            redirect: false,
+            ...payload,
+            ...payload.avatar,
+          })
             .then(() => {
               toast.success("Redirecting to verification page");
               setSignupStatus("redirecting");
@@ -221,6 +225,14 @@ const SignUpPage = () => {
       <GoogleAuthButton /> */}
       <PolicyMsg />
     </AuthWrapper>
+  );
+};
+
+const SignUpPage = () => {
+  return (
+    <Suspense>
+      <SignUp />
+    </Suspense>
   );
 };
 
