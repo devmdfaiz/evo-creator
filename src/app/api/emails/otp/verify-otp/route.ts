@@ -8,41 +8,50 @@ import { serverError } from "@/lib/utils/error/errorExtractor";
 
 export async function POST(req: Request) {
   try {
-    connectToDb();
+    await connectToDb();
 
     // Extract the OTP from the incoming request
     const { otp } = await req.json();
 
-    const {
-      user: { sub },
-    } = await getServerSession(authOptions);
+    // Get user session
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      return NextResponse.json(
+        {
+          message: "User is not authenticated. Please log in.",
+          user: null,
+          error: "User session not found",
+        },
+        { status: 401 }
+      );
+    }
 
     // Verify the provided OTP using the custom verification function
     const isOtpValid = verifyOTP(otp);
 
-    const user = await User.aggregate([
-      {
-        $match: { userId: sub }, // Replace "YOUR_USER_ID" with the actual userId value
-      },
-      {
-        $set: { emailVerificationStatus: "verified" },
-      },
-    ]);
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          message: "User not found. Please sign in or sign up.",
-          isOtpValid, // True if the OTP verification was successful
-          user: null,
-          error: null,
-        },
-        { status: 500 } // HTTP 200 OK for successful operation
-      );
-    }
-
     if (isOtpValid) {
-      // If the OTP is valid, return a successful response
+      const user = await User.aggregate([
+        {
+          $match: { userId: session.user.sub }, // Replace "YOUR_USER_ID" with the actual userId value
+        },
+        {
+          $set: { emailVerificationStatus: "verified" },
+        },
+      ]);
+
+      if (!user) {
+        return NextResponse.json(
+          {
+            message: "User not found. Please sign in or sign up.",
+            isOtpValid, // True if the OTP verification was successful
+            user: null,
+            error: null,
+          },
+          { status: 500 } // HTTP 200 OK for successful operation
+        );
+      }
+
       return NextResponse.json(
         {
           message: "OTP verified!",
