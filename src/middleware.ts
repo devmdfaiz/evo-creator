@@ -99,7 +99,7 @@ export default withAuth(
       return null;
     }
 
-    // "/api/email/otp"
+    // "/api/email"
     if (pathname.startsWith(partialPrivateEmailRoute)) {
       // if (token) {
         return null;

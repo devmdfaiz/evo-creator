@@ -6,7 +6,7 @@ export const publicPageApiRoute: string = "/api/page/public-page-data";
 
 export const publicAuthRoute: string = "/sign-";
 
-export const partialPrivateEmailRoute: string = "/api/email/otp";
+export const partialPrivateEmailRoute: string = "/api/email";
 
 export const publicRazorpayRoute: string = "/api/razorpay";
 
