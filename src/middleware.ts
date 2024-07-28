@@ -30,39 +30,7 @@ export default withAuth(
       .filter(Boolean)[0]; //?? filtering subdomain from doamin name
     const finishedCustomDomain = customSubDomain?.split(".")[0]; //?? removing dot from custom domain
 
-    //** Admin routes management starts here */
-    if (adminPrivateRoutes.includes(pathname)) {
-      if (accountStatus === "ADMIN") {
-        if (tokenWithUserDataIsEmailVerificationStatus === "verified") {
-          return null;
-        }
-      }
-
-      return NextResponse.redirect(new URL("/", req.url));
-    }
-
-    if (pathname.includes(adminApiRoute)) {
-      if (accountStatus === "ADMIN") {
-        if (tokenWithUserDataIsEmailVerificationStatus === "verified") {
-          return null;
-        }
-      }
-
-      return NextResponse.redirect(new URL("/", req.url));
-    }
-
-    if (pathname === "/admin") {
-      if (accountStatus === "ADMIN") {
-        if (tokenWithUserDataIsEmailVerificationStatus === "verified") {
-          return NextResponse.rewrite(new URL("/admin/overview", req.url));
-        }
-      }
-
-      return NextResponse.redirect(new URL("/", req.url));
-    }
-
     //** Routes management starts here */
-
     if (pathname === "/") {
       if (tokenWithUserData && token) {
         if (tokenWithUserDataIsEmailVerificationStatus === "verified") {
@@ -121,6 +89,37 @@ export default withAuth(
     if (pathname.startsWith("/api/order/thank-you-order-data")) {
       return null;
     }
+
+        //** Admin routes management starts here */
+        if (adminPrivateRoutes.includes(pathname)) {
+          if (accountStatus === "ADMIN") {
+            if (tokenWithUserDataIsEmailVerificationStatus === "verified") {
+              return null;
+            }
+          }
+    
+          return NextResponse.redirect(new URL("/", req.url));
+        }
+    
+        if (pathname.includes(adminApiRoute)) {
+          if (accountStatus === "ADMIN") {
+            if (tokenWithUserDataIsEmailVerificationStatus === "verified") {
+              return null;
+            }
+          }
+    
+          return NextResponse.redirect(new URL("/", req.url));
+        }
+    
+        if (pathname === "/admin") {
+          if (accountStatus === "ADMIN") {
+            if (tokenWithUserDataIsEmailVerificationStatus === "verified") {
+              return NextResponse.rewrite(new URL("/admin/overview", req.url));
+            }
+          }
+    
+          return NextResponse.redirect(new URL("/", req.url));
+        }
 
     if (pathname.startsWith("/api")) {
       if (tokenWithUserData && token) {
