@@ -99,13 +99,13 @@ export default withAuth(
       return null;
     }
 
-    // "/api/email"
+    // "/api/email/otp"
     if (pathname.startsWith(partialPrivateEmailRoute)) {
-      if (token) {
+      // if (token) {
         return null;
-      }
+      // }
 
-      return NextResponse.redirect(new URL("/sign-in", req.url));
+      // return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
     // "/api/page/public-page-data"
