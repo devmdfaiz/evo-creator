@@ -2,11 +2,12 @@ import connectToDb from "@/lib/mongodb/connection/db";
 import { User } from "@/lib/mongodb/models/user.model";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { resend } from "@/lib/resend/resend";
 import { evar } from "@/lib/envConstant";
 import SendOtp from "../../../../../emails/otp.email";
 import { generateOTP } from "@/lib/otplib/otplib";
 import { serverError } from "@/lib/utils/error/errorExtractor";
+import { transporter } from "@/lib/nodemailer/nodemailer";
+import { render } from "@react-email/components";
 
 export async function POST(req: Request, res: Response) {
   try {
@@ -40,31 +41,37 @@ export async function POST(req: Request, res: Response) {
       ); // Set HTTP status code 401 for unauthorized access
     }
 
-    // Send the OTP to a specific email address using the "resend" service
-    const { data, error } = await resend.emails.send({
-      from: "onboarding@resend.dev", // Sender's email address
-      to: user.email, // Recipient's email address
-      subject: `Your One-Time Password (OTP) from ${evar.projectName}`, // Email subject
-      react: SendOtp({
+    // Send the OTP to a specific email address using the "nodemailer" service
+
+    // Check if there was an error sending the email
+    const emailHtml = render(
+      SendOtp({
         projectName: evar.projectName,
         recipientName: user.fullname,
         action: "Sign in",
-        otp: generateOTP(), // Generate OTP directly here
+        otp: generateOTP(),
         supportEmail: "support@support.com",
         baseUrl: evar.domain,
-      }), // React component generating the email content
+      })
+    );
+
+    const info = await transporter.sendMail({
+      from: evar.senderEmail, // sender address
+      to: user.email, // list of receivers
+      subject: `Your One-Time Password (OTP) from ${evar.projectName}`, // Subject line
+      html: emailHtml, // html body
     });
 
     // Check if there was an error sending the email
-    if (error) {
+    if (!info.messageId) {
       return NextResponse.json(
         {
-          message: "An error occurred while sending otp. Please try again.",
+          message: "An error in sending email. Please try again.",
+          error: "Email sending failed",
           user: null,
-          error, // Return the error object for debugging
         },
-        { status: 500 }
-      ); // Set HTTP status code 500 for internal server error
+        { status: 500 } // HTTP 500 Internal Server Error for unexpected issues
+      );
     }
 
     return NextResponse.json(

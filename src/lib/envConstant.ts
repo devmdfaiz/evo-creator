@@ -17,6 +17,10 @@ interface Evar {
   registeredProjectName: string;
   pgName: string;
   address: string;
+  emailServerPass: string;
+  senderEmail: string;
+  emailServerPort: string;
+  emailServerHost: string;
 }
 
 export const evar: Evar = {
@@ -38,4 +42,8 @@ export const evar: Evar = {
   registeredProjectName: process.env.NEXT_PUBLIC_REGISTERED_PROJECT_NAME!,
   pgName: process.env.NEXT_PUBLIC_PG_NAME!,
   address: process.env.NEXT_PUBLIC_ADDRESS!,
+  emailServerPass: process.env.EMAIL_SERVER_PASS!,
+  senderEmail: process.env.SENDER_EMAIL!,
+  emailServerPort: process.env.EMAIL_SERVER_PORT!,
+  emailServerHost: process.env.EMAIL_SERVER_HOST!,
 };

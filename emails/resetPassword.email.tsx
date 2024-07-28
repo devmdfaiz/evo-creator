@@ -41,7 +41,7 @@ const PasswordResetLinkEmail = ({
           <Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[20px] max-w-[465px]">
             <Section className="mt-[32px]">
               <Img
-                src={`${baseUrl}/facebook.png`}
+                src={`${baseUrl}/square-logo.png`}
                 width="40"
                 height="37"
                 alt="Vercel"

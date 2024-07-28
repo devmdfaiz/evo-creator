@@ -1,30 +1,31 @@
 import { evar } from "@/lib/envConstant";
 import connectToDb from "@/lib/mongodb/connection/db";
 import { User } from "@/lib/mongodb/models/user.model";
-import { resend } from "@/lib/resend/resend";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import uniqid from "uniqid";
 import SendOtp from "../../../../../emails/otp.email"; // React component to generate OTP email content
 import { generateOTP } from "@/lib/otplib/otplib";
 import { serverError } from "@/lib/utils/error/errorExtractor";
+import { transporter } from "@/lib/nodemailer/nodemailer";
+import { render } from "@react-email/components";
 
 export async function POST(req: Request) {
-  // Connect to the database
-  await connectToDb();
-
-  const { fullname, email, password, phone } = await req.json();
-
-  // Generate a new OTP
-  const otp = generateOTP();
-
-  // Hash the password for security
-  const hashPassword = await bcrypt.hash(password, 10);
-
-  // Generate a unique user ID
-  const userId = uniqid("user-");
-
   try {
+    // Connect to the database
+    await connectToDb();
+
+    const { fullname, email, password, phone } = await req.json();
+
+    // Generate a new OTP
+    const otp = generateOTP();
+
+    // Hash the password for security
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    // Generate a unique user ID
+    const userId = uniqid("user-");
+
     // Check if a user with the same email already exists
     const existingUserWithEmail = await User.findOne({ email });
 
@@ -76,27 +77,35 @@ export async function POST(req: Request) {
     });
 
     if (newUser) {
-      // Send the OTP to a specific email address using the "resend" service
-      const { data, error } = await resend.emails.send({
-        from: "onboarding@resend.dev", // Sender's email address
-        to: email, // Recipient's email address
-        subject: `Your One-Time Password (OTP) from ${evar.projectName}`, // Email subject
-        react: SendOtp({
+      // Send the OTP to a specific email address using the "nodemailer" service
+
+      const emailHtml = render(
+        SendOtp({
           projectName: evar.projectName,
           recipientName: fullname,
           action: "Sign up",
           otp,
           supportEmail: "support@support.com",
           baseUrl: evar.domain,
-        }), // React component generating the email content
+        })
+      );
+
+      const info = await transporter.sendMail({
+        from: evar.senderEmail, // sender address
+        to: email, // list of receivers
+        subject: `Your One-Time Password (OTP) from ${evar.projectName}`, // Subject line
+        html: emailHtml, // html body
       });
 
       // Check if there was an error sending the email
-      if (error) {
+      if (!info.messageId) {
+        await User.findByIdAndDelete(newUser._id);
+
         return NextResponse.json(
           {
-            message: "An error in sending email. Please try again.", // User-friendly error message,
-            error, // Return the error object for debugging
+            message: "An error in sending email. Please try again.",
+            error: "Email sending failed",
+            user: null,
           },
           { status: 500 } // HTTP 500 Internal Server Error for unexpected issues
         );
