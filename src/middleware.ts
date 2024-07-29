@@ -129,6 +129,9 @@ export default withAuth(
     if (pathname.startsWith("/api/order/thank-you-order-data")) {
       return null;
     }
+    // if (pathname.startsWith("/api/full-user-data")) {
+    //   return null;
+    // }
 
     if (pathname.startsWith("/api")) {
       if (tokenWithUserData && token) {

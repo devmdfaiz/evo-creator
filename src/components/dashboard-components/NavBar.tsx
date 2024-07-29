@@ -22,6 +22,7 @@ import {
 } from "../ui/navigation-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { evar } from "@/lib/envConstant";
+import LogoWrapper, { HeaderLogo } from "../global/wrapper/LogoWrapper";
 
 const NavBar = ({
   isMenuOpen,
@@ -37,7 +38,7 @@ const NavBar = ({
   const navlinks: Navlinks[] = [
     {
       title: "Overview",
-      slug: "/overview",
+      slug: "/",
       icon: <PuzzleIcons className="w-4 h-4" />,
     },
     {
@@ -71,7 +72,7 @@ const NavBar = ({
   const adminNavlinks: Navlinks[] = [
     {
       title: "Overview",
-      slug: "/admin/overview",
+      slug: "/admin",
       icon: <PuzzleIcons className="w-4 h-4" />,
     },
     {
@@ -124,7 +125,13 @@ const NavBar = ({
       <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
         <SheetContent side="left">
           <SheetHeader className="py-2">
-            <SheetTitle className="text-left">{evar.projectName}</SheetTitle>
+            <SheetTitle className="text-left">
+              <Link href="/">
+                <LogoWrapper>
+                  <HeaderLogo />
+                </LogoWrapper>
+              </Link>
+            </SheetTitle>
             <nav className={""}>
               <ul
                 className={cn(

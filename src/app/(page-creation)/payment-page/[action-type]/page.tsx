@@ -33,6 +33,7 @@ import { useEffect, useMemo, useState } from "react";
 import { clientError } from "@/lib/utils/error/errorExtractor";
 import PageSpinner from "@/components/global/spinner/PageSpinner";
 import InfoTooltip from "@/components/dashboard-components/InfoTooltip";
+import InputTracker from "@/components/global/InputTracker/InputTracker";
 
 // React component starts here
 const PageAdd = ({
@@ -99,6 +100,17 @@ const PageAdd = ({
       .catch((error) => {
         console.log("Error in creating page: ", error);
 
+        if (error.response.status === 403) {
+          showToast(
+            error.response.data.message,
+            error.response.data.error,
+            "Close",
+            () => {}
+          );
+          setActionStatus("started");
+          return;
+        }
+
         setActionStatus("started");
         const errorMessage = clientError(error);
         showToast(errorMessage, null, "Close", () => {});
@@ -150,7 +162,11 @@ const PageAdd = ({
                     <FormLabel
                       className={cn("flex justify-start items-center gap-2")}
                     >
-                      Meta Title{" "}
+                      Meta Title*
+                      <InputTracker
+                        current={form.watch("metaTitle")}
+                        max={60}
+                      />
                       <InfoTooltip>
                         This is the catchy title people see in search results.{" "}
                         <br />
@@ -181,7 +197,11 @@ const PageAdd = ({
                     <FormLabel
                       className={cn("flex justify-start items-center gap-2")}
                     >
-                      Meta description{" "}
+                      Meta description*
+                      <InputTracker
+                        current={form.watch("metaDesc")}
+                        max={160}
+                      />
                       <InfoTooltip>
                         This short blurb appears under the title in search
                         results. <br /> Use it to tell people what your page is
@@ -211,7 +231,8 @@ const PageAdd = ({
                     <FormLabel
                       className={cn("flex justify-start items-center gap-2")}
                     >
-                      Keywords{" "}
+                      Keywords*
+                      <InputTracker current={form.watch("keywords")} max={60} />
                       <InfoTooltip>
                         These are the words people might use to find your page.
                         <br />

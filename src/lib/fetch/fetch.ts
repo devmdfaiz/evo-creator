@@ -12,6 +12,7 @@ export async function getDashboardOrderData({
   date,
   setCurrentPeriodOrders,
   setComparisonPeriodOrders,
+  setAccountStatus,
 }: {
   fromDate: Date;
   toDate: Date;
@@ -19,6 +20,7 @@ export async function getDashboardOrderData({
   date: any;
   setCurrentPeriodOrders: any;
   setComparisonPeriodOrders: any;
+  setAccountStatus: any;
 }) {
   try {
     const res = await axios.post("/api/order/order-data", {
@@ -29,6 +31,7 @@ export async function getDashboardOrderData({
     const { data, status } = res;
 
     if (status === 200) {
+      setAccountStatus(data.accountStatus);
       if (date?.type === "template") {
         if (date?.templateData?.day === "today") {
           const filtered = data?.orders[0]?.currentPeriod?.filter(
@@ -114,17 +117,20 @@ export async function getDashboardPageData({
   toDate,
   date,
   setPages,
+  setAccountStatus,
 }: {
   fromDate: Date;
   toDate: Date;
   date: any;
   setPages: any;
+  setAccountStatus: any;
 }) {
   try {
     const res = await axios.post("/api/page", { fromDate, toDate });
     const { data, status } = res;
 
     if (status === 200) {
+      setAccountStatus(data.accountStatus);
       if (date?.type === "template") {
         if (date?.templateData?.day === "today") {
           const filtered = data.pages.filter(
@@ -183,11 +189,11 @@ export const getPublicPageData = async (id: string) => {
     const response = await axios.post(url, { id });
 
     const fieldValue = await response.data.fieldValue;
-    return {fieldValue, error: null};
+    return { fieldValue, error: null };
   } catch (error) {
     console.error("Error fetching data:", error);
     const errorMessage = clientError(error);
-    return {fieldValue: null, error: errorMessage}
+    return { fieldValue: null, error: errorMessage };
   }
 };
 
@@ -221,5 +227,22 @@ export const checkOrderPaidOrNot = async (
     const errorMessage = clientError(error);
 
     showToast(errorMessage, null, "Close", () => {});
+  }
+};
+
+export const fetchFullUserData = async (userId: string) => {
+  try {
+    const { data, status } = await axios.post(
+      `${evar.domain}/api/full-user-data`,
+      { userId }
+    );
+
+    if (status === 200) {
+      return { data };
+    }
+  } catch (error) {
+    console.log("Error in fetching full user data: ", error);
+    const errorMessage = clientError(error);
+    return { data: null };
   }
 };

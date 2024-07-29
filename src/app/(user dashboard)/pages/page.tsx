@@ -12,9 +12,13 @@ import { getDashboardPageData } from "@/lib/fetch/fetch";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useContext, useMemo, useState } from "react";
+import AccountBlockInfo from "@/components/info/AccountBlockInfo";
 
 const Pages = () => {
   const [pages, setPages] = useState(["nothing"]);
+  const [accountStatus, setAccountStatus] = useState<"BLOCKED" | "ACTIVE">(
+    "ACTIVE"
+  );
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
   const { fromDate, toDate, date, reloadPage } = useContext(DateContext);
 
@@ -25,6 +29,7 @@ const Pages = () => {
       toDate,
       date,
       setPages,
+      setAccountStatus,
     }).then(() => {
       setIsOrdersLoading(false);
     });
@@ -35,27 +40,30 @@ const Pages = () => {
   }
 
   return (
-    <MainComponentsWrapper>
-      <div className="flex flex-wrap justify-between items-center">
-        <TypographyH1 className="my-7">All Pages</TypographyH1>
-        <div className="flex justify-start items-center flex-wrap gap-5 mb-5 sm:my-0">
-          <div className="flex gap-2 items-center justify-center">
-            {isOrdersLoading && <ButtonSpinner className="w-5 h-5" />}
-            <DatePickerWithRange />
+    <>
+      <MainComponentsWrapper>
+        <AccountBlockInfo accountStatus={accountStatus} />
+        <div className="flex flex-wrap justify-between items-center">
+          <TypographyH1 className="my-7">All Pages</TypographyH1>
+          <div className="flex justify-start items-center flex-wrap gap-5 mb-5 sm:my-0">
+            <div className="flex gap-2 items-center justify-center">
+              {isOrdersLoading && <ButtonSpinner className="w-5 h-5" />}
+              <DatePickerWithRange />
+            </div>
+            <Link
+              href="/payment-page/create"
+              className={buttonVariants({
+                variant: "default",
+              })}
+            >
+              <PlusCircledIcon className="mr-2 h-5 w-5" /> Create new Page
+            </Link>
           </div>
-          <Link
-            href="/payment-page/create"
-            className={buttonVariants({
-              variant: "default",
-            })}
-          >
-            <PlusCircledIcon className="mr-2 h-5 w-5" /> Create new Page
-          </Link>
         </div>
-      </div>
-      <PageCardWrapper pages={pages} />
-      <PagesTableData pages={pages} />
-    </MainComponentsWrapper>
+        <PageCardWrapper pages={pages} />
+        <PagesTableData pages={pages} />
+      </MainComponentsWrapper>
+    </>
   );
 };
 

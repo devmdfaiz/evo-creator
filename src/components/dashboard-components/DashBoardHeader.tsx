@@ -202,7 +202,24 @@ const DashBoardHeader = ({
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => {
-                      signOut();
+                      toast
+                        .promise(axios.get("/api/user/signout"), {
+                          loading: "Signing out you...",
+                          success: "Signed out successfully!",
+                          error: "Failed to sign out. Please try again.",
+                        })
+                        .then((res) => {
+                          const { status, data } = res;
+
+                          if (status === 200) {
+                            signOut();
+                          }
+                        })
+                        .catch((error) => {
+                          const errorMessage = clientError(error);
+
+                          showToast(errorMessage, null, "Close", () => {});
+                        });
                     }}
                   >
                     <LogOut className="mr-2 h-4 w-4" />

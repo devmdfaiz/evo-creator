@@ -4,10 +4,11 @@ import { authOptions } from "../../../../../AuthOptions";
 import { Order } from "@/lib/mongodb/models/order.model";
 import { NextResponse } from "next/server";
 import { serverError } from "@/lib/utils/error/errorExtractor";
+import { User } from "@/lib/mongodb/models/user.model";
 
 /**
  * Handles the POST request to fetch orders within a specified date range and comparison period.
- * 
+ *
  * @param {Request} req - The incoming HTTP request object.
  * @returns {Promise<Response>} - The HTTP response containing the order data or an error message.
  */
@@ -19,21 +20,28 @@ export async function POST(req: Request) {
     // Get user session
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
-      return NextResponse.json({
-        message: "User is not authenticated. Please log in.",
-        error: "User session not found",
-        orders: null,
-      }, { status: 401 });
+      return NextResponse.json(
+        {
+          message: "User is not authenticated. Please log in.",
+          error: "User session not found",
+          orders: null,
+        },
+        { status: 401 }
+      );
     }
 
     // Parse the request body
     const { fromDate, toDate, dayGap } = await req.json();
     if (!fromDate || !toDate || dayGap === undefined) {
-      return NextResponse.json({
-        message: "Invalid input. Please provide 'fromDate', 'toDate', and 'dayGap'.",
-        error: "Missing required fields",
-        orders: null,
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          message:
+            "Invalid input. Please provide 'fromDate', 'toDate', and 'dayGap'.",
+          error: "Missing required fields",
+          orders: null,
+        },
+        { status: 400 }
+      );
     }
 
     // Calculate the comparison period start date
@@ -116,11 +124,16 @@ export async function POST(req: Request) {
       },
     ]);
 
+    const userData = await User.findOne({ userId: session.user.sub });
+
+    const accountStatus = userData.accountStatus;
+
     // Return a successful response with the aggregated orders data
     return NextResponse.json(
       {
         message: "Orders fetched successfully.",
         orders,
+        accountStatus,
         error: null,
       },
       { status: 200 }
@@ -130,10 +143,13 @@ export async function POST(req: Request) {
     console.error("Error fetching orders:", error);
 
     // Return an error response
-    return NextResponse.json({
-      message: "Failed to fetch orders. Please try again later.",
-      orders: null,
-      error: errorMessage,
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        message: "Failed to fetch orders. Please try again later.",
+        orders: null,
+        error: errorMessage,
+      },
+      { status: 500 }
+    );
   }
 }

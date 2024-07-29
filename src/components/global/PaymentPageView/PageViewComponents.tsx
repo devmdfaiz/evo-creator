@@ -44,7 +44,7 @@ export const PageWrapper = ({
 
   return (
     <main className={cn(`${pageTheme} min-h-screen`, className)}>
-      <div className="h-2 w-full" />
+      <div className="h-2 w-full" style={{ backgroundColor: color }} />
       <ProductPageFormMobile
         className="lg:hidden z-50"
         priceDetails={fieldValue?.pagePrice!}

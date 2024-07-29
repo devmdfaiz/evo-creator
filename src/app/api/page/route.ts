@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "../../../../AuthOptions";
 import { serverError } from "@/lib/utils/error/errorExtractor";
+import { User } from "@/lib/mongodb/models/user.model";
 
 export async function POST(req: Request) {
   try {
@@ -64,17 +65,24 @@ export async function POST(req: Request) {
       },
       {
         $match: {
-          $or: [
-            { "orders.isPaid": true },
-            { "orders": { $exists: false } },
-          ],
+          $or: [{ "orders.isPaid": true }, { orders: { $exists: false } }],
         },
       },
       {
         $group: {
           _id: "$_id",
-          totalRevenue: { $sum: { $cond: [{ $ifNull: ["$orders.isPaid", false] }, "$orders.amount", 0] } },
-          paidOrdersCount: { $sum: { $cond: [{ $ifNull: ["$orders.isPaid", false] }, 1, 0] } },
+          totalRevenue: {
+            $sum: {
+              $cond: [
+                { $ifNull: ["$orders.isPaid", false] },
+                "$orders.amount",
+                0,
+              ],
+            },
+          },
+          paidOrdersCount: {
+            $sum: { $cond: [{ $ifNull: ["$orders.isPaid", false] }, 1, 0] },
+          },
           metaTitle: { $first: "$metaData.metaTitle" },
           seoHashUrl: { $first: "$metaData.seoHashUrl" },
           pageHashUrl: { $first: "$pageHashUrl" },
@@ -87,7 +95,10 @@ export async function POST(req: Request) {
         },
       },
     ]);
-    
+
+    const userData = await User.findOne({ userId: session.user.sub });
+
+    const accountStatus = userData.accountStatus;
 
     // Return a successful response with the aggregated pages data
     return NextResponse.json(
@@ -95,6 +106,7 @@ export async function POST(req: Request) {
         message: "Pages data retrieved successfully.",
         error: null,
         pages,
+        accountStatus,
       },
       { status: 200 }
     );

@@ -177,6 +177,17 @@ const PageTabs = ({ pageId }: { pageId: string }) => {
         setIsFormSubmitted(false);
         setPublishingStatus("error");
         console.error("Error updating page details:", error);
+
+        if (error.response.status === 403) {
+          showToast(
+            error.response.data.message,
+            error.response.data.error,
+            "Close",
+            () => {}
+          );
+          return;
+        }
+
         const errorMessage = clientError(error);
         showToast(errorMessage, null, "Close", () => {});
       })
@@ -322,7 +333,7 @@ export function ProductFields({ form, inputs }: TDetailsFields) {
             name="extProductLinks"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Add Link of your file</FormLabel>
+                <FormLabel>Add Link of your file*</FormLabel>
                 <FormControl>
                   <div className="w-full h-fit border border-foreground/40 border-dashed rounded py-8 cursor-pointer px-3 space-y-1">
                     <FormDescription>
@@ -366,7 +377,7 @@ export function ProductFields({ form, inputs }: TDetailsFields) {
           name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Category</FormLabel>
+              <FormLabel>Category*</FormLabel>
               <Select
                 onValueChange={(e) => {
                   inputs.setCategory(e);
@@ -470,7 +481,7 @@ export function ProductFields({ form, inputs }: TDetailsFields) {
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price</FormLabel>
+                  <FormLabel>Price*</FormLabel>
                   <br />
                   <FormControl>
                     <div className="flex items-center justify-start gap-2 py-1">
@@ -536,7 +547,7 @@ export function ProductFields({ form, inputs }: TDetailsFields) {
                   name="discountedPrice"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Discounted price</FormLabel>
+                      <FormLabel>Discounted price*</FormLabel>
                       <br />
                       <FormControl>
                         <div className="flex items-center justify-start gap-2 py-1">
@@ -579,7 +590,7 @@ export function ProductFields({ form, inputs }: TDetailsFields) {
               name="baseAuctionPrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Base Price</FormLabel>
+                  <FormLabel>Base Price*</FormLabel>
                   <br />
                   <FormControl>
                     <div className="flex items-center justify-start gap-2 py-1">
@@ -634,7 +645,9 @@ export function DetailsFields({ form, inputs }: TDetailsFields) {
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Page Title</FormLabel>
+                <FormLabel>
+                  Page Title*
+                </FormLabel>
                 <FormControl>
                   <Input
                     className="w-full"
@@ -653,7 +666,7 @@ export function DetailsFields({ form, inputs }: TDetailsFields) {
         </div>
 
         {/* cover upload */}
-        <FormLabel>Product Images</FormLabel>
+        <FormLabel>Product Images*</FormLabel>
         <FileUploader
           fileType={SUPPORTED_IMAGE_FORMATES}
           countLimit={7}
@@ -667,7 +680,7 @@ export function DetailsFields({ form, inputs }: TDetailsFields) {
             name="pageDesc"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description</FormLabel>
+                <FormLabel>Description*</FormLabel>
                 <FormControl>
                   <Tiptap field={field} />
                 </FormControl>
@@ -687,7 +700,7 @@ export function DetailsFields({ form, inputs }: TDetailsFields) {
               name="contPhone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone</FormLabel>
+                  <FormLabel>Phone*</FormLabel>
                   <FormControl>
                     <div className="flex items-center justify-start gap-2 py-1">
                       <Button
@@ -720,7 +733,7 @@ export function DetailsFields({ form, inputs }: TDetailsFields) {
               name="contEmail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Email*</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Add your contact email"
@@ -1105,7 +1118,7 @@ export function SettingFields({ form, inputs }: TDetailsFields) {
             name="buttonText"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Button Text</FormLabel>
+                <FormLabel>Button Text*</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="eg: Buy Now"
@@ -1366,7 +1379,7 @@ export function CustomiseFields({ form, inputs }: TDetailsFields) {
             name="pageOwner"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Page Owner</FormLabel>
+                <FormLabel>Page Owner*</FormLabel>
                 <FormControl>
                   <Input
                     placeholder={`e.g., ${evar.projectName}`}

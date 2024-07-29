@@ -32,6 +32,7 @@ import ButtonSpinner from "@/components/global/spinner/ButtonSpinner";
 import TypographyP from "@/components/typography/TypographyP";
 import OverviewCardsWrapper from "@/components/dashboard-components/OverviewCardsWrapper";
 import MainComponentsWrapper from "@/components/global/wrapper/MainComponentsWrapper";
+import AccountBlockInfo from "@/components/info/AccountBlockInfo";
 
 const chartConfig = {
   date: {
@@ -46,6 +47,9 @@ const OverviewPage = () => {
   const [comparisonPeriodOrders, setComparisonPeriodOrders] = useState([
     "nothing",
   ]);
+  const [accountStatus, setAccountStatus] = useState<"BLOCKED" | "ACTIVE">(
+    "ACTIVE"
+  );
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
   const { fromDate, toDate, dayGap, date } = useContext(DateContext);
 
@@ -58,6 +62,7 @@ const OverviewPage = () => {
       date,
       setCurrentPeriodOrders,
       setComparisonPeriodOrders,
+      setAccountStatus,
     }).then(() => {
       setIsOrdersLoading(false);
     });
@@ -74,6 +79,7 @@ const OverviewPage = () => {
 
   return (
     <MainComponentsWrapper>
+      <AccountBlockInfo accountStatus={accountStatus} />
       <div className="flex flex-wrap justify-between items-center">
         <TypographyH1 className="my-7">Overview</TypographyH1>
         <div className="mb-5 sm:my-0">
