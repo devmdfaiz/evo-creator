@@ -18,7 +18,7 @@ export const aggregateAmountsByDate = (orders: any[]) => {
       if (!amountsByDate[date]) {
         amountsByDate[date] = 0;
       }
-      amountsByDate[date] += order.amount;
+      amountsByDate[date] += order.amountToPay;
     }
   });
 
@@ -43,7 +43,7 @@ export function dashboardGrowthCalculation({
   });
 
   for (const filteredOrder of currentFilteredOrders) {
-    currentTotalRevenue += parseFloat(filteredOrder?.amount);
+    currentTotalRevenue += parseFloat(filteredOrder?.amountToPay);
   }
 
   const currentOrderCount = currentPeriod?.length;
@@ -56,7 +56,7 @@ export function dashboardGrowthCalculation({
   });
 
   for (const filteredOrder of comparisonFilteredOrders) {
-    comparisonTotalRevenue += parseFloat(filteredOrder?.amount);
+    comparisonTotalRevenue += parseFloat(filteredOrder?.amountToPay);
   }
   const comparisonOrderCount = comparisonPeriod?.length;
 

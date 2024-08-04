@@ -36,7 +36,7 @@ const OverviewCardsWrapper = ({
   return (
     <div className="flex flex-wrap justify-center gap-5">
       <SmallCard
-        title="Total Sales"
+        title="Total Orders"
         goal={currentPeriod?.length}
         desc={`${parseInt(JSON.stringify(orderGrowth))}% from last ${
           Number.isNaN(dayGap) ? 0 : dayGap

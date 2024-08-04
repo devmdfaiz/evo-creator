@@ -174,13 +174,22 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => {
-      const amount = parseFloat(row?.original?.pagePrice?.price);
+      const priceRow = row?.original?.pagePrice;
+      
+      const price: string = priceRow.offerDiscountedPrice
+        ? priceRow.discountedPrice
+        : priceRow.price;
+
+      const amount = parseFloat(price);
 
       // Format the amount as a INR amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "INR",
-      }).format(amount);
+      const formatted =
+        priceRow.priceType === "fixedPrice"
+          ? new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "INR",
+            }).format(amount)
+          : "Action Price";
 
       return <div className="ml-4 lowercase">{formatted}</div>;
     },
@@ -576,47 +585,69 @@ export const CouponCreator = ({
               <>
                 {coupons.length > 0 &&
                   coupons[0] !== "nothing" &&
-                  coupons.map((coupon, i) => (
-                    <div
-                      key={i}
-                      className="flex gap-3 items-center justify-center border w-full h-fit rounded-md px-4 py-2 mt-3"
-                    >
-                      <div className="grow">
-                        <TypographyH4 className="text-base">
-                          {coupon.code}
-                        </TypographyH4>
-                        <TypographyMuted className="text-xs">
-                          <b>Discount:</b> {coupon.discount}%
-                        </TypographyMuted>
-                        <TypographyMuted className="text-xs">
-                          <b>Created At:</b>{" "}
-                          {format(coupon.createdAt, "dd/MM/yyyy")}
-                        </TypographyMuted>
-                        <TypographyMuted className="text-xs">
-                          <b>Expiry:</b> {format(coupon.expiry, "dd/MM/yyyy")}
-                        </TypographyMuted>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          handleCouponDelete(coupon._id, i);
-                        }}
+                  coupons.map((coupon, i) => {
+                    const presentDate = new Date();
+                    let couponStatus;
+                    if (
+                      presentDate.getTime() >= new Date(coupon.expiry).getTime()
+                    ) {
+                      couponStatus = "Expired";
+                    } else {
+                      couponStatus = "Valid";
+                    }
+
+                    return (
+                      <div
+                        key={i}
+                        className="flex gap-3 items-center justify-center border w-full h-fit rounded-md px-4 py-2 mt-3"
                       >
-                        {!isCouponDeleting.isDeleting ? (
-                          <TrashIcon className="w-4 h-4" />
-                        ) : (
-                          <>
-                            {isCouponDeleting.index === i ? (
-                              <ButtonSpinner className="w-4 h-4" />
-                            ) : (
-                              <TrashIcon className="w-4 h-4" />
-                            )}
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  ))}
+                        <div className="grow">
+                          <TypographyH4 className="text-base">
+                            {coupon.code}{" "}
+                            <span
+                              className={`font-light text-sm w-fit h-full py-1 px-3 rounded-md ${
+                                couponStatus === "Expired"
+                                  ? "bg-red-700/20 text-red-700"
+                                  : "bg-green-700/20 text-green-700"
+                              }`}
+                            >
+                              {couponStatus}
+                            </span>
+                          </TypographyH4>
+                          <TypographyMuted className="text-xs">
+                            <b>Discount:</b> {coupon.discount}%
+                          </TypographyMuted>
+                          <TypographyMuted className="text-xs">
+                            <b>Created At:</b>{" "}
+                            {format(coupon.createdAt, "dd-MMM-yyyy")}
+                          </TypographyMuted>
+                          <TypographyMuted className="text-xs">
+                            <b>Expiry:</b>{" "}
+                            {format(coupon.expiry, "dd-MMM-yyyy")}
+                          </TypographyMuted>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            handleCouponDelete(coupon._id, i);
+                          }}
+                        >
+                          {!isCouponDeleting.isDeleting ? (
+                            <TrashIcon className="w-4 h-4" />
+                          ) : (
+                            <>
+                              {isCouponDeleting.index === i ? (
+                                <ButtonSpinner className="w-4 h-4" />
+                              ) : (
+                                <TrashIcon className="w-4 h-4" />
+                              )}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    );
+                  })}
               </>
             ) : (
               <ButtonSpinner PClassName="mt-3 w-full flex items-center justify-center" />

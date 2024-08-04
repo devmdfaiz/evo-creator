@@ -24,16 +24,17 @@ import {
 } from "@/lib/constants/index.constant";
 import axios from "axios";
 import { ReactHookFormContext } from "@/context/ReactHookFormProvider";
-import { useContext, useEffect, useState } from "react";
-import { evar } from "@/lib/envConstant";
+import { Dispatch, SetStateAction, useContext, useState } from "react";
 import { toast } from "react-toastify";
 import { indianNameAndCityGenerator } from "@/lib/faker/index.faker";
-import { getLsItem, setLsItem } from "@/lib/utils/storage/localstorage";
 import { useErrorHandler } from "@/context/zustand/store";
 import RazorpayIcon from "@/components/icons/RazorpayIcon";
 import { useZustandSelector } from "@/context/zustand/slectors";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
-import { Input } from "@/components/ui/input";
+import spinUpCashfreePaymentPage from "./spinUpPaymentPage";
+import { clientError } from "@/lib/utils/error/errorExtractor";
+import { showToast } from "@/lib/zod/index.zodSchema";
+import ButtonSpinner from "../spinner/ButtonSpinner";
+import { Loader } from "lucide-react";
 
 export const randomTimeGenerator = (delayValueArr: number[]) => {
   const delays = delayValueArr; // Array of delay values in milliseconds
@@ -48,40 +49,40 @@ export const randomTimeGenerator = (delayValueArr: number[]) => {
  * @location /components/global/paymentPage/PageForm.tsx
  * @param info
  */
-const handleOrderFilledInfo: any = async (info: any) => {
+const handleOrderFilledInfo: any = async (info: {
+  data: any;
+  pageId: string;
+  setIsDetailsSubmitting: Dispatch<SetStateAction<boolean>>;
+}) => {
+  // Ensure fbq is defined before using it
+  if (typeof window.fbq !== "undefined") {
+    window.fbq("track", "Initiate Checkout");
+  }
+  if (typeof window.gtag !== "undefined") {
+    window.gtag("event", "begin_checkout", {
+      event_category: "engagement",
+      event_label: "Buy Now Button Click",
+    });
+  }
+
+  const { setIsDetailsSubmitting } = info;
+  setIsDetailsSubmitting(true);
+
   try {
     const {
-      data: { order, message, status },
+      data: { order },
+      status,
     } = await axios.post("/api/order", info);
 
     if (status === 201) {
-      const options = {
-        key: evar.razorpayKey,
-        amount: order.amount * 100,
-        currency: "INR",
-        name: evar.projectName,
-        description: "Product/Service Purchase",
-        image: "/next.svg",
-        order_id: order.rzrPayOrderId,
-        handler: async (response: any) => {
-          const { data } = await axios.post(
-            "/api/razorpay/payment/verify",
-            response
-          );
-
-          if (data.isSignatureVerified) {
-            window.location.href = `/thank-you?order-id=${order.orderId}`;
-          } else {
-            console.error("Payment verification failed:", data.msg);
-          }
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      setIsDetailsSubmitting(false);
+      spinUpCashfreePaymentPage(order);
     }
   } catch (error) {
+    setIsDetailsSubmitting(false);
+    const errorMessage = clientError(error);
     console.log("payment page opening error is: ", error);
+    showToast(errorMessage, null, "Close", () => {});
   }
 };
 
@@ -135,6 +136,9 @@ export const ProductPageForm = ({
   buttonText,
 }: TProductPageForm) => {
   const path = usePathname();
+
+  const [isDetailsSubmitting, setIsDetailsSubmitting] = useState(false);
+
   const pageId = path.split("/")[2];
 
   const {
@@ -159,7 +163,7 @@ export const ProductPageForm = ({
       <TypographyH4 className="mb-3">Payment Details</TypographyH4>
       <form
         onSubmit={handleSubmit((data: any) =>
-          handleOrderFilledInfo({ data, pageId, priceType })
+          handleOrderFilledInfo({ data, pageId, setIsDetailsSubmitting })
         )}
         className="space-y-4"
       >
@@ -182,12 +186,18 @@ export const ProductPageForm = ({
           />
         )}
 
-        <Button
-          style={{ backgroundColor: color }}
-          className="w-full py-8 text-base tracking-wider rounded-3xl"
-        >
-          {buttonText}
-        </Button>
+        {!isDetailsSubmitting ? (
+          <Button
+            style={{ backgroundColor: color }}
+            className="w-full py-8 text-base tracking-wider rounded-3xl"
+          >
+            {buttonText}
+          </Button>
+        ) : (
+          <div className="w-full py-2 flex justify-center items-center">
+            <Loader className="animate-spin" />
+          </div>
+        )}
       </form>
 
       <GuaranteedBar theme={theme} />

@@ -9,6 +9,7 @@ import { generateOTP } from "@/lib/otplib/otplib";
 import { serverError } from "@/lib/utils/error/errorExtractor";
 import { transporter } from "@/lib/nodemailer/nodemailer";
 import { render } from "@react-email/components";
+import { Wallet } from "@/lib/mongodb/models/wallet.model";
 
 export async function POST(req: Request) {
   try {
@@ -25,14 +26,13 @@ export async function POST(req: Request) {
 
     // Generate a unique user ID
     const userId = uniqid("user-");
+    const walletId = uniqid("wallet-");
 
-    // Check if a user with the same email already exists
+    // Check if a user with the same email or phone already exists
     const existingUserWithEmail = await User.findOne({ email });
-
-    // Check if a user with the same phone already exists
     const existingUserWithPhone = await User.findOne({ phone });
 
-    if (existingUserWithPhone && existingUserWithEmail) {
+    if (existingUserWithEmail && existingUserWithPhone) {
       return NextResponse.json(
         {
           message:
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           message:
-            "Phone number already in use. Please sign in or use another email.",
+            "Phone number already in use. Please sign in or use another phone number.",
           user: null,
           error: null,
         },
@@ -76,40 +76,71 @@ export async function POST(req: Request) {
       userId,
     });
 
-    if (newUser) {
-      // Send the OTP to a specific email address using the "nodemailer" service
-
-      const emailHtml = render(
-        SendOtp({
-          projectName: evar.projectName,
-          recipientName: fullname,
-          action: "Sign up",
-          otp,
-          supportEmail: "support@support.com",
-          baseUrl: evar.domain,
-        })
+    if (!newUser) {
+      return NextResponse.json(
+        {
+          message: "Failed to create user. Please try again.",
+          user: null,
+          error: null,
+        },
+        { status: 500 } // 500 Internal Server Error
       );
+    }
 
+    // Create wallet
+    const createdWallet = await Wallet.create({
+      name: fullname,
+      phone,
+      walletId,
+      owner: userId,
+    });
+
+    if (!createdWallet) {
+      // Rollback user creation if wallet creation fails
+      await User.findByIdAndDelete(newUser._id);
+
+      return NextResponse.json(
+        {
+          message: "Failed to create wallet. Please try again.",
+          user: null,
+          error: null,
+        },
+        { status: 500 } // 500 Internal Server Error
+      );
+    }
+
+    // Send the OTP to a specific email address using the "nodemailer" service
+    const emailHtml = render(
+      SendOtp({
+        projectName: evar.projectName,
+        recipientName: fullname,
+        action: "Sign up",
+        otp,
+        supportEmail: "support@support.com",
+        baseUrl: evar.domain,
+      })
+    );
+
+    try {
       const info = await transporter.sendMail({
         from: evar.senderEmail, // sender address
         to: email, // list of receivers
         subject: `Your One-Time Password (OTP) from ${evar.projectName}`, // Subject line
         html: emailHtml, // html body
       });
+    } catch (error) {
+      // Rollback user and wallet creation if email sending fails
+      await User.findByIdAndDelete(newUser._id);
+      await Wallet.findByIdAndDelete(createdWallet._id);
 
-      // Check if there was an error sending the email
-      if (!info.messageId) {
-        await User.findByIdAndDelete(newUser._id);
-
-        return NextResponse.json(
-          {
-            message: "An error in sending email. Please try again.",
-            error: "Email sending failed",
-            user: null,
-          },
-          { status: 500 } // HTTP 500 Internal Server Error for unexpected issues
-        );
-      }
+      return NextResponse.json(
+        {
+          message: "An error occurred in sending email. Please try again.",
+          error: "Email sending failed",
+          user: null,
+        },
+        { status: 500 } // 500 Internal Server Error
+      );
     }
 
     return NextResponse.json(

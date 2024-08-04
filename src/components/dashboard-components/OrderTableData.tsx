@@ -219,7 +219,7 @@ export const columns: ColumnDef<any>[] = [
       );
     },
     cell: ({ row }) => {
-      const amount = parseFloat(row?.original?.amount);
+      const amount = parseFloat(row?.original?.amountToPay);
 
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {

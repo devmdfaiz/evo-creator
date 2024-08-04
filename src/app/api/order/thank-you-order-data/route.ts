@@ -37,7 +37,11 @@ export async function POST(req: Request) {
         $group: {
           _id: "$_id",
           customerInfo: { $first: "$customerInfo" },
-          isPaid: { $first: "$isPaid" },
+          paymentStatus: { $first: "$paymentStatus" },
+          metaPixel: { $first: "$pageData.settings.analyticIds.metaPixel" },
+          gaTrackingId: {
+            $first: "$pageData.settings.analyticIds.googleAnalytics",
+          },
           orderId: { $first: "$orderId" },
           amount: { $first: "$amount" },
           createdAt: { $first: "$createdAt" },

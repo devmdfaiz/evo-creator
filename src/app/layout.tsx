@@ -30,9 +30,7 @@ export default function RootLayout({
           <NextAuthSessionProvider>
             <ReactHookFormProvider>
               <DateProvider>
-                <main className="min-h-screen w-full">
-                  {children}
-                  </main>
+                <main className="min-h-screen w-full">{children}</main>
                 <ShadcnToast />
                 <Toastify
                   position="top-right"
@@ -51,8 +49,6 @@ export default function RootLayout({
             </ReactHookFormProvider>
           </NextAuthSessionProvider>
         </ProgressBarProvider>
-
-        <Script src="https://checkout.razorpay.com/v1/checkout.js"></Script>
       </body>
     </html>
   );

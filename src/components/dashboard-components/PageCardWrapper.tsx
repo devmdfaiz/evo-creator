@@ -15,11 +15,11 @@ const PageCardWrapper = ({ pages }: { pages: any[] }) => {
 
   if (pages) {
     for (let page of pages) {
-      if (page?.isPublished) {
+      if (page?.publishStatus === "public") {
         noOfPublicPages += 1;
       }
 
-      if (!page?.isPublished) {
+      if (page?.publishStatus === "private") {
         noOfPrivatePages += 1;
       }
     }

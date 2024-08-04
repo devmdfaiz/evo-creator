@@ -81,6 +81,7 @@ export async function POST(req: Request) {
                 isPaid: { $first: "$isPaid" },
                 rzrPayOrderId: { $first: "$rzrPayOrderId" },
                 amount: { $first: "$amount" },
+                amountToPay: { $first: "$amountToPay" },
                 createdAt: { $first: "$createdAt" },
                 pageId: { $first: "$pageData._id" },
                 pageTitle: { $first: "$pageData.metaData.metaTitle" },
@@ -114,6 +115,7 @@ export async function POST(req: Request) {
                 isPaid: { $first: "$isPaid" },
                 rzrPayOrderId: { $first: "$rzrPayOrderId" },
                 amount: { $first: "$amount" },
+                amountToPay: { $first: "$amountToPay" },
                 createdAt: { $first: "$createdAt" },
                 pageId: { $first: "$pageData._id" },
                 pageTitle: { $first: "$pageData.metaData.metaTitle" },
@@ -126,7 +128,7 @@ export async function POST(req: Request) {
 
     const userData = await User.findOne({ userId: session.user.sub });
 
-    const accountStatus = userData.accountStatus;
+    const accountStatus = userData!.accountStatus;
 
     // Return a successful response with the aggregated orders data
     return NextResponse.json(

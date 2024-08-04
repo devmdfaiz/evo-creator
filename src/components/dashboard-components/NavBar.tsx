@@ -57,11 +57,11 @@ const NavBar = ({
       slug: "/orders",
       icon: <OrderIcon className="w-4 h-4" />,
     },
-    // {
-    //   title: "Wallet",
-    //   slug: "/wallet",
-    //   icon: <WalletIcon className="w-4 h-4" />,
-    // },
+    {
+      title: "Wallet",
+      slug: "/wallet",
+      icon: <WalletIcon className="w-4 h-4" />,
+    },
     // {
     //   title: "Setting",
     //   slug: "/setting",

@@ -21,6 +21,8 @@ interface Evar {
   senderEmail: string;
   emailServerPort: string;
   emailServerHost: string;
+  cashfreeAppId: string;
+  cashfreeSecretKey: string;
 }
 
 export const evar: Evar = {
@@ -46,4 +48,6 @@ export const evar: Evar = {
   senderEmail: process.env.SENDER_EMAIL!,
   emailServerPort: process.env.EMAIL_SERVER_PORT!,
   emailServerHost: process.env.EMAIL_SERVER_HOST!,
+  cashfreeAppId: process.env.CF_APP_ID!,
+  cashfreeSecretKey: process.env.CF_SECRET_KEY!,
 };

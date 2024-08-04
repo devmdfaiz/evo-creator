@@ -213,10 +213,16 @@ export const checkOrderPaidOrNot = async (
     );
 
     if (status === 200) {
-      if (data.orderData[0].isPaid) {
+      if (data.orderData[0].paymentStatus === "SUCCESS") {
         setPaymentStatus("paid");
         setOrderData(data.orderData);
-      } else {
+      } else if (data.orderData[0].paymentStatus === "FAILED") {
+        setPaymentStatus("unpaid");
+        setOrderData(data.orderData);
+      } else if (data.orderData[0].paymentStatus === "ACTIVE") {
+        setPaymentStatus("unpaid");
+        setOrderData(data.orderData);
+      } else if (data.orderData[0].paymentStatus === "USER_DROPPED") {
         setPaymentStatus("unpaid");
         setOrderData(data.orderData);
       }

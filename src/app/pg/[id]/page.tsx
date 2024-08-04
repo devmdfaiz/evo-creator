@@ -7,6 +7,7 @@ import {
   PageComponents,
   PageWrapper,
 } from "@/components/global/PaymentPageView/PageViewComponents";
+import AnalyticsWrapperForPage from "./AnalyticsWrapperForPage";
 
 /**
  * Payment page main component
@@ -84,9 +85,7 @@ const PaymentPage = async ({
     const pageTheme = pageThemeProvider(theme);
 
     return (
-      <main
-        className={cn(`${pageTheme} w-full`)}
-      >
+      <main className={cn(`${pageTheme} w-full`)}>
         <PageInputsWithFormForMobileFormSolution
           fieldsData={fieldValue?.settings?.formInputs}
           color={color}
@@ -98,10 +97,15 @@ const PaymentPage = async ({
     );
   }
 
+  const pixelId = fieldValue?.settings?.analyticIds?.metaPixel;
+  const gaTrackingId = fieldValue?.settings?.analyticIds?.googleAnalytics;
+
   return (
-    <PageWrapper fieldValue={fieldValue} color={color} theme={theme}>
-      <PageComponents fieldValue={fieldValue} theme={theme} color={color} />
-    </PageWrapper>
+    <AnalyticsWrapperForPage gaTrackingId={gaTrackingId} pixelId={pixelId}>
+      <PageWrapper fieldValue={fieldValue} color={color} theme={theme}>
+        <PageComponents fieldValue={fieldValue} theme={theme} color={color} />
+      </PageWrapper>
+    </AnalyticsWrapperForPage>
   );
 };
 

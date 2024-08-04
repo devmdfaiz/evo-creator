@@ -189,7 +189,7 @@ const OverviewPage = () => {
                         </p>
                       </div>
                       <div className="ml-auto font-medium">
-                        +₹{currentPeriodOrder.amount}.00
+                        +₹{currentPeriodOrder.amountToPay}
                       </div>
                     </div>
                   );

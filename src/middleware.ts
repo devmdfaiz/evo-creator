@@ -14,7 +14,7 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
   // `withAuth` augments your `Request` with the user's token.
-  function middleware(req) {
+  async function middleware(req) {
     const token = !!req.nextauth.token; //?? finding token
     const tokenWithUserData = req.nextauth.token; //?? finding token data
     const tokenWithUserDataIsEmailVerificationStatus =
@@ -29,14 +29,6 @@ export default withAuth(
       ?.split(`${process.env.DOMAIN}`)
       .filter(Boolean)[0]; //?? filtering subdomain from doamin name
     const finishedCustomDomain = customSubDomain?.split(".")[0]; //?? removing dot from custom domain
-
-    console.log("Middleware triggered", {
-      token,
-      tokenWithUserData,
-      tokenWithUserDataIsEmailVerificationStatus,
-      accountStatus,
-      pathname,
-    });
 
     //** Admin routes management starts here */
     if (adminPrivateRoutes.includes(pathname)) {
@@ -106,11 +98,15 @@ export default withAuth(
     if (pathname.startsWith(publicAuthApiRoute)) {
       return null;
     }
+    // "/api/order"
+    if (pathname.startsWith("/api/order")) {
+      return null;
+    }
 
     // "/api/email"
     if (pathname.startsWith(partialPrivateEmailRoute)) {
       if (token) {
-      return null;
+        return null;
       }
 
       return NextResponse.redirect(new URL("/sign-in", req.url));

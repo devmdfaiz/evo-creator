@@ -75,7 +75,7 @@ export async function POST(req: Request) {
             $sum: {
               $cond: [
                 { $ifNull: ["$orders.isPaid", false] },
-                "$orders.amount",
+                "$orders.amountToPay",
                 0,
               ],
             },
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
 
     const userData = await User.findOne({ userId: session.user.sub });
 
-    const accountStatus = userData.accountStatus;
+    const accountStatus = userData!.accountStatus;
 
     // Return a successful response with the aggregated pages data
     return NextResponse.json(
