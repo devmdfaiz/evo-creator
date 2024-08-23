@@ -1,6 +1,6 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
-interface Transaction extends Document {
+export interface Transaction {
   amount: number;
   type: "credit" | "debit";
   status: "USER_DROPPED" | "SUCCESS" | "FAILED" | "ACTIVE";

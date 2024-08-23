@@ -6,6 +6,7 @@ const PixelBaseCode = ({ pixelId }: { pixelId: string }) => {
   return (
     <>
       <Script
+        id="metaScript"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `

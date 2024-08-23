@@ -63,6 +63,19 @@ export default withAuth(
 
     //** Routes management starts here */
 
+    // Webhook Route
+    if (pathname === "/api/order/payment-webhook") {
+      const rawBody = await req.arrayBuffer();
+      const encodedBody = encodeURIComponent(
+        Buffer.from(rawBody).toString("utf8")
+      );
+
+      const url = new URL(req.url);
+      url.searchParams.set("rawBody", encodedBody);
+
+      return NextResponse.rewrite(url);
+    }
+
     if (pathname === "/") {
       if (tokenWithUserData && token) {
         if (tokenWithUserDataIsEmailVerificationStatus === "verified") {

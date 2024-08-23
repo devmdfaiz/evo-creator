@@ -6,8 +6,10 @@ const GoogleAnalytics = ({ gaTrackingId }: { gaTrackingId: string }) => (
     <Script
       strategy="afterInteractive"
       src={`https://www.googletagmanager.com/gtag/js?id=${gaTrackingId}`}
+      id="gaScript"
     />
     <Script
+      id="gaScript2"
       strategy="afterInteractive"
       dangerouslySetInnerHTML={{
         __html: `
