@@ -12,28 +12,31 @@ import { useSearchParams } from "next/navigation";
 import { ReactNode, Suspense, useEffect, useMemo, useState } from "react";
 
 const SuspenseThankYouPage = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useMemo(() => {
+    setIsMounted(true);
+  }, []);
+
+  return <Suspense>{isMounted && <ThankYouPageDataLoading />}</Suspense>;
+};
+
+const ThankYouPageDataLoading = () => {
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get("order-id");
+
   const [paymentStatus, setPaymentStatus] = useState<
     "verifying" | "paid" | "unpaid" | "error"
   >("verifying");
   const [orderData, setOrderData] = useState<any[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
 
   // const orderId = "etrgwc63"
 
   useMemo(() => {
-    const searchParams = useSearchParams();
-    const id = searchParams.get("order-id");
-    setOrderId(id);
-
     if (orderId) {
-      checkOrderPaidOrNot(orderId, setPaymentStatus, setOrderData).finally(
-        () => {
-          setIsMounted(true);
-        }
-      );
+      checkOrderPaidOrNot(orderId, setPaymentStatus, setOrderData);
     }
-  }, []);
+  }, [orderId]);
 
   const pixelId = orderData[0]?.metaPixel;
   const gaTrackingId = orderData[0]?.gaTrackingId;
@@ -47,13 +50,11 @@ const SuspenseThankYouPage = () => {
   }
 
   return (
-    <Suspense>
+    <>
       {pixelId && <PixelBaseCode pixelId={pixelId} />}
       {gaTrackingId && <GoogleAnalytics gaTrackingId={gaTrackingId} />}
-      {isMounted && (
-        <ThankYouPage orderData={orderData} paymentStatus={paymentStatus} />
-      )}
-    </Suspense>
+      <ThankYouPage orderData={orderData} paymentStatus={paymentStatus} />
+    </>
   );
 };
 
