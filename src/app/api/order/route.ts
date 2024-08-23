@@ -7,16 +7,7 @@ import { serverError } from "@/lib/utils/error/errorExtractor";
 import { evar } from "@/lib/envConstant";
 import { Cashfree } from "cashfree-pg";
 import initiateCashfree from "@/lib/utils/cashfree/cashfree";
-import { Wallet } from "@/lib/mongodb/models/wallet.model";
-
-export function separateFivePercent(totalAmount: number) {
-  const fivePercent = totalAmount * 0.05;
-  const remainingAmount = totalAmount - fivePercent;
-  return {
-    fivePercent: fivePercent.toFixed(2),
-    remainingAmount: remainingAmount.toFixed(2),
-  };
-}
+import { separateFivePercent } from "@/lib/utils/utils";
 
 export async function POST(req: Request) {
   try {

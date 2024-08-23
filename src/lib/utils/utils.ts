@@ -246,3 +246,12 @@ export function formatePageInputs(
 
   return fieldsInput;
 }
+
+export function separateFivePercent(totalAmount: number) {
+  const fivePercent = totalAmount * 0.05;
+  const remainingAmount = totalAmount - fivePercent;
+  return {
+    fivePercent: fivePercent.toFixed(2),
+    remainingAmount: remainingAmount.toFixed(2),
+  };
+}

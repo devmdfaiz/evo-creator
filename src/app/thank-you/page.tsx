@@ -11,17 +11,61 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ReactNode, Suspense, useEffect, useMemo, useState } from "react";
 
+const SuspenseThankYouPage = () => {
+  const [paymentStatus, setPaymentStatus] = useState<
+    "verifying" | "paid" | "unpaid" | "error"
+  >("verifying");
+  const [orderData, setOrderData] = useState<any[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
+
+  // const orderId = "etrgwc63"
+
+  useMemo(() => {
+    const searchParams = useSearchParams();
+    const id = searchParams.get("order-id");
+    setOrderId(id);
+
+    if (orderId) {
+      checkOrderPaidOrNot(orderId, setPaymentStatus, setOrderData).finally(
+        () => {
+          setIsMounted(true);
+        }
+      );
+    }
+  }, []);
+
+  const pixelId = orderData[0]?.metaPixel;
+  const gaTrackingId = orderData[0]?.gaTrackingId;
+
+  if (!orderId) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        Order id not found
+      </div>
+    );
+  }
+
+  return (
+    <Suspense>
+      {pixelId && <PixelBaseCode pixelId={pixelId} />}
+      {gaTrackingId && <GoogleAnalytics gaTrackingId={gaTrackingId} />}
+      {isMounted && (
+        <ThankYouPage orderData={orderData} paymentStatus={paymentStatus} />
+      )}
+    </Suspense>
+  );
+};
+
 const ThankYouPage = ({
   paymentStatus,
   orderData,
-  isMounted,
 }: {
   paymentStatus: "verifying" | "paid" | "unpaid" | "error";
   orderData: any[];
-  isMounted: boolean;
 }) => {
   useEffect(() => {
-    if (paymentStatus === "paid" && isMounted) {
+    if (paymentStatus === "paid") {
       if (typeof window !== "undefined" && window.fbq) {
         window.fbq("track", "Purchase", {
           transaction_id: orderData[0].orderId,
@@ -55,7 +99,7 @@ const ThankYouPage = ({
         console.error("Facebook Pixel is not initialized.");
       }
     }
-  }, [paymentStatus, isMounted, orderData]);
+  }, [paymentStatus, orderData]);
 
   const reloadPage = () => {
     window.location.reload();
@@ -263,40 +307,6 @@ const ThankYouPage = ({
         </div>
       </div>
     </ThankYouPageWrapper>
-  );
-};
-
-const SuspenseThankYouPage = () => {
-  const [paymentStatus, setPaymentStatus] = useState<
-    "verifying" | "paid" | "unpaid" | "error"
-  >("verifying");
-  const [orderData, setOrderData] = useState<any[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
-
-  const searchParams = useSearchParams();
-  const orderId = searchParams.get("order-id");
-
-  useMemo(() => {
-    checkOrderPaidOrNot(orderId!, setPaymentStatus, setOrderData).finally(
-      () => {
-        setIsMounted(true);
-      }
-    );
-  }, []);
-
-  const pixelId = orderData[0]?.metaPixel;
-  const gaTrackingId = orderData[0]?.gaTrackingId;
-
-  return (
-    <Suspense>
-      {pixelId && <PixelBaseCode pixelId={pixelId} />}
-      {gaTrackingId && <GoogleAnalytics gaTrackingId={gaTrackingId} />}
-      <ThankYouPage
-        orderData={orderData}
-        paymentStatus={paymentStatus}
-        isMounted={isMounted}
-      />
-    </Suspense>
   );
 };
 
