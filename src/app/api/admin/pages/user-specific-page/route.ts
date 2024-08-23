@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { serverError } from "@/lib/utils/error/errorExtractor";
 import { authOptions } from "../../../../../../AuthOptions";
 
+
 export async function POST(req: Request) {
   try {
     // Connect to the database
