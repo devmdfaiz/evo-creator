@@ -11,8 +11,6 @@ import { ToastContainer as Toastify } from "react-toastify";
 import { Toaster as HotToast } from "react-hot-toast";
 import "react-toastify/dist/ReactToastify.css";
 
-export const runtime = "edge";
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
