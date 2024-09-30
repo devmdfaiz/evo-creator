@@ -10,6 +10,7 @@ import { serverError } from "@/lib/utils/error/errorExtractor";
 import { transporter } from "@/lib/nodemailer/nodemailer";
 import { render } from "@react-email/components";
 import { Wallet } from "@/lib/mongodb/models/wallet.model";
+import { resend } from "@/lib/resend/resend";
 
 export async function POST(req: Request) {
   try {
@@ -110,25 +111,26 @@ export async function POST(req: Request) {
     }
 
     // Send the OTP to a specific email address using the "nodemailer" service
-    const emailHtml = render(
-      SendOtp({
+
+    // handle by resend
+    const { data, error } = await resend.emails.send({
+      from: "Verification OTP <otp@evocreator.com>",
+      to: email,
+      subject: `Your One-Time Password (OTP) from ${evar.projectName}`,
+      react: SendOtp({
         projectName: evar.projectName,
         recipientName: fullname,
         action: "Sign up",
-        otp,
-        supportEmail: "support@support.com",
+        otp: generateOTP(),
+        supportEmail: "support@evocreator.com",
         baseUrl: evar.domain,
-      })
-    );
+      }),
+    });
 
-    try {
-      const info = await transporter.sendMail({
-        from: evar.senderEmail, // sender address
-        to: email, // list of receivers
-        subject: `Your One-Time Password (OTP) from ${evar.projectName}`, // Subject line
-        html: emailHtml, // html body
-      });
-    } catch (error) {
+    console.log("Resend email data: ", data);
+    
+
+    if (error) {
       // Rollback user and wallet creation if email sending fails
       await User.findByIdAndDelete(newUser._id);
       await Wallet.findByIdAndDelete(createdWallet._id);
@@ -136,7 +138,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           message: "An error occurred in sending email. Please try again.",
-          error: "Email sending failed",
+          error,
           user: null,
         },
         { status: 500 } // 500 Internal Server Error

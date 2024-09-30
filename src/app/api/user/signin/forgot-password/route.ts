@@ -8,6 +8,7 @@ import { addMinutes } from "date-fns";
 import { serverError } from "@/lib/utils/error/errorExtractor";
 import { render } from "@react-email/components";
 import { transporter } from "@/lib/nodemailer/nodemailer";
+import { resend } from "@/lib/resend/resend";
 
 export async function POST(req: Request, res: Response) {
   connectToDb();
@@ -40,30 +41,26 @@ export async function POST(req: Request, res: Response) {
 
     // Send the OTP to a specific email address using the "resend" service
 
-    const emailHtml = render(
-      PasswordResetLinkEmail({
+    // handle by resend
+    const { data, error } = await resend.emails.send({
+      from: "Password reset link <forget-password@evocreator.com>",
+      to: user.email,
+      subject: `Your Password reset link from ${evar.projectName}`,
+      react: PasswordResetLinkEmail({
         projectName: evar.projectName,
         recipientName: user.fullname,
         action: "reset password",
         link: `${evar.domain}/reset-password/${token}`,
         supportEmail: "support@support.com",
         baseUrl: evar.domain,
-      })
-    );
-
-    const info = await transporter.sendMail({
-      from: evar.senderEmail, // sender address
-      to: user.email, // list of receivers
-      subject: `Your One-Time Password (OTP) from ${evar.projectName}`, // Subject line
-      html: emailHtml, // html body
+      }),
     });
 
-    // Check if there was an error sending the email
-    if (!info.messageId) {
+    if (error) {
       return NextResponse.json(
         {
           message: "An error in sending email. Please try again.",
-          error: "Email sending failed",
+          error,
           user: null,
         },
         { status: 500 } // HTTP 500 Internal Server Error for unexpected issues

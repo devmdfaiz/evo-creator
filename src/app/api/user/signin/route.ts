@@ -8,6 +8,7 @@ import { generateOTP } from "@/lib/otplib/otplib";
 import { serverError } from "@/lib/utils/error/errorExtractor";
 import { transporter } from "@/lib/nodemailer/nodemailer";
 import { render } from "@react-email/components";
+import { resend } from "@/lib/resend/resend";
 
 export async function POST(req: Request, res: Response) {
   try {
@@ -43,31 +44,26 @@ export async function POST(req: Request, res: Response) {
 
     // Send the OTP to a specific email address using the "nodemailer" service
 
-    // Check if there was an error sending the email
-    const emailHtml = render(
-      SendOtp({
+    // handle by resend
+    const { data, error } = await resend.emails.send({
+      from: "Verification OTP <otp@evocreator.com>",
+      to: user.email,
+      subject: `Your One-Time Password (OTP) from ${evar.projectName}`,
+      react: SendOtp({
         projectName: evar.projectName,
         recipientName: user.fullname,
         action: "Sign in",
         otp: generateOTP(),
-        supportEmail: "support@support.com",
+        supportEmail: "support@evocreator.com",
         baseUrl: evar.domain,
-      })
-    );
-
-    const info = await transporter.sendMail({
-      from: evar.senderEmail, // sender address
-      to: user.email, // list of receivers
-      subject: `Your One-Time Password (OTP) from ${evar.projectName}`, // Subject line
-      html: emailHtml, // html body
+      }),
     });
 
-    // Check if there was an error sending the email
-    if (!info.messageId) {
+    if (error) {
       return NextResponse.json(
         {
           message: "An error in sending email. Please try again.",
-          error: "Email sending failed",
+          error,
           user: null,
         },
         { status: 500 } // HTTP 500 Internal Server Error for unexpected issues
